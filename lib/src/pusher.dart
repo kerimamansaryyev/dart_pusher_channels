@@ -4,7 +4,7 @@ import 'event.dart';
 import 'options.dart';
 import 'web_socket_connection.dart';
 
-class Pusher {
+class PusherChannels {
   final PusherOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
@@ -42,10 +42,10 @@ class Pusher {
     return _channelEventFactory(name, channelName, data);
   }
 
-  Pusher({required this.options, required ConnectionDelegate delegate})
+  PusherChannels({required this.options, required ConnectionDelegate delegate})
       : _delegate = delegate;
 
-  Pusher.websocket(
+  PusherChannels.websocket(
       {required this.options,
       int reconnectTries = 4,
       void Function(dynamic error, StackTrace trace)?
