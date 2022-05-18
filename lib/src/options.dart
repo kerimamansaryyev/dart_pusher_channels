@@ -1,9 +1,7 @@
-const _kClient = 'dart';
-
 class PusherOptions {
   final String scheme;
   final String? cluster;
-  final int port;
+  final int? port;
   final String key;
   final int protocol;
   final String version;
@@ -21,7 +19,7 @@ class PusherOptions {
 
   PusherOptions.ws({
     String? cluster,
-    required int port,
+    required int? port,
     required String key,
     required int protocol,
     required String version,
@@ -37,7 +35,7 @@ class PusherOptions {
 
   PusherOptions.wss({
     String? cluster,
-    required int port,
+    required int? port,
     required String key,
     required int protocol,
     required String version,
@@ -62,3 +60,5 @@ class PusherOptions {
             'protocol': protocol.toString()
           });
 }
+
+const _kClient = 'dart';
