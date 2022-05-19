@@ -1,6 +1,9 @@
 library channels;
 
 import 'dart:async';
+import 'dart:convert';
+import 'package:dart_pusher_channels/src/exceptions/exception.dart';
+import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import '../connection.dart';
 import '../event.dart';
@@ -31,13 +34,27 @@ class PrivateChannel extends Channel {
   PrivateChannel(
       {required String name,
       required ConnectionDelegate connectionDelegate,
+      this.onAuthFailed,
       required this.authorizationDelegate})
       : super(name: name, connectionDelegate: connectionDelegate);
 
   final AuthorizationDelegate authorizationDelegate;
+  final void Function(PusherAuthenticationException error)? onAuthFailed;
 
   @override
-  void subscribe() {}
+  void subscribe() async {
+    try {
+      var code = await authorizationDelegate.authenticationString(
+          connectionDelegate.socketId ?? "", name);
+      connectionDelegate.send(SendEvent(
+          data: {'channel': name, 'auth': code},
+          name: PusherEventNames.subscribe,
+          channelName: null));
+    } on PusherAuthenticationException catch (ex) {
+      onAuthFailed?.call(ex);
+      // ignore: empty_catches
+    } catch (ex) {}
+  }
 
   @override
   void unsubscribe() {}

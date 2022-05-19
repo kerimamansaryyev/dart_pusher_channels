@@ -22,12 +22,12 @@ class PusherChannels {
     return null;
   }
 
-  Channel privateChannel(String name) {
+  Channel privateChannel(
+      String name, AuthorizationDelegate authorizationDelegate) {
     var channel = PrivateChannel(
         name: name,
         connectionDelegate: _delegate,
-        authorizationDelegate: TokenAuthorizationDelegate(
-            authorizationEndpoint: Uri.parse('uri'), headers: {}));
+        authorizationDelegate: authorizationDelegate);
     _channels[channel.name] = channel;
     return _channels[channel.name]!;
   }

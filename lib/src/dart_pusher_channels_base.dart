@@ -3,6 +3,7 @@ export 'package:dart_pusher_channels/src/channel/channel.dart'
         Channel,
         AuthorizationDelegate,
         TokenAuthorizationDelegate,
+        PusherAuthenticationException,
         ChannelReadEvent
     hide PrivateChannel, PublicChannel;
 

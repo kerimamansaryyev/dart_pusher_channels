@@ -14,6 +14,15 @@ abstract class ConnectionDelegate {
 
   ConnectionDelegate({required this.options});
 
+  String? _socketId;
+
+  String? get socketId => _socketId;
+
+  @protected
+  set socketId(String? newId) {
+    _socketId = newId;
+  }
+
   @protected
   StreamController<void> get onConnectedController;
   @protected
@@ -53,6 +62,10 @@ abstract class ConnectionDelegate {
         return event;
       case PusherEventNames.connectionEstablished:
         onPong();
+        print(data);
+        var sockId = data["socket_id"]?.toString();
+        socketId = sockId;
+        print(socketId);
         var event = RecieveEvent(
             data: data,
             name: name,
