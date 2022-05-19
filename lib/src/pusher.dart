@@ -23,10 +23,12 @@ class PusherChannels {
   }
 
   Channel privateChannel(
-      String name, AuthorizationDelegate authorizationDelegate) {
+      String name, AuthorizationDelegate authorizationDelegate,
+      {void Function(PusherAuthenticationException error)? onAuthFailed}) {
     var channel = PrivateChannel(
         name: name,
         connectionDelegate: _delegate,
+        onAuthFailed: onAuthFailed,
         authorizationDelegate: authorizationDelegate);
     _channels[channel.name] = channel;
     return _channels[channel.name]!;
