@@ -2,7 +2,7 @@ part of channels;
 
 class PusherAuthenticationException extends PusherException {
   final int statusCode;
-  PusherAuthenticationException({required this.statusCode}) : super();
+  const PusherAuthenticationException({required this.statusCode}) : super();
 }
 
 abstract class AuthorizationDelegate {
@@ -26,9 +26,12 @@ class TokenAuthorizationDelegate extends AuthorizationDelegate {
   Future<String> authenticationString(
       String socketId, String channelName) async {
     var response = await http.post(authorizationEndpoint,
-        headers: headers,
+        headers: {
+          ...headers,
+          'content-type': 'application/x-www-form-urlencoded'
+        },
         body: jsonEncode({'socket_id': socketId, 'channel': channelName}));
-    print(response.body);
+
     if (response.statusCode != 200) {
       throw PusherAuthenticationException(statusCode: response.statusCode);
     }
