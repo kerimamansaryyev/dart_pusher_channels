@@ -65,7 +65,6 @@ abstract class ConnectionDelegate {
         print(data);
         var sockId = data["socket_id"]?.toString();
         socketId = sockId;
-        print(socketId);
         var event = RecieveEvent(
             data: data,
             name: name,
