@@ -113,6 +113,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
         _connectionCompleter.completeError(error, trace);
       }
       onConnectionErrorHandler?.call(error, trace);
+      cancelTimer();
     } else {
       reconnect();
     }
