@@ -26,12 +26,12 @@ abstract class ConnectionDelegate {
   @protected
   StreamController<void> get onConnectedController;
   @protected
-  StreamController<ReadEvent> get onEventRecievedController;
+  StreamController<RecieveEvent> get onEventRecievedController;
 
   Stream<void> get onConnection => onConnectedController.stream;
-  Stream<ReadEvent> get onErrorEvent =>
+  Stream<RecieveEvent> get onErrorEvent =>
       onEvent.where((event) => event.name == PusherEventNames.error);
-  Stream<ReadEvent> get onEvent => onEventRecievedController.stream;
+  Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
 
   void onConnectionError(dynamic error, StackTrace trace);
 
@@ -71,7 +71,9 @@ abstract class ConnectionDelegate {
             name: name,
             channelName: null,
             onEventRecieved: (_, ___, __) => onConnectionHanlder());
-        onConnectedController.add(null);
+        if (!onConnectedController.isClosed) {
+          onConnectedController.add(null);
+        }
         return event;
       case PusherEventNames.pong:
         var event = RecieveEvent(
@@ -115,7 +117,7 @@ abstract class ConnectionDelegate {
 
     event?.callHandler();
 
-    if (event != null) {
+    if (event != null && !onEventRecievedController.isClosed) {
       onEventRecievedController.add(event);
     }
 
@@ -141,6 +143,16 @@ abstract class ConnectionDelegate {
     }
   }
 
+  @mustCallSuper
+  Future<void> dispose() async {
+    try {
+      await disconnect();
+      // ignore: empty_catches
+    } catch (e) {}
+    await cancelTimer();
+  }
+
+  @mustCallSuper
   Future<void> resetTimer() async {
     await _timerSubs?.cancel();
     _timerSubs = Stream.periodic(activityDuration).listen((_) {

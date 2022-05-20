@@ -14,6 +14,20 @@ abstract class Event {
 
 abstract class ReadEvent extends Event {}
 
+class PusherReadEvent extends ReadEvent {
+  @override
+  final Map data;
+
+  @override
+  final String name;
+
+  @override
+  final String? channelName;
+
+  PusherReadEvent(
+      {required this.data, required this.name, required this.channelName});
+}
+
 class SendEvent extends Event {
   @override
   final Map data;

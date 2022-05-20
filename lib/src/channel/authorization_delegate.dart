@@ -25,13 +25,13 @@ class TokenAuthorizationDelegate extends AuthorizationDelegate {
   @override
   Future<String> authenticationString(
       String socketId, String channelName) async {
-    var response = await http.post(authorizationEndpoint,
-        headers: {
-          ...headers,
-          'content-type': 'application/x-www-form-urlencoded'
-        },
-        encoding: Encoding.getByName('utf-8'),
-        body: {'socket_id': socketId, 'channel': channelName});
+    var response = await http.post(authorizationEndpoint, headers: {
+      ...headers,
+      'content-type': 'application/x-www-form-urlencoded'
+    }, body: {
+      'socket_id': socketId,
+      'channel_name': channelName
+    });
 
     if (response.statusCode != 200) {
       throw PusherAuthenticationException(statusCode: response.statusCode);

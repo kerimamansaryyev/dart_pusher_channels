@@ -53,6 +53,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   void onEventRecieved(data) {
+    _reconnectTries = 0;
     _preEventHandler(data);
     if (!_connectionCompleter.isCompleted) {
       _connectionCompleter.complete();
@@ -109,8 +110,22 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   void onConnectionError(error, trace) {
     if (!_connectionCompleter.isCompleted) {
       _connectionCompleter.completeError(error, trace);
-      onConnectionErrorHandler?.call(error, trace);
-      _reconnectTries++;
     }
+    if (_reconnectTries >= reconnectTries) {
+      onConnectionErrorHandler?.call(error, trace);
+    }
+    _reconnectTries++;
+  }
+
+  @override
+  Future<void> dispose() async {
+    await super.dispose();
+    await onConnectedController.close();
+    await onEventRecievedController.close();
+  }
+
+  void resetAndReconnect() {
+    _reconnectTries = 0;
+    reconnect();
   }
 }
