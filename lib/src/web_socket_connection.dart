@@ -12,8 +12,8 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   WebSocketChannelConnectionDelegate(
       {required PusherOptions options,
       this.eventFactory,
-      this.reconnectTries = 4,
-      this.onConnectionErrorHandler})
+      this.onConnectionErrorHandler,
+      this.reconnectTries = 4})
       : super(options: options);
 
   int _reconnectTries = 0;
@@ -21,10 +21,20 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final RecieveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
-  final void Function(dynamic error, StackTrace trace)?
-      onConnectionErrorHandler;
-
   final int reconnectTries;
+
+  @override
+  final PublishSubject<ConnectionStatus> connectionStatusController =
+      PublishSubject();
+
+  @override
+  final PublishSubject<void> onConnectedController = PublishSubject<void>();
+
+  @override
+  final PublishSubject<RecieveEvent> onEventRecievedController =
+      PublishSubject<RecieveEvent>();
+
+  final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
 
   WebSocketChannel? _socketChannel;
 
@@ -66,17 +76,19 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> connect() async {
+    await super.connect();
     _connectionCompleter = Completer();
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
       _socketChannel?.stream.listen(onEventRecieved);
-    }, onConnectionError);
+    }, _onConnectionError);
     resetTimer();
     return _connectionCompleter.future;
   }
 
   @override
   Future<void> disconnect() async {
+    await super.disconnect();
     await _socketChannel?.sink.close();
   }
 
@@ -84,13 +96,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   RecieveEvent? externalEventFactory(
           String name, String? channelName, Map data) =>
       eventFactory?.call(name, channelName, data);
-
-  @override
-  final PublishSubject<void> onConnectedController = PublishSubject<void>();
-
-  @override
-  final PublishSubject<RecieveEvent> onEventRecievedController =
-      PublishSubject<RecieveEvent>();
 
   @override
   void ping() {
@@ -106,12 +111,12 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     }));
   }
 
-  @override
-  void onConnectionError(error, trace) {
-    if (!_connectionCompleter.isCompleted) {
-      _connectionCompleter.completeError(error, trace);
-    }
+  void _onConnectionError(error, trace) {
     if (_reconnectTries >= reconnectTries) {
+      passConnectionStatus(ConnectionStatus.connectionError);
+      if (!_connectionCompleter.isCompleted) {
+        _connectionCompleter.completeError(error, trace);
+      }
       onConnectionErrorHandler?.call(error, trace);
     }
     _reconnectTries++;
@@ -122,6 +127,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     await super.dispose();
     await onConnectedController.close();
     await onEventRecievedController.close();
+    await connectionStatusController.close();
   }
 
   void resetTries() {

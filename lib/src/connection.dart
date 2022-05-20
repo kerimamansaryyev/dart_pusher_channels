@@ -7,6 +7,8 @@ import 'event.dart';
 import 'event_names.dart';
 import 'options.dart';
 
+enum ConnectionStatus { notConnected, connected, connectionError, pending }
+
 abstract class ConnectionDelegate {
   Duration get activityDuration;
 
@@ -24,6 +26,9 @@ abstract class ConnectionDelegate {
   }
 
   @protected
+  StreamController<ConnectionStatus> get connectionStatusController;
+
+  @protected
   StreamController<void> get onConnectedController;
   @protected
   StreamController<RecieveEvent> get onEventRecievedController;
@@ -33,10 +38,18 @@ abstract class ConnectionDelegate {
       onEvent.where((event) => event.name == PusherEventNames.error);
   Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
 
-  void onConnectionError(dynamic error, StackTrace trace);
+  Stream<ConnectionStatus> get onConnectionStatusChanged =>
+      connectionStatusController.stream;
 
-  Future<void> connect();
-  Future<void> disconnect();
+  @mustCallSuper
+  Future<void> connect() async {
+    passConnectionStatus(ConnectionStatus.pending);
+  }
+
+  @mustCallSuper
+  Future<void> disconnect() async {
+    passConnectionStatus(ConnectionStatus.notConnected);
+  }
 
   void ping();
 
@@ -45,6 +58,13 @@ abstract class ConnectionDelegate {
   void onErrorHandler(Map data) {}
 
   void onConnectionHanlder() {}
+
+  @protected
+  void passConnectionStatus(ConnectionStatus status) {
+    if (!connectionStatusController.isClosed) {
+      connectionStatusController.add(status);
+    }
+  }
 
   @protected
   RecieveEvent? externalEventFactory(
@@ -70,7 +90,9 @@ abstract class ConnectionDelegate {
             name: name,
             channelName: null,
             onEventRecieved: (_, ___, __) => onConnectionHanlder());
-        if (!onConnectedController.isClosed) {
+        if (!onConnectedController.isClosed &&
+            !connectionStatusController.isClosed) {
+          connectionStatusController.add(ConnectionStatus.connected);
           onConnectedController.add(null);
         }
         return event;

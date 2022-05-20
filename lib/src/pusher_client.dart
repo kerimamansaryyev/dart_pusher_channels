@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'channel/channel.dart';
 import 'connection.dart';
 import 'event.dart';
@@ -18,6 +16,9 @@ class PusherChannels {
   Stream<PusherReadEvent> get onErrorEvent =>
       _delegate.onErrorEvent.map((event) => PusherReadEvent(
           data: event.data, name: event.name, channelName: event.channelName));
+
+  Stream<ConnectionStatus> get onConnectionStatusChanged =>
+      _delegate.onConnectionStatusChanged;
 
   RecieveEvent? _channelEventFactory(
       String name, String? channelName, Map data) {
@@ -62,7 +63,7 @@ class PusherChannels {
   PusherChannels.websocket(
       {required this.options,
       int reconnectTries = 4,
-      void Function(dynamic error, StackTrace trace, VoidCallback? refresh)?
+      void Function(dynamic error, StackTrace? trace, void Function()? refresh)?
           onConnectionErrorHandle}) {
     _delegate = WebSocketChannelConnectionDelegate(
       options: options,

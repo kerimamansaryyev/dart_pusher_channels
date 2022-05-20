@@ -14,3 +14,5 @@ export 'package:dart_pusher_channels/src/pusher_client.dart'
     show PusherChannels;
 export 'package:dart_pusher_channels/src/web_socket_connection.dart'
     show WebSocketChannelConnectionDelegate;
+
+export 'package:dart_pusher_channels/src/connection.dart' show ConnectionStatus;
