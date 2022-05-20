@@ -3,6 +3,7 @@
 /// More dartdocs go here.
 library dart_pusher_channels;
 
-export 'src/dart_pusher_channels_base.dart';
+export 'base.dart';
+export 'api.dart';
 
 // TODO: Export any libraries intended for clients of this package.

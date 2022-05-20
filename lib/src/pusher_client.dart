@@ -10,7 +10,6 @@ class PusherChannels {
   final PusherOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
-  final bool resubscribeOnError;
 
   Stream<PusherReadEvent> get onEvent =>
       _delegate.onEvent.map((event) => PusherReadEvent(
@@ -55,15 +54,13 @@ class PusherChannels {
     return _channelEventFactory(name, channelName, data);
   }
 
-  PusherChannels(
-      {required this.options,
-      required ConnectionDelegate delegate,
-      this.resubscribeOnError = true})
-      : _delegate = delegate;
+  PusherChannels({
+    required this.options,
+    required ConnectionDelegate delegate,
+  }) : _delegate = delegate;
 
   PusherChannels.websocket(
       {required this.options,
-      this.resubscribeOnError = true,
       int reconnectTries = 4,
       void Function(dynamic error, StackTrace trace, VoidCallback? refresh)?
           onConnectionErrorHandle}) {
@@ -71,14 +68,15 @@ class PusherChannels {
       options: options,
       reconnectTries: reconnectTries,
       onConnectionErrorHandler: (error, trace) {
-        onConnectionErrorHandle?.call(
-            error,
-            trace,
-            (_delegate as WebSocketChannelConnectionDelegate)
-                .resetAndReconnect);
-        if (resubscribeOnError) {
-          resubscribeToChannels();
-        }
+        onConnectionErrorHandle?.call(error, trace, () async {
+          (_delegate as WebSocketChannelConnectionDelegate).resetTries();
+          try {
+            await _delegate.disconnect();
+            await connect();
+            resubscribeToChannels();
+            // ignore: empty_catches
+          } catch (e) {}
+        });
       },
       eventFactory: _eventFactory,
     );

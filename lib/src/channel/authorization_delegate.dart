@@ -1,8 +1,11 @@
 part of channels;
 
-class PusherAuthenticationException extends PusherException {
-  final int statusCode;
-  const PusherAuthenticationException({required this.statusCode}) : super();
+abstract class PusherAuthenticationException extends PusherException {}
+
+class PusherTokenAuthDelegateException extends PusherAuthenticationException {
+  final http.Response response;
+
+  PusherTokenAuthDelegateException._(this.response);
 }
 
 abstract class AuthorizationDelegate {
@@ -34,7 +37,7 @@ class TokenAuthorizationDelegate extends AuthorizationDelegate {
     });
 
     if (response.statusCode != 200) {
-      throw PusherAuthenticationException(statusCode: response.statusCode);
+      throw PusherTokenAuthDelegateException._(response);
     }
     return _parser(response);
   }

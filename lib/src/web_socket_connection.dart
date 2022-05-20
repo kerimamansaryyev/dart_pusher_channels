@@ -124,8 +124,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     await onEventRecievedController.close();
   }
 
-  void resetAndReconnect() {
+  void resetTries() {
     _reconnectTries = 0;
-    reconnect();
   }
 }
