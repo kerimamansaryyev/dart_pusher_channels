@@ -82,7 +82,6 @@ abstract class ConnectionDelegate {
         return event;
       case PusherEventNames.connectionEstablished:
         onPong();
-        print(data);
         var sockId = data["socket_id"]?.toString();
         socketId = sockId;
         var event = RecieveEvent(

@@ -52,16 +52,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   @override
-  void reconnect() async {
-    if (_reconnectTries >= reconnectTries) {
-      await disconnect();
-      await cancelTimer();
-    } else {
-      super.reconnect();
-    }
-  }
-
-  @override
   void onEventRecieved(data) {
     _reconnectTries = 0;
     _preEventHandler(data);
@@ -80,16 +70,19 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     _connectionCompleter = Completer();
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved);
+      _socketChannel?.stream.listen(onEventRecieved,
+          cancelOnError: true, onError: _onConnectionError);
     }, _onConnectionError);
-    resetTimer();
     return _connectionCompleter.future;
   }
 
   @override
   Future<void> disconnect() async {
     await super.disconnect();
-    await _socketChannel?.sink.close();
+    try {
+      await _socketChannel?.sink.close().timeout(const Duration(seconds: 1));
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   @override
@@ -112,14 +105,17 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   void _onConnectionError(error, trace) {
-    if (_reconnectTries >= reconnectTries) {
+    if (_reconnectTries == reconnectTries) return;
+    _reconnectTries++;
+    if (_reconnectTries == reconnectTries) {
       passConnectionStatus(ConnectionStatus.connectionError);
       if (!_connectionCompleter.isCompleted) {
         _connectionCompleter.completeError(error, trace);
       }
       onConnectionErrorHandler?.call(error, trace);
+    } else {
+      reconnect();
     }
-    _reconnectTries++;
   }
 
   @override
