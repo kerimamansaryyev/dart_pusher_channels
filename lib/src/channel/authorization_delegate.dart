@@ -30,7 +30,8 @@ class TokenAuthorizationDelegate extends AuthorizationDelegate {
           ...headers,
           'content-type': 'application/x-www-form-urlencoded'
         },
-        body: jsonEncode({'socket_id': socketId, 'channel': channelName}));
+        encoding: Encoding.getByName('utf-8'),
+        body: {'socket_id': socketId, 'channel': channelName});
 
     if (response.statusCode != 200) {
       throw PusherAuthenticationException(statusCode: response.statusCode);
