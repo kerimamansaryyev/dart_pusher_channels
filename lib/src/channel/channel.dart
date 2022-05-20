@@ -46,6 +46,7 @@ class PrivateChannel extends Channel {
     try {
       var code = await authorizationDelegate.authenticationString(
           connectionDelegate.socketId ?? "", name);
+      print(code);
       connectionDelegate.send(SendEvent(
           data: {'channel': name, 'auth': code},
           name: PusherEventNames.subscribe,
