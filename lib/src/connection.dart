@@ -29,11 +29,10 @@ abstract class ConnectionDelegate {
   StreamController<ConnectionStatus> get connectionStatusController;
 
   @protected
-  StreamController<void> get onConnectedController;
-  @protected
   StreamController<RecieveEvent> get onEventRecievedController;
 
-  Stream<void> get onConnection => onConnectedController.stream;
+  Stream<void> get onConnectionEstablished => connectionStatusController.stream
+      .where((event) => event == ConnectionStatus.connected);
   Stream<RecieveEvent> get onErrorEvent =>
       onEvent.where((event) => event.name == PusherEventNames.error);
   Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
@@ -89,10 +88,8 @@ abstract class ConnectionDelegate {
             name: name,
             channelName: null,
             onEventRecieved: (_, ___, __) => onConnectionHanlder());
-        if (!onConnectedController.isClosed &&
-            !connectionStatusController.isClosed) {
+        if (!connectionStatusController.isClosed) {
           connectionStatusController.add(ConnectionStatus.connected);
-          onConnectedController.add(null);
         }
         return event;
       case PusherEventNames.pong:

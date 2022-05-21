@@ -28,9 +28,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       PublishSubject();
 
   @override
-  final PublishSubject<void> onConnectedController = PublishSubject<void>();
-
-  @override
   final PublishSubject<RecieveEvent> onEventRecievedController =
       PublishSubject<RecieveEvent>();
 
@@ -110,7 +107,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     if (_reconnectTries == reconnectTries) {
       passConnectionStatus(ConnectionStatus.connectionError);
       if (!_connectionCompleter.isCompleted) {
-        _connectionCompleter.completeError(error, trace);
+        _connectionCompleter.complete(null);
       }
       onConnectionErrorHandler?.call(error, trace);
       cancelTimer();
@@ -122,7 +119,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   @override
   Future<void> dispose() async {
     await super.dispose();
-    await onConnectedController.close();
     await onEventRecievedController.close();
     await connectionStatusController.close();
   }

@@ -20,6 +20,8 @@ class PusherChannels {
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       _delegate.onConnectionStatusChanged;
 
+  Stream<void> get onConnectionEstablished => _delegate.onConnectionEstablished;
+
   RecieveEvent? _channelEventFactory(
       String name, String? channelName, Map data) {
     if (channelName != null && _channels.containsKey(channelName)) {
