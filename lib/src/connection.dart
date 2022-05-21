@@ -7,7 +7,13 @@ import 'event.dart';
 import 'event_names.dart';
 import 'options.dart';
 
-enum ConnectionStatus { notConnected, connected, connectionError, pending }
+enum ConnectionStatus {
+  notConnected,
+  connected,
+  connectionError,
+  pending,
+  established
+}
 
 abstract class ConnectionDelegate {
   Duration get activityDuration;
@@ -32,7 +38,7 @@ abstract class ConnectionDelegate {
   StreamController<RecieveEvent> get onEventRecievedController;
 
   Stream<void> get onConnectionEstablished => connectionStatusController.stream
-      .where((event) => event == ConnectionStatus.connected);
+      .where((event) => event == ConnectionStatus.established);
   Stream<RecieveEvent> get onErrorEvent =>
       onEvent.where((event) => event.name == PusherEventNames.error);
   Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
@@ -78,6 +84,9 @@ abstract class ConnectionDelegate {
             name: name,
             channelName: null,
             onEventRecieved: (_, ___, d) => onErrorHandler(d));
+        if (!connectionStatusController.isClosed) {
+          connectionStatusController.add(ConnectionStatus.connected);
+        }
         return event;
       case PusherEventNames.connectionEstablished:
         onPong();
@@ -89,7 +98,7 @@ abstract class ConnectionDelegate {
             channelName: null,
             onEventRecieved: (_, ___, __) => onConnectionHanlder());
         if (!connectionStatusController.isClosed) {
-          connectionStatusController.add(ConnectionStatus.connected);
+          connectionStatusController.add(ConnectionStatus.established);
         }
         return event;
       case PusherEventNames.pong:
