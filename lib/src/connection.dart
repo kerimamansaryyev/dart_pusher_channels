@@ -8,7 +8,7 @@ import 'event_names.dart';
 import 'options.dart';
 
 enum ConnectionStatus {
-  notConnected,
+  disconnected,
   connected,
   connectionError,
   pending,
@@ -53,7 +53,7 @@ abstract class ConnectionDelegate {
 
   @mustCallSuper
   Future<void> disconnect() async {
-    passConnectionStatus(ConnectionStatus.notConnected);
+    passConnectionStatus(ConnectionStatus.disconnected);
   }
 
   void ping();
