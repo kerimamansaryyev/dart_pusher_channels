@@ -12,11 +12,12 @@ abstract class AuthorizationDelegate {
   FutureOr<String> authenticationString(String socketId, String channelName);
 }
 
-class TokenAuthorizationDelegate extends AuthorizationDelegate {
+@immutable
+class TokenAuthorizationDelegate implements AuthorizationDelegate {
   final Uri authorizationEndpoint;
   final Map<String, String> headers;
 
-  TokenAuthorizationDelegate(
+  const TokenAuthorizationDelegate(
       {required this.authorizationEndpoint,
       required this.headers,
       FutureOr<String> Function(http.Response response) parser =
