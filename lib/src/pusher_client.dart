@@ -3,8 +3,6 @@ import 'package:dart_pusher_channels/base.dart';
 import 'channel/channel.dart';
 import 'connection.dart';
 import 'event.dart';
-import 'options.dart';
-import 'web_socket_connection.dart';
 
 /// Canonical client structure to connect to a server based
 /// on Pusher Channels protocol through [ConnectionDelegate],
