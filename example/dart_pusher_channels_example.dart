@@ -28,8 +28,8 @@ void main() {
   Channel? privateChannel;
   StreamSubscription? eventSubscription;
   StreamSubscription? privateChannelEventSubscription;
-  // This stream will recieve events and call the callback
-  // below whenever the client is connected and reconnected after potential error
+  // This stream will recieve events and notify subscribers
+  // whenever the client is connected or reconnected after potential error
   client.onConnectionEstablished.listen((_) async {
     channel ??= client.publicChannel('my_public_channel_name');
     privateChannel ??= client.privateChannel(

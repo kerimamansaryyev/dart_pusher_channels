@@ -57,8 +57,8 @@ final client = PusherChannels.websocket(
   // after successfull connection to your server
   Channel? channel;
   StreamSubscription? eventSubscription;
-  // This stream will recieve events and call the callback
-  // below whenever the client is connected and reconnected after potential error
+  // This stream will recieve events and notify subscribers
+  // whenever the client is connected or reconnected after potential error
   client.onConnectionEstablished.listen((_) async {
     channel ??= client.publicChannel('my_public_channel_name');
     await eventSubscription?.cancel();
@@ -69,6 +69,7 @@ final client = PusherChannels.websocket(
     });
     channel!.subscribe();
   });
+  client.connect();
 
 ```
 
