@@ -7,7 +7,7 @@ import 'event.dart';
 /// Canonical client structure to connect to a server based
 /// on Pusher Channels protocol through [ConnectionDelegate],
 /// generating and managing channels internally
-class PusherChannels {
+class PusherChannelsClient {
   final PusherChannelOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
@@ -69,13 +69,13 @@ class PusherChannels {
     return _channelEventFactory(name, channelName, data);
   }
 
-  PusherChannels({
+  PusherChannelsClient({
     required this.options,
     required ConnectionDelegate delegate,
   }) : _delegate = delegate;
 
   /// Build a client over the Web socket connection
-  PusherChannels.websocket(
+  PusherChannelsClient.websocket(
       {required this.options,
       int reconnectTries = 4,
       void Function(dynamic error, StackTrace? trace, void Function()? refresh)?

@@ -16,7 +16,7 @@ void main() {
       protocol: 7,
       version: '7.0.3');
 
-  final client = PusherChannels.websocket(
+  final client = PusherChannelsClient.websocket(
       reconnectTries: 2,
       options: options,
       // Handle the errors based on the web sockets connection

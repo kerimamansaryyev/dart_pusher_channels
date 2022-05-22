@@ -40,10 +40,10 @@ const options = PusherChannelOptions.wss(
 ```
 2. Create the client.
 
-Use `PusherChannels.websocket` constructor to create a client based on web sockets.
+Use `PusherChannelsClient.websocket` constructor to create a client based on web sockets.
 
 ```dart
-final client = PusherChannels.websocket(
+final client = PusherChannelsClient.websocket(
       reconnectTries: 2,
       options: options,
       // Handle the errors based on the web sockets connection
