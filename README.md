@@ -1,5 +1,9 @@
 This package is an unofficial pure dart implementation of [Pusher Channels](https://pusher.com/channels).
 
+# Help in development
+
+Author of the package currently needs help with testing the package on other OS platforms and some test servers using Pusher protocol to implement encrypted and presence channels.
+
 # Description
 
 ***Note: This package needs to be tested and accepting issues. It was tested on a few projects for production.***
