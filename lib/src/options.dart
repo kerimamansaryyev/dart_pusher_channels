@@ -1,3 +1,6 @@
+import 'package:meta/meta.dart';
+
+@immutable
 class PusherChannelOptions {
   final String scheme;
   final String? cluster;
@@ -7,7 +10,7 @@ class PusherChannelOptions {
   final String version;
   final String _host;
 
-  PusherChannelOptions(
+  const PusherChannelOptions(
       {required this.scheme,
       required String host,
       this.cluster,
@@ -17,7 +20,7 @@ class PusherChannelOptions {
       required this.version})
       : _host = cluster == null ? host : 'ws-$cluster.$host';
 
-  PusherChannelOptions.ws({
+  const PusherChannelOptions.ws({
     String? cluster,
     required int? port,
     required String key,
@@ -33,7 +36,7 @@ class PusherChannelOptions {
             protocol: protocol,
             version: version);
 
-  PusherChannelOptions.wss({
+  const PusherChannelOptions.wss({
     String? cluster,
     required int? port,
     required String key,
