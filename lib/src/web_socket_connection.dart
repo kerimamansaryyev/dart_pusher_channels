@@ -21,6 +21,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final RecieveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
+  /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
 
   @override

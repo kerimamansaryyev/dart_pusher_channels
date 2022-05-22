@@ -1,25 +1,37 @@
+import 'package:dart_pusher_channels/base.dart';
+
 import 'channel/channel.dart';
 import 'connection.dart';
 import 'event.dart';
 import 'options.dart';
 import 'web_socket_connection.dart';
 
+/// Canonical client structure to connect to a server based
+/// on Pusher Channels protocol through [ConnectionDelegate],
+/// generating and managing channels internally
 class PusherChannels {
   final PusherChannelOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
 
+  /// Events recieved by client's [ConnectionDelegate] and mapped
+  /// as [PusherReadEvent]
   Stream<PusherReadEvent> get onEvent =>
       _delegate.onEvent.map((event) => PusherReadEvent(
           data: event.data, name: event.name, channelName: event.channelName));
 
+  /// Events with name [PusherEventNames.error] recieved by client's [ConnectionDelegate] and mapped
+  /// as [PusherReadEvent]
   Stream<PusherReadEvent> get onErrorEvent =>
       _delegate.onErrorEvent.map((event) => PusherReadEvent(
           data: event.data, name: event.name, channelName: event.channelName));
 
+  /// Emits whenever the connection status of [ConnectionDelegate] is changed
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       _delegate.onConnectionStatusChanged;
 
+  /// Emits when [ConnectionDelegate] manages to establish connection receiving event
+  /// with name [PusherEventNames.connectionEstablished]
   Stream<void> get onConnectionEstablished => _delegate.onConnectionEstablished;
 
   RecieveEvent? _channelEventFactory(
@@ -35,6 +47,7 @@ class PusherChannels {
     return null;
   }
 
+  /// Creating new private channel
   Channel privateChannel(
       String name, AuthorizationDelegate authorizationDelegate,
       {void Function(PusherAuthenticationException error)? onAuthFailed}) {
@@ -47,6 +60,7 @@ class PusherChannels {
     return _channels[channel.name]!;
   }
 
+  /// Createing new public channel
   Channel publicChannel(String name) {
     var channel = PublicChannel(name: name, connectionDelegate: _delegate);
     _channels[channel.name] = channel;
@@ -62,6 +76,7 @@ class PusherChannels {
     required ConnectionDelegate delegate,
   }) : _delegate = delegate;
 
+  /// Build a client over the Web socket connection
   PusherChannels.websocket(
       {required this.options,
       int reconnectTries = 4,

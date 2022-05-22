@@ -1,3 +1,6 @@
+///The channels library includes classes and interfaces for subscribing, unsubscribing, listening events from channels
+///Fot the present time - there are only 2 types of channels - Private, Public
+
 library channels;
 
 import 'dart:async';
@@ -12,16 +15,21 @@ import '../event_names.dart';
 part 'authorization_delegate.dart';
 part 'event.dart';
 
+///An interface to represent use-cases based on  the [Pusher documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
 abstract class Channel {
+  /// Channel name
   final String name;
 
+  /// Subscribing to the channel sending [PusherEventNames.subscribe] through [ConnectionDelegate]
   void subscribe();
 
+  /// Unsubscribing to the channel sending [PusherEventNames.subscribe] through [ConnectionDelegate]
   void unsubscribe();
 
   @protected
   final ConnectionDelegate connectionDelegate;
 
+  ///Listening for incoming events by given [eventName] over the [connectionDelegate.onEvent]
   Stream<ChannelReadEvent> bind(String eventName) => connectionDelegate.onEvent
       .where((event) => event.channelName == name && eventName == event.name)
       .map<ChannelReadEvent>((event) =>
@@ -30,6 +38,8 @@ abstract class Channel {
   Channel({required this.name, required this.connectionDelegate});
 }
 
+/// Implementation of pusher private channels using [AuthorizationDelegate] to get auth code for subscribing through authenticaton
+/// middleware.
 class PrivateChannel extends Channel {
   PrivateChannel(
       {required String name,
@@ -38,9 +48,14 @@ class PrivateChannel extends Channel {
       required this.authorizationDelegate})
       : super(name: name, connectionDelegate: connectionDelegate);
 
+  /// Define AuthorizationDelegate to get auth string and subscribe to a channel
   final AuthorizationDelegate authorizationDelegate;
+
+  /// Called when [authorizationDelegate] fails to get auth string
   final void Function(PusherAuthenticationException error)? onAuthFailed;
 
+  /// [PrivateChannel] subscription is established only if [authorizationDelegate.authenticationString] succeds
+  /// with valid auth code
   @override
   void subscribe() async {
     try {
@@ -60,6 +75,7 @@ class PrivateChannel extends Channel {
   void unsubscribe() {}
 }
 
+/// Implementation of pusher public channels
 class PublicChannel extends Channel {
   PublicChannel(
       {required String name, required ConnectionDelegate connectionDelegate})

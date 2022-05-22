@@ -1,5 +1,6 @@
 part of channels;
 
+/// Implementation of [ReadEvent] recieved from [Channel]
 class ChannelReadEvent extends Event implements ReadEvent {
   @override
   final Map data;

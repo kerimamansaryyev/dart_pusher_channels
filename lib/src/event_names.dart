@@ -1,3 +1,5 @@
+/// Constant event names of Pusher Channels
+
 abstract class PusherEventNames {
   static const connectionEstablished = 'pusher:connection_established';
   static const error = 'pusher:error';

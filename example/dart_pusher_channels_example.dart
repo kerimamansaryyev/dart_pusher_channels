@@ -54,4 +54,5 @@ void main() {
     });
     channel!.subscribe();
   });
+  client.connect();
 }
