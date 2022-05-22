@@ -15,7 +15,7 @@ import '../event_names.dart';
 part 'authorization_delegate.dart';
 part 'event.dart';
 
-///An interface to represent use-cases based on  the [Pusher documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
+///An interface to represent the channels based on  the [Pusher documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
 abstract class Channel {
   /// Channel name
   final String name;
