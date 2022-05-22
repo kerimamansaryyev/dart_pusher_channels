@@ -1,3 +1,6 @@
+## 0.0.8
+
+- Updated README.
 ## 0.0.7
 
 - Using more canonical names of classes and interfaces.
