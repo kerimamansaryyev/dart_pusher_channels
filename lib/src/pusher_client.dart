@@ -5,7 +5,7 @@ import 'options.dart';
 import 'web_socket_connection.dart';
 
 class PusherChannels {
-  final PusherOptions options;
+  final PusherChannelOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
 

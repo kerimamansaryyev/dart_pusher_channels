@@ -18,7 +18,7 @@ enum ConnectionStatus {
 abstract class ConnectionDelegate {
   Duration get activityDuration;
 
-  final PusherOptions options;
+  final PusherChannelOptions options;
 
   ConnectionDelegate({required this.options});
 

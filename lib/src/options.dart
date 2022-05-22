@@ -1,4 +1,4 @@
-class PusherOptions {
+class PusherChannelOptions {
   final String scheme;
   final String? cluster;
   final int? port;
@@ -7,7 +7,7 @@ class PusherOptions {
   final String version;
   final String _host;
 
-  PusherOptions(
+  PusherChannelOptions(
       {required this.scheme,
       required String host,
       this.cluster,
@@ -17,7 +17,7 @@ class PusherOptions {
       required this.version})
       : _host = cluster == null ? host : 'ws-$cluster.$host';
 
-  PusherOptions.ws({
+  PusherChannelOptions.ws({
     String? cluster,
     required int? port,
     required String key,
@@ -33,7 +33,7 @@ class PusherOptions {
             protocol: protocol,
             version: version);
 
-  PusherOptions.wss({
+  PusherChannelOptions.wss({
     String? cluster,
     required int? port,
     required String key,

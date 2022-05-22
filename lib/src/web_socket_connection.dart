@@ -10,7 +10,7 @@ import 'options.dart';
 
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   WebSocketChannelConnectionDelegate(
-      {required PusherOptions options,
+      {required PusherChannelOptions options,
       this.eventFactory,
       this.onConnectionErrorHandler,
       this.reconnectTries = 4})
