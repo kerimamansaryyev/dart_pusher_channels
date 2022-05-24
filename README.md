@@ -74,7 +74,11 @@ final client = PusherChannelsClient.websocket(
     channel!.subscribe();
   });
   client.connect();
-
+  // unsubscribe when done with channel
+  eventSubscription?.cancel();
+  channel?.unsubscribe();
+  //close when done with client
+  client.close();
 ```
 
 

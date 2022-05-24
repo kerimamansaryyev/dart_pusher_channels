@@ -72,7 +72,12 @@ class PrivateChannel extends Channel {
   }
 
   @override
-  void unsubscribe() {}
+  void unsubscribe() {
+    connectionDelegate.send(SendEvent(
+        data: {'channel': name},
+        name: PusherEventNames.unsubscribe,
+        channelName: null));
+  }
 }
 
 /// Implementation of pusher public channels

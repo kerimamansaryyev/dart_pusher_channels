@@ -1,3 +1,6 @@
+## 0.0.9
+
+- Implemented `unsubscribe` method for private channels.
 ## 0.0.8
 
 - Updated README.

@@ -55,4 +55,11 @@ void main() {
     channel!.subscribe();
   });
   client.connect();
+  // unsubscribe when done with channels
+  privateChannelEventSubscription?.cancel();
+  eventSubscription?.cancel();
+  channel?.unsubscribe();
+  privateChannel?.unsubscribe();
+  //close when done with client
+  client.close();
 }
