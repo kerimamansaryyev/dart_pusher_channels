@@ -1,3 +1,6 @@
+## 0.0.9+1
+
+- Making `refresh` callback of `onConnectionErrorHandler` constructor of `PusherChannelsClient.websocket` non-nullable
 ## 0.0.9
 
 - Implemented `unsubscribe` method for private channels.
