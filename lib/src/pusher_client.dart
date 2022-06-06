@@ -78,7 +78,7 @@ class PusherChannelsClient {
   PusherChannelsClient.websocket(
       {required this.options,
       int reconnectTries = 4,
-      void Function(dynamic error, StackTrace? trace, void Function()? refresh)?
+      void Function(dynamic error, StackTrace? trace, void Function() refresh)?
           onConnectionErrorHandle}) {
     _delegate = WebSocketChannelConnectionDelegate(
       options: options,
