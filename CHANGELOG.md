@@ -1,3 +1,6 @@
+## 0.1.0+1
+
+- Updated the description of pubspec.yaml
 ## 0.1.0
 
 - Fixed issue of non-cancallable timer. Added logging with `print` by default. Will be optional in next minor version.
