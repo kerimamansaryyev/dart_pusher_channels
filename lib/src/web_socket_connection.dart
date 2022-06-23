@@ -78,7 +78,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   Future<void> disconnect() async {
     await super.disconnect();
     try {
-      await _socketChannel?.sink.close().timeout(const Duration(seconds: 1));
+      await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
       // ignore: empty_catches
     } catch (e) {}
   }
@@ -90,6 +90,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   void ping() {
+    super.ping();
     send(SendEvent(data: {}, name: PusherEventNames.ping, channelName: null));
   }
 
@@ -103,6 +104,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   void _onConnectionError(error, trace) {
+    print('connectionError');
     if (_reconnectTries == reconnectTries) return;
     _reconnectTries++;
     if (_reconnectTries == reconnectTries) {

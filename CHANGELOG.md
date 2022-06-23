@@ -1,3 +1,6 @@
+## 0.1.0
+
+- Fixed issue of non-cancallable timer. Added logging with `print` by default. Will be optional in next minor version.
 ## 0.0.9+1
 
 - Making `refresh` callback of `onConnectionErrorHandler` constructor of `PusherChannelsClient.websocket` non-nullable

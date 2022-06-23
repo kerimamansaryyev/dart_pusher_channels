@@ -37,6 +37,9 @@ abstract class ConnectionDelegate {
   ConnectionDelegate({required this.options});
 
   String? _socketId;
+  bool _pongRecieved = false;
+  bool _isDisconnectedManually = false;
+  Timer? _timer;
 
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
@@ -70,17 +73,26 @@ abstract class ConnectionDelegate {
   /// Connect to a server
   @mustCallSuper
   Future<void> connect() async {
+    _isDisconnectedManually = false;
+    await cancelTimer();
+    print(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
   }
 
   /// Disconnect from server
   @mustCallSuper
   Future<void> disconnect() async {
+    _isDisconnectedManually = true;
+    await cancelTimer();
+    print(ConnectionStatus.disconnected);
     passConnectionStatus(ConnectionStatus.disconnected);
   }
 
   /// Ping a server when [activityDuration] exceeds
-  void ping();
+  @mustCallSuper
+  void ping() {
+    print('pinging');
+  }
 
   /// Send events
   void send(SendEvent event);
@@ -105,6 +117,7 @@ abstract class ConnectionDelegate {
       String name, String? channelName, Map data);
 
   /// Identifies Pusher's internal events
+  @mustCallSuper
   @protected
   RecieveEvent? internalEventFactory(String name, Map data) {
     switch (name) {
@@ -119,7 +132,6 @@ abstract class ConnectionDelegate {
         }
         return event;
       case PusherEventNames.connectionEstablished:
-        onPong();
         var sockId = data["socket_id"]?.toString();
         socketId = sockId;
         var event = RecieveEvent(
@@ -136,7 +148,7 @@ abstract class ConnectionDelegate {
             channelName: null,
             data: data,
             name: name,
-            onEventRecieved: (_, __, ___) => onPong());
+            onEventRecieved: (_, __, ___) {});
         return event;
       default:
         return null;
@@ -166,6 +178,8 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   void onEventRecieved(data) async {
+    if (_isDisconnectedManually) return;
+    await onPong();
     print(data);
     Map raw = jsonize(data);
     var name = raw['event']?.toString() ?? "";
@@ -179,26 +193,26 @@ abstract class ConnectionDelegate {
     if (event != null && !onEventRecievedController.isClosed) {
       onEventRecievedController.add(event);
     }
-
-    await resetTimer();
   }
 
-  bool _pongRecieved = false;
-
-  StreamSubscription? _timerSubs;
-
   /// When event with name [PusherEventNames.pong] is recieved
+  @mustCallSuper
   @protected
-  void onPong() {
+  Future<void> onPong() {
+    print('Got pong');
     _pongRecieved = true;
+    return resetTimer();
   }
 
   /// Pings connection when [activityDuration] exceeds.
+  @mustCallSuper
   @protected
   void checkPong() {
+    print('checking for pong');
     if (_pongRecieved) {
       _pongRecieved = false;
       ping();
+      resetTimer();
     } else {
       reconnect();
     }
@@ -217,14 +231,17 @@ abstract class ConnectionDelegate {
   /// Called when [pings] or [reconnect] succeed to connect or ping to a server
   @mustCallSuper
   Future<void> resetTimer() async {
-    await _timerSubs?.cancel();
-    _timerSubs = Stream.periodic(activityDuration).listen((_) {
-      checkPong();
-    });
+    _timer?.cancel();
+    _timer = null;
+    print('Timer is reset. Activity duration: $activityDuration');
+    _timer = Timer(activityDuration, checkPong);
   }
 
   /// Cancelling a timer
+  @mustCallSuper
   Future<void> cancelTimer() async {
-    await _timerSubs?.cancel();
+    print('Timer is canceled');
+    _timer?.cancel();
+    _timer = null;
   }
 }
