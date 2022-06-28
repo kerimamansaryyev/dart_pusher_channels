@@ -105,7 +105,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   void _onConnectionError(error, trace) {
     print('connectionError');
-    if (_reconnectTries == reconnectTries) return;
+    if (_reconnectTries == reconnectTries || isDisposed) return;
     _reconnectTries++;
     if (_reconnectTries == reconnectTries) {
       passConnectionStatus(ConnectionStatus.connectionError);

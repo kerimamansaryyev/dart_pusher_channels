@@ -1,3 +1,6 @@
+## 0.1.1
+
+- Fixed reconnection tries on disposal
 ## 0.1.0+1
 
 - Updated the description of pubspec.yaml

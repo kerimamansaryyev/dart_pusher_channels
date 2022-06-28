@@ -225,6 +225,7 @@ abstract class ConnectionDelegate {
       await disconnect();
       // ignore: empty_catches
     } catch (e) {}
+    isDisposed = true;
     await cancelTimer();
   }
 
@@ -244,4 +245,7 @@ abstract class ConnectionDelegate {
     _timer?.cancel();
     _timer = null;
   }
+
+  @protected
+  bool isDisposed = false;
 }
