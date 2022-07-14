@@ -1,3 +1,6 @@
+## 0.2.0
+
+- Tested on Windows succesfully and updated meta data
 ## 0.1.1
 
 - Fixed reconnection tries on disposal
