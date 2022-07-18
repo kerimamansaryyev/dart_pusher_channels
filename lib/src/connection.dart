@@ -29,6 +29,7 @@ enum ConnectionStatus {
 /// Special interface to describe connection, recieveing and sending events
 abstract class ConnectionDelegate {
   /// Value that used as a time-out to let know the delegate to call [checkPong]
+  @protected
   Duration get activityDuration;
 
   /// Constraints of the delegate
@@ -44,6 +45,7 @@ abstract class ConnectionDelegate {
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
 
+  @mustCallSuper
   @protected
   set socketId(String? newId) {
     _socketId = newId;
@@ -90,6 +92,7 @@ abstract class ConnectionDelegate {
 
   /// Ping a server when [activityDuration] exceeds
   @mustCallSuper
+  @protected
   void ping() {
     print('pinging');
   }
@@ -98,12 +101,15 @@ abstract class ConnectionDelegate {
   void send(SendEvent event);
 
   /// Called when event with name [PusherEventNames.error] is identified by [internalEventFactory]
+  @protected
   void onErrorHandler(Map data) {}
 
   /// Called when connection is established
+  @protected
   void onConnectionHanlder() {}
 
   /// Internal API to pass [ConnectionStatus] to sink of [connectionStatusController]
+  @mustCallSuper
   @protected
   void passConnectionStatus(ConnectionStatus status) {
     if (!connectionStatusController.isClosed) {
@@ -168,6 +174,7 @@ abstract class ConnectionDelegate {
   }
 
   /// Reconnect to server
+  @mustCallSuper
   @protected
   void reconnect() async {
     await disconnect();
@@ -231,6 +238,7 @@ abstract class ConnectionDelegate {
 
   /// Called when [pings] or [reconnect] succeed to connect or ping to a server
   @mustCallSuper
+  @protected
   Future<void> resetTimer() async {
     _timer?.cancel();
     _timer = null;
@@ -240,6 +248,7 @@ abstract class ConnectionDelegate {
 
   /// Cancelling a timer
   @mustCallSuper
+  @protected
   Future<void> cancelTimer() async {
     print('Timer is canceled');
     _timer?.cancel();

@@ -1,3 +1,7 @@
+## 0.2.0+1
+
+- Updated README.md
+- Improved annotations
 ## 0.2.0
 
 - Tested on Windows succesfully and updated meta data

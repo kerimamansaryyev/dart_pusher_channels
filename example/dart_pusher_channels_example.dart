@@ -39,7 +39,8 @@ void main() {
         // You may implement your own authorization delegate
         // implementing [AuthorizationDelegate] interface
         TokenAuthorizationDelegate(
-            authorizationEndpoint: Uri.parse('http://my,auth.com/api/auth'),
+            // User `http` or `https` scheme
+            authorizationEndpoint: Uri.parse('http://my.auth.com/api/auth'),
             headers: {'Authorization': 'Bearer [YOUR_TOKEN]'}));
     await eventSubscription?.cancel();
     await privateChannelEventSubscription?.cancel();

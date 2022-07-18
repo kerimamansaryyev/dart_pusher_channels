@@ -17,6 +17,7 @@ This package was tested on:
 * Anrdoid
 * IOS
 * Web
+* Windows
 
 Other platforms are in a test queue.
 
@@ -90,7 +91,10 @@ The package supports 2 types of channels:
 * Public
 * Private
 
-Presence channels and encrypted channels are in the milestones.
+## Milestones
+* Triggering events (for now plugin supprts only reading events from channels)
+* Presence channels
+* Encrypted channels
 
 ## Authorization
 The package comes with the default delegate for authorizing to private channels over http.
@@ -102,7 +106,8 @@ final privateChannel ??= client.privateChannel(
         // to authorize to the channels
         // You may implement your own authorization delegate
         // implementing [AuthorizationDelegate] interface
+        // Use `http` or `https` scheme
         TokenAuthorizationDelegate(
-            authorizationEndpoint: Uri.parse('http://my,auth.com/api/auth'),
+            authorizationEndpoint: Uri.parse('http://my.auth.com/api/auth'),
             headers: {'Authorization': 'Bearer [YOUR_TOKEN]'}));
 ```
