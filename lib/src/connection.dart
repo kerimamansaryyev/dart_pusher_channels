@@ -175,7 +175,6 @@ abstract class ConnectionDelegate {
 
   /// Reconnect to server
   @mustCallSuper
-  @protected
   void reconnect() async {
     await disconnect();
     connect();
