@@ -1,3 +1,8 @@
+## 0.2.1
+
+Added following additional controls to `PusherChannelsClient`
+- Method `disconnect()`
+- Method `reconnect()`
 ## 0.2.0+1
 
 - Updated README.md
