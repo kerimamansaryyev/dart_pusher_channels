@@ -1,3 +1,6 @@
+## 0.2.2
+
+Added `PusherChannelsPackageConfigs` which enables and disables log prints.
 ## 0.2.1
 
 Added following additional controls to `PusherChannelsClient`

@@ -111,3 +111,11 @@ final privateChannel ??= client.privateChannel(
             authorizationEndpoint: Uri.parse('http://my.auth.com/api/auth'),
             headers: {'Authorization': 'Bearer [YOUR_TOKEN]'}));
 ```
+
+## Enabling/disabling logs
+By default, logs are disabled.
+```dart
+PusherChannelsPackageConfigs.enableLogs();
+//or
+PusherChannelsPackageConfigs.disableLogs();
+```

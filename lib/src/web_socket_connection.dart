@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_pusher_channels/configs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:async';
@@ -104,7 +105,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   void _onConnectionError(error, trace) {
-    print('connectionError');
+    PusherChannelsPackageLogger.log('connectionError');
     if (_reconnectTries == reconnectTries || isDisposed) return;
     _reconnectTries++;
     if (_reconnectTries == reconnectTries) {

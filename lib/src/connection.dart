@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dart_pusher_channels/configs.dart';
 import 'package:meta/meta.dart';
 
 import 'event.dart';
@@ -77,7 +78,7 @@ abstract class ConnectionDelegate {
   Future<void> connect() async {
     _isDisconnectedManually = false;
     await cancelTimer();
-    print(ConnectionStatus.pending);
+    PusherChannelsPackageLogger.log(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
   }
 
@@ -86,7 +87,7 @@ abstract class ConnectionDelegate {
   Future<void> disconnect() async {
     _isDisconnectedManually = true;
     await cancelTimer();
-    print(ConnectionStatus.disconnected);
+    PusherChannelsPackageLogger.log(ConnectionStatus.disconnected);
     passConnectionStatus(ConnectionStatus.disconnected);
   }
 
@@ -94,7 +95,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   void ping() {
-    print('pinging');
+    PusherChannelsPackageLogger.log('pinging');
   }
 
   /// Send events
@@ -186,7 +187,7 @@ abstract class ConnectionDelegate {
   void onEventRecieved(data) async {
     if (_isDisconnectedManually) return;
     await onPong();
-    print(data);
+    PusherChannelsPackageLogger.log(data);
     Map raw = jsonize(data);
     var name = raw['event']?.toString() ?? "";
     var payload = jsonize(raw['data']);
@@ -205,7 +206,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   Future<void> onPong() {
-    print('Got pong');
+    PusherChannelsPackageLogger.log('Got pong');
     _pongRecieved = true;
     return resetTimer();
   }
@@ -214,7 +215,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   void checkPong() {
-    print('checking for pong');
+    PusherChannelsPackageLogger.log('checking for pong');
     if (_pongRecieved) {
       _pongRecieved = false;
       ping();
@@ -241,7 +242,8 @@ abstract class ConnectionDelegate {
   Future<void> resetTimer() async {
     _timer?.cancel();
     _timer = null;
-    print('Timer is reset. Activity duration: $activityDuration');
+    PusherChannelsPackageLogger.log(
+        'Timer is reset. Activity duration: $activityDuration');
     _timer = Timer(activityDuration, checkPong);
   }
 
@@ -249,7 +251,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   Future<void> cancelTimer() async {
-    print('Timer is canceled');
+    PusherChannelsPackageLogger.log('Timer is canceled');
     _timer?.cancel();
     _timer = null;
   }

@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 
 void main() {
-  //Creating options to use the client over wss:// scheme
+  // You may enable logs to see what's going on
+  PusherChannelsPackageConfigs.enableLogs();
+
+  // Creating options to use the client over wss:// scheme
   const options = PusherChannelOptions.wss(
       host: 'my.domain.com',
       //By default the servers using pusher over wss://

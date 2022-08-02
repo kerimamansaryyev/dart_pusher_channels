@@ -7,3 +7,4 @@ export 'package:dart_pusher_channels/src/event.dart';
 export 'package:dart_pusher_channels/src/event_names.dart';
 export 'package:dart_pusher_channels/src/options.dart';
 export 'package:dart_pusher_channels/src/pusher_client.dart';
+export 'package:dart_pusher_channels/configs.dart';
