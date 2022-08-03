@@ -40,11 +40,20 @@ abstract class ConnectionDelegate {
 
   String? _socketId;
   bool _pongRecieved = false;
-  bool _isDisconnectedManually = false;
+  bool _isDisconnected = true;
+  bool _manualDisconnection = false;
   Timer? _timer;
+  ConnectionStatus? _currentConnectionStatus;
 
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
+
+  /// Current [ConnectionStatus]
+  ConnectionStatus? get currentConnectionStatus => _currentConnectionStatus;
+
+  /// If disconnection was made with method [disconnectSafely]
+  @mustCallSuper
+  bool get isManuallyDisconnected => _manualDisconnection;
 
   /// Defines if [ConnectionDelegate] can perform connection or it has to reconnect
   @protected
@@ -78,13 +87,21 @@ abstract class ConnectionDelegate {
       connectionStatusController.stream;
 
   /// Provides safe connection.
-  void connectSafely() async => canConnect ? connect() : reconnect();
+  Future<void> connectSafely() async => canConnect ? connect() : reconnect();
+
+  /// Provides safe disconnection
+  @mustCallSuper
+  Future<void> disconnectSafely() {
+    _manualDisconnection = true;
+    return disconnect();
+  }
 
   /// Connect to a server.
   @mustCallSuper
   @protected
   Future<void> connect() async {
-    _isDisconnectedManually = false;
+    _isDisconnected = false;
+    _manualDisconnection = false;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
@@ -92,8 +109,9 @@ abstract class ConnectionDelegate {
 
   /// Disconnect from server
   @mustCallSuper
+  @protected
   Future<void> disconnect() async {
-    _isDisconnectedManually = true;
+    _isDisconnected = true;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.disconnected);
     passConnectionStatus(ConnectionStatus.disconnected);
@@ -122,6 +140,7 @@ abstract class ConnectionDelegate {
   @protected
   void passConnectionStatus(ConnectionStatus status) {
     if (!connectionStatusController.isClosed) {
+      _currentConnectionStatus = status;
       connectionStatusController.add(status);
     }
   }
@@ -193,7 +212,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   void onEventRecieved(data) async {
-    if (_isDisconnectedManually) return;
+    if (_isDisconnected) return;
     await onPong();
     PusherChannelsPackageLogger.log(data);
     Map raw = jsonize(data);

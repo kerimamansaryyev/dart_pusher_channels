@@ -87,7 +87,7 @@ class PusherChannelsClient {
         onConnectionErrorHandle?.call(error, trace, () async {
           (_delegate as WebSocketChannelConnectionDelegate).resetTries();
           try {
-            await _delegate.disconnect();
+            await disconnect();
             await connect();
             resubscribeToChannels();
             // ignore: empty_catches
@@ -105,14 +105,24 @@ class PusherChannelsClient {
   }
 
   /// Connect with current [ConnectionDelegate]
-  Future<void> connect() async => _delegate.connectSafely();
+  Future<void> connect() => _delegate.connectSafely();
 
   /// Permanently close this instance
   Future<void> close() => _delegate.dispose();
 
   /// Disconnecting with current [ConnectionDelegate]
-  Future<void> disconnect() => _delegate.disconnect();
+  Future<void> disconnect() => _delegate.disconnectSafely();
 
   /// Reconnecting with current [ConnectionDelegate]
-  void reconnect() => _delegate.reconnect();
+  void reconnect() {
+    if (_delegate.currentConnectionStatus == ConnectionStatus.established ||
+        _delegate.currentConnectionStatus == ConnectionStatus.connected ||
+        _delegate.isManuallyDisconnected) {
+      _delegate.reconnect();
+    }
+  }
+
+  /// If using force reconnect while [ConnectionStatus] of [ConnectionDelegate] is pending - it may result in
+  /// 2 reconnections. To reconnect safely - use [reconnect]
+  void forceReconnect() => _delegate.reconnect();
 }
