@@ -46,6 +46,10 @@ abstract class ConnectionDelegate {
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
 
+  /// Defines if [ConnectionDelegate] can perform connection or it has to reconnect
+  @protected
+  bool get canConnect;
+
   @mustCallSuper
   @protected
   set socketId(String? newId) {
@@ -73,8 +77,12 @@ abstract class ConnectionDelegate {
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       connectionStatusController.stream;
 
-  /// Connect to a server
+  /// Provides safe connection.
+  void connectSafely() async => canConnect ? connect() : reconnect();
+
+  /// Connect to a server.
   @mustCallSuper
+  @protected
   Future<void> connect() async {
     _isDisconnectedManually = false;
     await cancelTimer();

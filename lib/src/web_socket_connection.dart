@@ -27,6 +27,9 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final int reconnectTries;
 
   @override
+  bool get canConnect => _socketChannel == null;
+
+  @override
   final PublishSubject<ConnectionStatus> connectionStatusController =
       PublishSubject();
 
@@ -38,6 +41,10 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   WebSocketChannel? _socketChannel;
 
+  StreamSubscription? _socketChannelSubs;
+
+  bool _isDisconnected = true;
+
   Completer<void> _connectionCompleter = Completer();
 
   Duration _activityDuration = const Duration(seconds: 60);
@@ -48,6 +55,15 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     var timeout = d['activity_timeout'];
     if (timeout is int) {
       _activityDuration = Duration(seconds: timeout);
+    }
+  }
+
+  void _shouldReconnectOnDone() {
+    final shouldReconnect = !isDisposed && !_isDisconnected;
+    if (shouldReconnect) {
+      reconnect();
+    } else {
+      disconnect();
     }
   }
 
@@ -67,11 +83,15 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   @override
   Future<void> connect() async {
     await super.connect();
+    _isDisconnected = false;
     _connectionCompleter = Completer();
-    runZonedGuarded(() {
+    runZonedGuarded(() async {
+      await _socketChannelSubs?.cancel();
       _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved,
-          cancelOnError: true, onError: _onConnectionError);
+      _socketChannelSubs = _socketChannel?.stream.listen(onEventRecieved,
+          cancelOnError: true,
+          onError: _onConnectionError,
+          onDone: _shouldReconnectOnDone);
     }, _onConnectionError);
     return _connectionCompleter.future;
   }
@@ -80,7 +100,11 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   Future<void> disconnect() async {
     await super.disconnect();
     try {
+      _isDisconnected = true;
+      await _socketChannelSubs?.cancel();
       await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
+      _socketChannel = null;
+      _socketChannelSubs = null;
       // ignore: empty_catches
     } catch (e) {}
   }
