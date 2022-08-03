@@ -1,15 +1,24 @@
-import 'package:meta/meta.dart';
 import 'package:dart_pusher_channels/api.dart';
+
+typedef LogHandler = void Function(Object? o);
 
 /// Package configurations.
 abstract class PusherChannelsPackageConfigs {
   static bool _logsEnabled = false;
+  static LogHandler _handler = print;
 
   /// Makes logs visible. If logs are enabled, you will able to see logs from different structures of the package.
   /// For example, event logs from [ConnectionDelegate]s.
   /// <br/>
-  /// Logs are done with [print] function and will be printed to the console that you app is running on.
-  static void enableLogs() {
+  /// Logs are done with [handler] if specified. Otherwise, they will be printed
+  /// to console using [print].
+  static void enableLogs({LogHandler? handler}) {
+    if (handler != null) {
+      _handler = handler;
+    } else {
+      _handler = print;
+    }
+
     _logsEnabled = true;
   }
 
@@ -20,19 +29,17 @@ abstract class PusherChannelsPackageConfigs {
 
   /// Use to check if logs are enabled.
   static bool get logsEnabled => _logsEnabled;
+
+  /// The handler log function.
+  static LogHandler get handler => _handler;
 }
 
 /// Logger that used across all the package.
 abstract class PusherChannelsPackageLogger {
   /// Wraps print by condition of [PusherChannelsPackageConfigs.logsEnabled]
   static void log(Object? object) {
-    if (PusherChannelsPackageConfigs.logsEnabled) print(object);
-  }
-
-  /// Mock for testing
-  @visibleForTesting
-  static void logTest(Object? object, [void Function(bool)? callBack]) {
-    callBack?.call(PusherChannelsPackageConfigs.logsEnabled);
-    log(object);
+    if (PusherChannelsPackageConfigs.logsEnabled) {
+      PusherChannelsPackageConfigs.handler(object);
+    }
   }
 }
