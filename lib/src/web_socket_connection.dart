@@ -37,8 +37,9 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
 
   WebSocketChannel? _socketChannel;
+  StreamSubscription? _socketStreamSubscription;
 
-  Completer<void> _connectionCompleter = Completer();
+  Completer<void>? _connectionCompleter;
 
   Duration _activityDuration = const Duration(seconds: 60);
 
@@ -55,8 +56,9 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   void onEventRecieved(data) {
     _reconnectTries = 0;
     _preEventHandler(data);
-    if (!_connectionCompleter.isCompleted) {
-      _connectionCompleter.complete();
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      _connectionCompleter!.complete();
+      _connectionCompleter = null;
     }
     super.onEventRecieved(data);
   }
@@ -66,14 +68,23 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> connect() async {
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      return _connectionCompleter!.future;
+    }
+    if (_socketChannel != null) {
+      return;
+    }
+
     await super.connect();
     _connectionCompleter = Completer();
+
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved,
+      _socketStreamSubscription = _socketChannel?.stream.listen(onEventRecieved,
           cancelOnError: true, onError: _onConnectionError);
     }, _onConnectionError);
-    return _connectionCompleter.future;
+
+    return _connectionCompleter!.future;
   }
 
   @override
@@ -83,6 +94,13 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
       // ignore: empty_catches
     } catch (e) {}
+
+    _socketStreamSubscription?.cancel();
+    _socketChannel = _socketChannel = null;
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      _connectionCompleter!.complete();
+      _connectionCompleter = null;
+    }
   }
 
   @override
@@ -115,9 +133,12 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       reconnect();
     } else {
       passConnectionStatus(ConnectionStatus.connectionError);
-      if (!_connectionCompleter.isCompleted) {
-        _connectionCompleter.complete(null);
+
+      if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+        _connectionCompleter!.complete();
+        _connectionCompleter = null;
       }
+
       onConnectionErrorHandler?.call(error, trace);
       cancelTimer();
     }
