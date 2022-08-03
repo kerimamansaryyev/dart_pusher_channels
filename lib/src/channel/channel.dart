@@ -5,9 +5,11 @@ library channels;
 
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
+
 import '../connection.dart';
 import '../event.dart';
 import '../event_names.dart';
@@ -54,17 +56,26 @@ class PrivateChannel extends Channel {
   /// Called when [authorizationDelegate] fails to get auth string
   final void Function(PusherAuthenticationException error)? onAuthFailed;
 
-  /// [PrivateChannel] subscription is established only if [authorizationDelegate.authenticationString] succeds
-  /// with valid auth code
+  /// [PrivateChannel] subscription is established only if
+  /// [ConnectionDelegate.socketId] is set and
+  /// [authorizationDelegate.authenticationString] succeeds
+  /// with valid auth code.
   @override
   void subscribe() async {
+    if (connectionDelegate.socketId == null) {
+      return;
+    }
+
     try {
       var code = await authorizationDelegate.authenticationString(
-          connectionDelegate.socketId ?? "", name);
+        connectionDelegate.socketId!,
+        name,
+      );
       connectionDelegate.send(SendEvent(
-          data: {'channel': name, 'auth': code},
-          name: PusherEventNames.subscribe,
-          channelName: null));
+        data: {'channel': name, 'auth': code},
+        name: PusherEventNames.subscribe,
+        channelName: null,
+      ));
     } on PusherAuthenticationException catch (ex) {
       onAuthFailed?.call(ex);
       // ignore: empty_catches
