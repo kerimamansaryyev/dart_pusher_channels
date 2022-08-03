@@ -6,6 +6,7 @@ typedef LogHandler = void Function(Object? o);
 abstract class PusherChannelsPackageConfigs {
   static bool _logsEnabled = false;
   static LogHandler _handler = print;
+  static const defaultPingWaitPongDuration = Duration(seconds: 10);
 
   /// Makes logs visible. If logs are enabled, you will able to see logs from different structures of the package.
   /// For example, event logs from [ConnectionDelegate]s.

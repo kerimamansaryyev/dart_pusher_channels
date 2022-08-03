@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_pusher_channels/configs.dart';
+import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -13,6 +14,7 @@ import 'options.dart';
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   WebSocketChannelConnectionDelegate(
       {required PusherChannelOptions options,
+      required this.pingWaitPongDuration,
       this.eventFactory,
       this.onConnectionErrorHandler,
       this.reconnectTries = 4})
@@ -25,6 +27,10 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
+
+  @override
+  @protected
+  final Duration pingWaitPongDuration;
 
   @override
   final PublishSubject<ConnectionStatus> connectionStatusController =

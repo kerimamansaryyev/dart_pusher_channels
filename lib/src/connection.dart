@@ -33,6 +33,11 @@ abstract class ConnectionDelegate {
   @protected
   Duration get activityDuration;
 
+  /// If [PusherEventNames.pong] was recieved then this duration is set to timer
+  /// while waiting for pong next time
+  @protected
+  Duration get pingWaitPongDuration;
+
   /// Constraints of the delegate
   final PusherChannelOptions options;
 
@@ -219,7 +224,7 @@ abstract class ConnectionDelegate {
     if (_pongRecieved) {
       _pongRecieved = false;
       ping();
-      resetTimer();
+      resetTimer(pingWaitPongDuration);
     } else {
       reconnect();
     }
@@ -239,12 +244,13 @@ abstract class ConnectionDelegate {
   /// Called when [pings] or [reconnect] succeed to connect or ping to a server
   @mustCallSuper
   @protected
-  Future<void> resetTimer() async {
+  Future<void> resetTimer([Duration? timeoutDuration]) async {
     _timer?.cancel();
     _timer = null;
+    final duration = timeoutDuration ?? activityDuration;
     PusherChannelsPackageLogger.log(
-        'Timer is reset. Activity duration: $activityDuration');
-    _timer = Timer(activityDuration, checkPong);
+        'Timer is reset. Activity duration: $duration');
+    _timer = Timer(duration, checkPong);
   }
 
   /// Cancelling a timer
