@@ -57,7 +57,7 @@ class PrivateChannel extends Channel {
   final void Function(PusherAuthenticationException error)? onAuthFailed;
 
   /// [PrivateChannel] subscription is established only if
-  /// [connectionDelegate.socketId] is set and
+  /// [connectionDelegate.socketId] is set (if connection is established) and
   /// [authorizationDelegate.authenticationString] succeeds
   /// with valid auth code.
   @override
@@ -82,6 +82,8 @@ class PrivateChannel extends Channel {
     } catch (ex) {}
   }
 
+  /// [PrivateChannel] unsubscription is established only if
+  /// [connectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {
     if (connectionDelegate.socketId == null) {
@@ -101,6 +103,8 @@ class PublicChannel extends Channel {
       {required String name, required ConnectionDelegate connectionDelegate})
       : super(name: name, connectionDelegate: connectionDelegate);
 
+  /// [PublicChannel] subscription is established only if
+  /// [connectionDelegate.socketId] is set (if connection is established)
   @override
   void subscribe() {
     if (connectionDelegate.socketId == null) {
@@ -113,6 +117,8 @@ class PublicChannel extends Channel {
         channelName: null));
   }
 
+  /// [PublicChannel] unsubscription is established only if
+  /// [connectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {
     if (connectionDelegate.socketId == null) {
