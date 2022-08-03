@@ -38,10 +38,13 @@ abstract class ConnectionDelegate {
 
   ConnectionDelegate({required this.options});
 
+  final Duration _pingDurationBeforeDisconnect = const Duration(seconds: 30);
+
   String? _socketId;
   bool _pongRecieved = false;
   bool _isDisconnectedManually = false;
   Timer? _timer;
+  Timer? _pingTimer;
 
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
@@ -96,6 +99,7 @@ abstract class ConnectionDelegate {
   @protected
   void ping() {
     PusherChannelsPackageLogger.log('pinging');
+    setPingTimer();
   }
 
   /// Send events
@@ -156,6 +160,7 @@ abstract class ConnectionDelegate {
             data: data,
             name: name,
             onEventRecieved: (_, __, ___) {});
+        cancelPingTimer();
         return event;
       default:
         return null;
@@ -258,4 +263,19 @@ abstract class ConnectionDelegate {
 
   @protected
   bool isDisposed = false;
+
+  @mustCallSuper
+  @protected
+  void setPingTimer() {
+    _pingTimer = Timer(_pingDurationBeforeDisconnect, disconnect);
+  }
+
+  /// Cancelling a timer
+  @mustCallSuper
+  @protected
+  void cancelPingTimer() {
+    PusherChannelsPackageLogger.log('PingTimer is canceled');
+    _pingTimer?.cancel();
+    _pingTimer = null;
+  }
 }
