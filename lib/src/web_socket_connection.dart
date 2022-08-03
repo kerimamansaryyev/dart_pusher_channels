@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_pusher_channels/configs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'dart:async';
+
 import 'connection.dart';
 import 'event.dart';
 import 'event_names.dart';
@@ -67,11 +68,20 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   Future<void> connect() async {
     await super.connect();
     _connectionCompleter = Completer();
-    runZonedGuarded(() {
-      _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved,
-          cancelOnError: true, onError: _onConnectionError);
-    }, _onConnectionError);
+    runZonedGuarded(
+      () {
+        _socketChannel = WebSocketChannel.connect(options.uri);
+        _socketChannel?.stream.listen(
+          onEventRecieved,
+          cancelOnError: true,
+          onError: _onConnectionError,
+          onDone: () {
+            disconnect();
+          },
+        );
+      },
+      _onConnectionError,
+    );
     return _connectionCompleter.future;
   }
 
