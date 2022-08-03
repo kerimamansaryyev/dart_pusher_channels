@@ -29,7 +29,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final int reconnectTries;
 
   @override
-  @protected
   final Duration pingWaitPongDuration;
 
   @override
