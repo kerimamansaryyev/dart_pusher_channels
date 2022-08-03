@@ -57,7 +57,7 @@ class PrivateChannel extends Channel {
   final void Function(PusherAuthenticationException error)? onAuthFailed;
 
   /// [PrivateChannel] subscription is established only if
-  /// [ConnectionDelegate.socketId] is set and
+  /// [connectionDelegate.socketId] is set and
   /// [authorizationDelegate.authenticationString] succeeds
   /// with valid auth code.
   @override
