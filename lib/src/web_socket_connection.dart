@@ -148,6 +148,12 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   @override
+  Future<void> reconnect() async {
+    await _socketChannelSubs?.cancel();
+    return super.reconnect();
+  }
+
+  @override
   Future<void> dispose() async {
     await super.dispose();
     await onEventRecievedController.close();

@@ -41,7 +41,6 @@ abstract class ConnectionDelegate {
   String? _socketId;
   bool _pongRecieved = false;
   bool _isDisconnected = true;
-  bool _manualDisconnection = false;
   Timer? _timer;
   ConnectionStatus? _currentConnectionStatus;
 
@@ -50,10 +49,6 @@ abstract class ConnectionDelegate {
 
   /// Current [ConnectionStatus]
   ConnectionStatus? get currentConnectionStatus => _currentConnectionStatus;
-
-  /// If disconnection was made with method [disconnectSafely]
-  @mustCallSuper
-  bool get isManuallyDisconnected => _manualDisconnection;
 
   /// Defines if [ConnectionDelegate] can perform connection or it has to reconnect
   @protected
@@ -87,21 +82,13 @@ abstract class ConnectionDelegate {
       connectionStatusController.stream;
 
   /// Provides safe connection.
-  Future<void> connectSafely() async => canConnect ? connect() : reconnect();
-
-  /// Provides safe disconnection
-  @mustCallSuper
-  Future<void> disconnectSafely() {
-    _manualDisconnection = true;
-    return disconnect();
-  }
+  Future<void> connectSafely() => canConnect ? connect() : reconnect();
 
   /// Connect to a server.
   @mustCallSuper
   @protected
   Future<void> connect() async {
     _isDisconnected = false;
-    _manualDisconnection = false;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
@@ -109,7 +96,6 @@ abstract class ConnectionDelegate {
 
   /// Disconnect from server
   @mustCallSuper
-  @protected
   Future<void> disconnect() async {
     _isDisconnected = true;
     await cancelTimer();
@@ -203,7 +189,7 @@ abstract class ConnectionDelegate {
 
   /// Reconnect to server
   @mustCallSuper
-  void reconnect() async {
+  Future<void> reconnect() async {
     await disconnect();
     connect();
   }
