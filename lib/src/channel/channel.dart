@@ -84,6 +84,10 @@ class PrivateChannel extends Channel {
 
   @override
   void unsubscribe() {
+    if (connectionDelegate.socketId == null) {
+      return;
+    }
+
     connectionDelegate.send(SendEvent(
         data: {'channel': name},
         name: PusherEventNames.unsubscribe,
@@ -99,6 +103,10 @@ class PublicChannel extends Channel {
 
   @override
   void subscribe() {
+    if (connectionDelegate.socketId == null) {
+      return;
+    }
+
     connectionDelegate.send(SendEvent(
         data: {'channel': name},
         name: PusherEventNames.subscribe,
@@ -107,6 +115,10 @@ class PublicChannel extends Channel {
 
   @override
   void unsubscribe() {
+    if (connectionDelegate.socketId == null) {
+      return;
+    }
+
     connectionDelegate.send(SendEvent(
         data: {'channel': name},
         name: PusherEventNames.unsubscribe,
