@@ -61,8 +61,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   void _shouldReconnectOnDone() {
-    final shouldReconnect =
-        !isDisposed && !isManuallyDisconnected && !_isDisconnected;
+    final shouldReconnect = !isDisposed && !isManuallyDisconnected;
     if (shouldReconnect) {
       reconnect();
     } else {
