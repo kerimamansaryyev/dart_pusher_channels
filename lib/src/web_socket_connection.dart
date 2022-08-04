@@ -13,6 +13,7 @@ import 'options.dart';
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   WebSocketChannelConnectionDelegate(
       {required PusherChannelOptions options,
+      required this.pingWaitPongDuration,
       this.eventFactory,
       this.onConnectionErrorHandler,
       this.reconnectTries = 4})
@@ -25,6 +26,9 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
+
+  @override
+  final Duration pingWaitPongDuration;
 
   @override
   final PublishSubject<ConnectionStatus> connectionStatusController =
