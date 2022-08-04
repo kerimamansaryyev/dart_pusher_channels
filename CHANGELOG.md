@@ -4,8 +4,8 @@ Merging pull requests [#6](https://github.com/mcfugger/dart_pusher_channels/pull
 [#8](https://github.com/mcfugger/dart_pusher_channels/pull/8), [#10](https://github.com/mcfugger/dart_pusher_channels/pull/10), [#12](https://github.com/mcfugger/dart_pusher_channels/pull/12). Thanks to [Nicolas Britos](https://github.com/nicobritos) for contributions.
 - Added an additional member `pingWaitPongDuration` to the `ConnectionDelegate` and the parameter with the same name
 to the constructor `PusherChannelsClient.websocket`. It will regulate timeout of `ping` waiting for `pong` (checking if connection is alive).
-- Fixed multiple connections occuring after `disconnect` commited by multiple `reconnect` calls.
-- Distincting manual disconnections of `ConnectionDelegate` (`disconnectSafely`) from automated ones.
+- Fixed multiple connections occurring after `disconnect` committed by multiple `reconnect` calls.
+- Distinguish manual disconnections of `ConnectionDelegate` (`disconnectSafely`) from automated ones.
 - Fixed: multiple socket connections while calling `connect` multiple times are prevented.
 - Change: now `reconnect`'s type is `Future<void>`. (Previously was `void`).
 ## 0.2.3+1
@@ -32,7 +32,7 @@ Added following additional controls to `PusherChannelsClient`
 - Improved annotations
 ## 0.2.0
 
-- Tested on Windows succesfully and updated meta data
+- Tested on Windows successfully and updated meta data
 ## 0.1.1
 
 - Fixed reconnection tries on disposal
@@ -41,7 +41,7 @@ Added following additional controls to `PusherChannelsClient`
 - Updated the description of pubspec.yaml
 ## 0.1.0
 
-- Fixed issue of non-cancallable timer. Added logging with `print` by default. Will be optional in next minor version.
+- Fixed issue of non-cancellable timer. Added logging with `print` by default. Will be optional in next minor version.
 ## 0.0.9+1
 
 - Making `refresh` callback of `onConnectionErrorHandler` constructor of `PusherChannelsClient.websocket` non-nullable

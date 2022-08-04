@@ -27,10 +27,10 @@ enum ConnectionStatus {
   established
 }
 
-/// Special interface to describe connection, recieveing and sending events
+/// Special interface to describe connection, receiving and sending events
 abstract class ConnectionDelegate {
   String? _socketId;
-  bool _pongRecieved = false;
+  bool _pongReceived = false;
   bool _isDisconnected = true;
   bool _isManuallyDisconnected = true;
   Timer? _timer;
@@ -45,7 +45,7 @@ abstract class ConnectionDelegate {
   @protected
   Duration get activityDuration;
 
-  /// If [PusherEventNames.pong] was recieved then this duration is set to timer
+  /// If [PusherEventNames.pong] was received then this duration is set to timer
   /// while waiting for pong next time
   @protected
   Duration get pingWaitPongDuration;
@@ -62,19 +62,19 @@ abstract class ConnectionDelegate {
   @protected
   StreamController<ConnectionStatus> get connectionStatusController;
 
-  /// Controller to notify subscribers when event recieved from a server
+  /// Controller to notify subscribers when event received from a server
   @protected
-  StreamController<RecieveEvent> get onEventRecievedController;
+  StreamController<ReceiveEvent> get onEventReceivedController;
 
-  /// Notifies subscribers whenever the delegate recieves [PusherEventNames.connectionEstablished]
+  /// Notifies subscribers whenever the delegate receives [PusherEventNames.connectionEstablished]
   Stream<void> get onConnectionEstablished => connectionStatusController.stream
       .where((event) => event == ConnectionStatus.established);
 
-  /// Notifies subscribers whenever the delegate recieves [PusherEventNames.error]
-  Stream<RecieveEvent> get onErrorEvent =>
+  /// Notifies subscribers whenever the delegate receives [PusherEventNames.error]
+  Stream<ReceiveEvent> get onErrorEvent =>
       onEvent.where((event) => event.name == PusherEventNames.error);
 
-  Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
+  Stream<ReceiveEvent> get onEvent => onEventReceivedController.stream;
 
   /// Notifies subscribers when connection status is changed
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
@@ -155,7 +155,7 @@ abstract class ConnectionDelegate {
 
   /// Called when connection is established
   @protected
-  void onConnectionHanlder() {}
+  void onConnectionHandler() {}
 
   /// Internal API to pass [ConnectionStatus] to sink of [connectionStatusController]
   @protected
@@ -168,7 +168,7 @@ abstract class ConnectionDelegate {
 
   /// External event factory to return events if [internalEventFactory] returns null
   @protected
-  RecieveEvent? externalEventFactory(
+  ReceiveEvent? externalEventFactory(
     String name,
     String? channelName,
     Map data,
@@ -177,14 +177,14 @@ abstract class ConnectionDelegate {
   /// Identifies Pusher's internal events
   @protected
   @mustCallSuper
-  RecieveEvent? internalEventFactory(String name, Map data) {
+  ReceiveEvent? internalEventFactory(String name, Map data) {
     switch (name) {
       case PusherEventNames.error:
-        final event = RecieveEvent(
+        final event = ReceiveEvent(
           data: data,
           name: name,
           channelName: null,
-          onEventRecieved: (_, ___, d) => onErrorHandler(d),
+          onEventReceived: (_, ___, d) => onErrorHandler(d),
         );
         if (!connectionStatusController.isClosed) {
           connectionStatusController.add(ConnectionStatus.connected);
@@ -193,22 +193,22 @@ abstract class ConnectionDelegate {
       case PusherEventNames.connectionEstablished:
         final sockId = data['socket_id']?.toString();
         socketId = sockId;
-        final event = RecieveEvent(
+        final event = ReceiveEvent(
           data: data,
           name: name,
           channelName: null,
-          onEventRecieved: (_, ___, __) => onConnectionHanlder(),
+          onEventReceived: (_, ___, __) => onConnectionHandler(),
         );
         if (!connectionStatusController.isClosed) {
           connectionStatusController.add(ConnectionStatus.established);
         }
         return event;
       case PusherEventNames.pong:
-        final event = RecieveEvent(
+        final event = ReceiveEvent(
           channelName: null,
           data: data,
           name: name,
-          onEventRecieved: (_, __, ___) {},
+          onEventReceived: (_, __, ___) {},
         );
         return event;
       default:
@@ -218,7 +218,7 @@ abstract class ConnectionDelegate {
 
   /// Internal api for deserialization of event's data
   @protected
-  Map jsonize(raw) {
+  Map safeJsonDecode(raw) {
     Map data;
     if (raw is String) {
       data = jsonDecode(raw);
@@ -228,35 +228,35 @@ abstract class ConnectionDelegate {
     return data;
   }
 
-  /// Deserializes string from a server to [RecieveEvent] with factories and calls its `callHandler` method
+  /// Deserializes string from a server to [ReceiveEvent] with factories and calls its `callHandler` method
   @protected
   @mustCallSuper
-  void onEventRecieved(data) async {
+  void onEventReceived(data) async {
     if (_isDisconnected) {
       return;
     }
     await onPong();
     PusherChannelsPackageLogger.log(data);
-    final Map raw = jsonize(data);
+    final Map raw = safeJsonDecode(data);
     final name = raw['event']?.toString() ?? '';
-    final payload = jsonize(raw['data']);
+    final payload = safeJsonDecode(raw['data']);
     final channelName = raw['channel']?.toString();
     final event = internalEventFactory(name, payload) ??
         externalEventFactory(name, channelName, payload);
 
     event?.callHandler();
 
-    if (event != null && !onEventRecievedController.isClosed) {
-      onEventRecievedController.add(event);
+    if (event != null && !onEventReceivedController.isClosed) {
+      onEventReceivedController.add(event);
     }
   }
 
-  /// When event with name [PusherEventNames.pong] is recieved
+  /// When event with name [PusherEventNames.pong] is received
   @protected
   @mustCallSuper
   Future<void> onPong() {
     PusherChannelsPackageLogger.log('Got pong');
-    _pongRecieved = true;
+    _pongReceived = true;
     return resetTimer();
   }
 
@@ -265,8 +265,8 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   void checkPong() {
     PusherChannelsPackageLogger.log('checking for pong');
-    if (_pongRecieved) {
-      _pongRecieved = false;
+    if (_pongReceived) {
+      _pongReceived = false;
       ping();
       resetTimer(pingWaitPongDuration);
     } else {

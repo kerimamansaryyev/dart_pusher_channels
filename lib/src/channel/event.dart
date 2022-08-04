@@ -1,6 +1,6 @@
 part of channels;
 
-/// Implementation of [ReadEvent] recieved from [Channel]
+/// Implementation of [ReadEvent] received from [Channel]
 class ChannelReadEvent extends Event implements ReadEvent {
   final Channel channel;
 

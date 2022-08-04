@@ -28,12 +28,12 @@ void main() {
   );
 
   // Ensure you implement your logic
-  // after successfull connection to your server
+  // after successful connection to your server
   Channel? channel;
   Channel? privateChannel;
   StreamSubscription? eventSubscription;
   StreamSubscription? privateChannelEventSubscription;
-  // This stream will recieve events and notify subscribers
+  // This stream will receive events and notify subscribers
   // whenever the client is connected or reconnected after potential error
   client.onConnectionEstablished.listen((_) async {
     channel ??= client.publicChannel('my_public_channel_name');

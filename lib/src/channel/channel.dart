@@ -42,7 +42,7 @@ abstract class Channel {
       );
 }
 
-/// Implementation of pusher private channels using [AuthorizationDelegate] to get auth code for subscribing through authenticaton
+/// Implementation of pusher private channels using [AuthorizationDelegate] to get auth code for subscribing through authentication
 /// middleware.
 class PrivateChannel extends Channel {
   /// Define AuthorizationDelegate to get auth string and subscribe to a channel
@@ -85,7 +85,7 @@ class PrivateChannel extends Channel {
     } catch (_) {}
   }
 
-  /// [PrivateChannel] unsubscription is established only if
+  /// Unsubscribes this [PrivateChannel] only if
   /// [ConnectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {
@@ -127,7 +127,7 @@ class PublicChannel extends Channel {
     );
   }
 
-  /// [PublicChannel] unsubscription is established only if
+  /// Unsubscribes this [PublicChannel] only if
   /// [ConnectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {

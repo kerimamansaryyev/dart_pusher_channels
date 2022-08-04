@@ -21,12 +21,12 @@ Contributors:
 
 This package is built according to the [official documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/) of Pusher Channels protocol.
 
-The package has flexibale API containing interfaces for building custom connection and authorization. By default, it supports connection to **Web sockets** over the [web_socket_channel](https://pub.dev/packages/web_socket_channel) out of the box.
+The package has flexible API containing interfaces for building custom connection and authorization. By default, it supports connection to **Web sockets** over the [web_socket_channel](https://pub.dev/packages/web_socket_channel) out of the box.
 
 # Supported platforms
 This package was tested on:
-* Anrdoid
-* IOS
+* Android
+* iOS
 * Web
 * Windows
 
@@ -70,10 +70,10 @@ final client = PusherChannelsClient.websocket(
 
 ```dart
 // Ensure you implement your logic
-  // after successfull connection to your server
+  // after successful connection to your server
   Channel? channel;
   StreamSubscription? eventSubscription;
-  // This stream will recieve events and notify subscribers
+  // This stream will receive events and notify subscribers
   // whenever the client is connected or reconnected after potential error
   client.onConnectionEstablished.listen((_) async {
     channel ??= client.publicChannel('my_public_channel_name');
@@ -96,14 +96,14 @@ final client = PusherChannelsClient.websocket(
 
 ## Channels and events
 
-**Note: For now, the package supports only reading (recieving) events. Triggering events is in the milestones.**
+**Note: For now, the package supports only reading (receiving) events. Triggering events is in the milestones.**
 
 The package supports 2 types of channels:
 * Public
 * Private
 
 ## Milestones
-* Triggering events (for now plugin supprts only reading events from channels)
+* Triggering events (for now plugin supports only reading events from channels)
 * Presence channels
 * Encrypted channels
 

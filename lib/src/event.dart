@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-typedef RecieveEventPredicate = void Function(
+typedef ReceiveEventPredicate = void Function(
   String name,
   String? channelName,
   Map data,
@@ -61,11 +61,11 @@ class SendEvent extends Event {
   });
 }
 
-/// Special type of [ReadEvent] that accepts [RecieveEventPredicate]
-/// Then accepted [onEventRecieved] can be called with [callHandler]
-class RecieveEvent extends Event implements ReadEvent {
+/// Special type of [ReadEvent] that accepts [ReceiveEventPredicate]
+/// Then accepted [onEventReceived] can be called with [callHandler]
+class ReceiveEvent extends Event implements ReadEvent {
   @protected
-  final RecieveEventPredicate onEventRecieved;
+  final ReceiveEventPredicate onEventReceived;
 
   @override
   final Map data;
@@ -76,15 +76,15 @@ class RecieveEvent extends Event implements ReadEvent {
   @override
   final String? channelName;
 
-  const RecieveEvent({
+  const ReceiveEvent({
     required this.data,
     required this.name,
-    required this.onEventRecieved,
+    required this.onEventReceived,
     required this.channelName,
   });
 
-  /// Calling [onEventRecieved]
+  /// Calling [onEventReceived]
   void callHandler() {
-    onEventRecieved(name, channelName, data);
+    onEventReceived(name, channelName, data);
   }
 }

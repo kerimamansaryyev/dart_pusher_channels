@@ -11,10 +11,10 @@ import 'event_names.dart';
 import 'options.dart';
 
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
-  final RecieveEvent? Function(String name, String? channelName, Map data)?
+  final ReceiveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
-  /// The delegate makes a new try when connection fail is occured
+  /// The delegate makes a new try when connection fail is occurred
   final int reconnectTries;
 
   final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
@@ -27,8 +27,8 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       PublishSubject();
 
   @override
-  final PublishSubject<RecieveEvent> onEventRecievedController =
-      PublishSubject<RecieveEvent>();
+  final PublishSubject<ReceiveEvent> onEventReceivedController =
+      PublishSubject<ReceiveEvent>();
 
   WebSocketChannel? _socketChannel;
   StreamSubscription? _socketChannelSubs;
@@ -55,13 +55,13 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   Duration get activityDuration => _activityDuration;
 
   @override
-  void onEventRecieved(data) {
+  void onEventReceived(data) {
     _reconnectTries = 0;
     _preEventHandler(data);
     if (!_connectionCompleter.isCompleted) {
       _connectionCompleter.complete();
     }
-    super.onEventRecieved(data);
+    super.onEventReceived(data);
   }
 
   @override
@@ -76,7 +76,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       () {
         _socketChannel = WebSocketChannel.connect(options.uri);
         _socketChannelSubs = _socketChannel?.stream.listen(
-          onEventRecieved,
+          onEventReceived,
           cancelOnError: true,
           onError: _onConnectionError,
           onDone: _shouldReconnectOnDone,
@@ -98,7 +98,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   @override
-  RecieveEvent? externalEventFactory(
+  ReceiveEvent? externalEventFactory(
     String name,
     String? channelName,
     Map data,
@@ -125,7 +125,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   @override
   Future<void> dispose() async {
     await super.dispose();
-    await onEventRecievedController.close();
+    await onEventReceivedController.close();
     await connectionStatusController.close();
   }
 
@@ -152,8 +152,8 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   void _preEventHandler(data) {
-    final root = jsonize(data);
-    final d = jsonize(root['data']);
+    final root = safeJsonDecode(data);
+    final d = safeJsonDecode(root['data']);
     final timeout = d['activity_timeout'];
     if (timeout is int) {
       _activityDuration = Duration(seconds: timeout);

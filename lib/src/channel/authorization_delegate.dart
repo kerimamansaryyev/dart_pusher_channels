@@ -1,7 +1,7 @@
 part of channels;
 
 /// Exception that is supposed to be thrown when [AuthorizationDelegate] fails to
-/// get auth tring
+/// get auth string
 /// It is recommended to create separate implementations for each [AuthorizationDelegate]
 abstract class PusherAuthenticationException extends PusherException {}
 
@@ -20,7 +20,7 @@ abstract class AuthorizationDelegate {
   FutureOr<String> authenticationString(String socketId, String channelName);
 }
 
-/// Implementation of [AuthorizationDelegate] throug http protocol
+/// Implementation of [AuthorizationDelegate] through http protocol
 @immutable
 class TokenAuthorizationDelegate implements AuthorizationDelegate {
   final FutureOr<String> Function(http.Response response) _parser;
@@ -31,7 +31,7 @@ class TokenAuthorizationDelegate implements AuthorizationDelegate {
     required this.authorizationEndpoint,
     required this.headers,
 
-    /// Provide custom parse mehtod, otherwise [defaultAuthCodeParser] will be used
+    /// Provide custom parse method, otherwise [defaultAuthCodeParser] will be used
     FutureOr<String> Function(http.Response response) parser =
         defaultAuthCodeParser,
   }) : _parser = parser;

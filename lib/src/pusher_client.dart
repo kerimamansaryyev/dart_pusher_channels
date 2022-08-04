@@ -43,7 +43,7 @@ class PusherChannelsClient {
     );
   }
 
-  /// Events recieved by client's [ConnectionDelegate] and mapped
+  /// Events received by client's [ConnectionDelegate] and mapped
   /// as [PusherReadEvent]
   Stream<PusherReadEvent> get onEvent => _delegate.onEvent.map(
         (event) => PusherReadEvent(
@@ -53,7 +53,7 @@ class PusherChannelsClient {
         ),
       );
 
-  /// Events with name [PusherEventNames.error] recieved by client's [ConnectionDelegate] and mapped
+  /// Events with name [PusherEventNames.error] received by client's [ConnectionDelegate] and mapped
   /// as [PusherReadEvent]
   Stream<PusherReadEvent> get onErrorEvent => _delegate.onErrorEvent.map(
         (event) => PusherReadEvent(
@@ -87,7 +87,7 @@ class PusherChannelsClient {
     return _channels[channel.name]!;
   }
 
-  /// Createing new public channel
+  /// Creating new public channel
   Channel publicChannel(String name) {
     final channel = PublicChannel(name: name, connectionDelegate: _delegate);
     _channels[channel.name] = channel;
@@ -112,20 +112,20 @@ class PusherChannelsClient {
   /// Reconnecting with current [ConnectionDelegate]
   Future<void> reconnect() => _delegate.reconnect();
 
-  RecieveEvent? _eventFactory(String name, String? channelName, Map data) {
+  ReceiveEvent? _eventFactory(String name, String? channelName, Map data) {
     return _channelEventFactory(name, channelName, data);
   }
 
-  RecieveEvent? _channelEventFactory(
+  ReceiveEvent? _channelEventFactory(
     String name,
     String? channelName,
     Map data,
   ) {
     if (channelName != null && _channels.containsKey(channelName)) {
-      return RecieveEvent(
+      return ReceiveEvent(
         data: data,
         name: name,
-        onEventRecieved: (name, _, data) {},
+        onEventReceived: (name, _, data) {},
         channelName: channelName,
       );
     }
