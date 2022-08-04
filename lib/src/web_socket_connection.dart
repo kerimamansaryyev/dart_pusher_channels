@@ -43,6 +43,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   WebSocketChannel? _socketChannel;
   StreamSubscription? _socketChannelSubs;
+  bool _isDisconnected = true;
 
   Completer<void> _connectionCompleter = Completer();
 
@@ -56,6 +57,16 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     var timeout = d['activity_timeout'];
     if (timeout is int) {
       _activityDuration = Duration(seconds: timeout);
+    }
+  }
+
+  void _shouldReconnectOnDone() {
+    final shouldReconnect =
+        !isDisposed && !isManuallyDisconnected && !_isDisconnected;
+    if (shouldReconnect) {
+      reconnect();
+    } else {
+      disconnect();
     }
   }
 
@@ -74,6 +85,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> connect() async {
+    _isDisconnected = false;
     await super.connect();
     if (!_connectionCompleter.isCompleted) {
       _connectionCompleter.complete();
@@ -82,13 +94,16 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
       _socketChannelSubs = _socketChannel?.stream.listen(onEventRecieved,
-          cancelOnError: true, onError: _onConnectionError);
+          cancelOnError: true,
+          onError: _onConnectionError,
+          onDone: _shouldReconnectOnDone);
     }, _onConnectionError);
     return _connectionCompleter.future;
   }
 
   @override
   Future<void> disconnect() async {
+    _isDisconnected = true;
     await super.disconnect();
     try {
       await _socketChannelSubs?.cancel();

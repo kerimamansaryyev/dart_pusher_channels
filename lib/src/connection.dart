@@ -45,9 +45,14 @@ abstract class ConnectionDelegate {
 
   String? _socketId;
   bool _pongRecieved = false;
-  bool _isDisconnectedManually = false;
+  bool _isDisconnected = true;
+  bool _isManuallyDisconnected = true;
   Timer? _timer;
   int _currentConnectionLifeCycle = 0;
+
+  /// Check if connection was stopped intentionally.
+  @protected
+  bool get isManuallyDisconnected => _isManuallyDisconnected;
 
   /// Can perform connections without reconnection
   @protected
@@ -84,12 +89,18 @@ abstract class ConnectionDelegate {
       connectionStatusController.stream;
 
   Future<void> connectSafely() => canConnectSafely ? connect() : reconnect();
+  @mustCallSuper
+  Future<void> disconnectSafely() {
+    _isManuallyDisconnected = true;
+    return disconnect();
+  }
 
   /// Connect to a server
   @mustCallSuper
   @protected
   Future<void> connect() async {
-    _isDisconnectedManually = false;
+    _isDisconnected = false;
+    _isManuallyDisconnected = false;
     _currentConnectionLifeCycle++;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.pending);
@@ -98,8 +109,9 @@ abstract class ConnectionDelegate {
 
   /// Disconnect from server
   @mustCallSuper
+  @protected
   Future<void> disconnect() async {
-    _isDisconnectedManually = true;
+    _isDisconnected = true;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.disconnected);
     passConnectionStatus(ConnectionStatus.disconnected);
@@ -200,7 +212,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   @protected
   void onEventRecieved(data) async {
-    if (_isDisconnectedManually) return;
+    if (_isDisconnected) return;
     await onPong();
     PusherChannelsPackageLogger.log(data);
     Map raw = jsonize(data);
