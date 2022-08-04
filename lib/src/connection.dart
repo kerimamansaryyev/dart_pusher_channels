@@ -88,14 +88,17 @@ abstract class ConnectionDelegate {
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       connectionStatusController.stream;
 
+  /// Public interface for safe connection.
   Future<void> connectSafely() => canConnectSafely ? connect() : reconnect();
+
+  /// Public interface for safe disconnection.
   @mustCallSuper
   Future<void> disconnectSafely() {
     _isManuallyDisconnected = true;
     return disconnect();
   }
 
-  /// Connect to a server
+  /// Connect to a server. Starting from version 0.2.6 - it's protected. Use [connectSafely] from the outside.
   @mustCallSuper
   @protected
   Future<void> connect() async {
@@ -107,7 +110,7 @@ abstract class ConnectionDelegate {
     passConnectionStatus(ConnectionStatus.pending);
   }
 
-  /// Disconnect from server
+  /// Disconnect from a server. Starting from version 0.2.6 - it's protected. Use [disconnectSafely] from the outside.
   @mustCallSuper
   @protected
   Future<void> disconnect() async {
