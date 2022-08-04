@@ -87,7 +87,7 @@ class PusherChannelsClient {
         onConnectionErrorHandle?.call(error, trace, () async {
           (_delegate as WebSocketChannelConnectionDelegate).resetTries();
           try {
-            await reconnect();
+            await forceReconnect();
             resubscribeToChannels();
             // ignore: empty_catches
           } catch (e) {}
@@ -110,8 +110,20 @@ class PusherChannelsClient {
   Future<void> close() => _delegate.dispose();
 
   /// Disconnecting with current [ConnectionDelegate]
-  Future<void> disconnect() => _delegate.disconnect();
+  Future<void> disconnect() => _delegate.disonnectManually();
 
-  /// Reconnecting with current [ConnectionDelegate]
-  Future<void> reconnect() => _delegate.reconnect();
+  /// Reconnect safely if:
+  /// 1. Manual disconnection was commited. See [disconnect]
+  /// 2. No active attempt for connection. If current status [ConnectionStatus.pending]. See [onConnectionStatusChanged].
+  Future<void> reconnect() {
+    if (_delegate.currentConnectionStatus != ConnectionStatus.pending ||
+        _delegate.manuallyDisconnected) {
+      return _delegate.reconnect();
+    } else {
+      return Future.value();
+    }
+  }
+
+  /// Force reconnect even if there is an active attempt for reconnection.
+  Future<void> forceReconnect() => _delegate.reconnect();
 }

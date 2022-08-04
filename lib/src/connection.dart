@@ -43,6 +43,9 @@ abstract class ConnectionDelegate {
   bool _isDisconnected = true;
   Timer? _timer;
   ConnectionStatus? _currentConnectionStatus;
+  bool _manuallyDisconnected = true;
+
+  bool get manuallyDisconnected => _manuallyDisconnected;
 
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
@@ -84,11 +87,19 @@ abstract class ConnectionDelegate {
   /// Provides safe connection.
   Future<void> connectSafely() => canConnect ? connect() : reconnect();
 
+  /// Manual disconnection
+  @mustCallSuper
+  Future<void> disonnectManually() {
+    _manuallyDisconnected = true;
+    return disconnect();
+  }
+
   /// Connect to a server.
   @mustCallSuper
   @protected
   Future<void> connect() async {
     _isDisconnected = false;
+    _manuallyDisconnected = false;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
@@ -96,6 +107,7 @@ abstract class ConnectionDelegate {
 
   /// Disconnect from server
   @mustCallSuper
+  @protected
   Future<void> disconnect() async {
     _isDisconnected = true;
     await cancelTimer();
