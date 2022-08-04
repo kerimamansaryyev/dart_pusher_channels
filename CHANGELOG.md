@@ -1,3 +1,13 @@
+## 0.2.5
+
+Merging pull requests [#6](https://github.com/mcfugger/dart_pusher_channels/pull/6),
+[#8](https://github.com/mcfugger/dart_pusher_channels/pull/8), [#10](https://github.com/mcfugger/dart_pusher_channels/pull/10), [#12](https://github.com/mcfugger/dart_pusher_channels/pull/12). Thanks to [Nicolas Britos](https://github.com/nicobritos) for contributions.
+- Added an additional member `pingWaitPongDuration` to the `ConnectionDelegate` and the parameter with the same name
+to the constructor `PusherChannelsClient.websocket`. It will regulate timeout of `ping` waiting for `pong` (checking if connection is alive).
+- Fixed multiple connections occuring after `disconnect` commited by multiple `reconnect` calls.
+- Distincting manual disconnections of `ConnectionDelegate` (`disconnectSafely`) from automated ones.
+- Fixed: multiple socket connections while calling `connect` multiple times are prevented.
+- Change: now `reconnect`'s type is `Future<void>`. (Previously was `void`).
 ## 0.2.3+1
 
 Featuring contributors in README

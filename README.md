@@ -11,7 +11,9 @@ Maintainer:
 <br/>
 Contributors:
 <br/>
-[Nicolas Britos](https://github.com/nicobritos) - Pull request [#5](https://github.com/mcfugger/dart_pusher_channels/pull/5)
+[Nicolas Britos](https://github.com/nicobritos) - Pull requests [#5](https://github.com/mcfugger/dart_pusher_channels/pull/5),
+[#6](https://github.com/mcfugger/dart_pusher_channels/pull/6),
+[#8](https://github.com/mcfugger/dart_pusher_channels/pull/8)
 
 # Description
 
