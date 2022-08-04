@@ -8,6 +8,12 @@ abstract class PusherChannelsPackageConfigs {
   static LogHandler _handler = print;
   static const defaultPingWaitPongDuration = Duration(seconds: 10);
 
+  /// Use to check if logs are enabled.
+  static bool get logsEnabled => _logsEnabled;
+
+  /// The handler log function.
+  static LogHandler get handler => _handler;
+
   /// Makes logs visible. If logs are enabled, you will able to see logs from different structures of the package.
   /// For example, event logs from [ConnectionDelegate]s.
   /// <br/>
@@ -27,12 +33,6 @@ abstract class PusherChannelsPackageConfigs {
   static void disableLogs() {
     _logsEnabled = false;
   }
-
-  /// Use to check if logs are enabled.
-  static bool get logsEnabled => _logsEnabled;
-
-  /// The handler log function.
-  static LogHandler get handler => _handler;
 }
 
 /// Logger that used across all the package.

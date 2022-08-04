@@ -23,30 +23,32 @@ abstract class AuthorizationDelegate {
 /// Implementation of [AuthorizationDelegate] throug http protocol
 @immutable
 class TokenAuthorizationDelegate implements AuthorizationDelegate {
+  final FutureOr<String> Function(http.Response response) _parser;
   final Uri authorizationEndpoint;
   final Map<String, String> headers;
 
-  const TokenAuthorizationDelegate(
-      {required this.authorizationEndpoint,
-      required this.headers,
+  const TokenAuthorizationDelegate({
+    required this.authorizationEndpoint,
+    required this.headers,
 
-      /// Provide custom parse mehtod, otherwise [defaultAuthCodeParser] will be used
-      FutureOr<String> Function(http.Response response) parser =
-          defaultAuthCodeParser})
-      : _parser = parser;
-
-  final FutureOr<String> Function(http.Response response) _parser;
+    /// Provide custom parse mehtod, otherwise [defaultAuthCodeParser] will be used
+    FutureOr<String> Function(http.Response response) parser =
+        defaultAuthCodeParser,
+  }) : _parser = parser;
 
   @override
   Future<String> authenticationString(
-      String socketId, String channelName) async {
-    var response = await http.post(authorizationEndpoint, headers: {
-      ...headers,
-      'content-type': 'application/x-www-form-urlencoded'
-    }, body: {
-      'socket_id': socketId,
-      'channel_name': channelName
-    });
+    String socketId,
+    String channelName,
+  ) async {
+    final response = await http.post(
+      authorizationEndpoint,
+      headers: {
+        ...headers,
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: {'socket_id': socketId, 'channel_name': channelName},
+    );
 
     if (response.statusCode != 200) {
       throw PusherTokenAuthDelegateException._(response);
@@ -56,7 +58,6 @@ class TokenAuthorizationDelegate implements AuthorizationDelegate {
 }
 
 FutureOr<String> defaultAuthCodeParser(http.Response response) {
-  var decoded = jsonDecode(response.body);
-  var auth = decoded['auth'] ?? "";
-  return auth;
+  final decoded = jsonDecode(response.body);
+  return decoded['auth'] ?? '';
 }

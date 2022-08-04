@@ -29,6 +29,18 @@ enum ConnectionStatus {
 
 /// Special interface to describe connection, recieveing and sending events
 abstract class ConnectionDelegate {
+  String? _socketId;
+  bool _pongRecieved = false;
+  bool _isDisconnected = true;
+  bool _isManuallyDisconnected = true;
+  Timer? _timer;
+  int _currentConnectionLifeCycle = 0;
+
+  /// Constraints of the delegate
+  final PusherChannelOptions options;
+
+  ConnectionDelegate({required this.options});
+
   /// Value that used as a time-out to let know the delegate to call [checkPong]
   @protected
   Duration get activityDuration;
@@ -38,18 +50,6 @@ abstract class ConnectionDelegate {
   @protected
   Duration get pingWaitPongDuration;
 
-  /// Constraints of the delegate
-  final PusherChannelOptions options;
-
-  ConnectionDelegate({required this.options});
-
-  String? _socketId;
-  bool _pongRecieved = false;
-  bool _isDisconnected = true;
-  bool _isManuallyDisconnected = true;
-  Timer? _timer;
-  int _currentConnectionLifeCycle = 0;
-
   /// Check if connection was stopped intentionally.
   @protected
   bool get isManuallyDisconnected => _isManuallyDisconnected;
@@ -57,15 +57,6 @@ abstract class ConnectionDelegate {
   /// Can perform connections without reconnection
   @protected
   bool get canConnectSafely;
-
-  /// Socket id sent from the server after connection is established
-  String? get socketId => _socketId;
-
-  @mustCallSuper
-  @protected
-  set socketId(String? newId) {
-    _socketId = newId;
-  }
 
   /// Controller to notify subscribers about connection status.
   @protected
@@ -82,17 +73,51 @@ abstract class ConnectionDelegate {
   /// Notifies subscribers whenever the delegate recieves [PusherEventNames.error]
   Stream<RecieveEvent> get onErrorEvent =>
       onEvent.where((event) => event.name == PusherEventNames.error);
+
   Stream<RecieveEvent> get onEvent => onEventRecievedController.stream;
 
   /// Notifies subscribers when connection status is changed
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       connectionStatusController.stream;
 
+  /// Socket id sent from the server after connection is established
+  String? get socketId => _socketId;
+
+  @mustCallSuper
+  @protected
+  set socketId(String? newId) {
+    _socketId = newId;
+  }
+
   Future<void> connectSafely() => canConnectSafely ? connect() : reconnect();
+
   @mustCallSuper
   Future<void> disconnectSafely() {
     _isManuallyDisconnected = true;
     return disconnect();
+  }
+
+  /// Send events
+  void send(SendEvent event);
+
+  /// Reconnect to server
+  @mustCallSuper
+  Future<void> reconnect() async {
+    final _prevCycle = _currentConnectionLifeCycle;
+    await disconnect();
+    if (_prevCycle == _currentConnectionLifeCycle) {
+      connect().ignore();
+    }
+  }
+
+  /// Closing all sinks and disconnecting from a server
+  @mustCallSuper
+  Future<void> dispose() async {
+    try {
+      await disconnect();
+    } catch (_) {}
+    isDisposed = true;
+    await cancelTimer();
   }
 
   /// Connect to a server
@@ -124,9 +149,6 @@ abstract class ConnectionDelegate {
     PusherChannelsPackageLogger.log('pinging');
   }
 
-  /// Send events
-  void send(SendEvent event);
-
   /// Called when event with name [PusherEventNames.error] is identified by [internalEventFactory]
   @protected
   void onErrorHandler(Map data) {}
@@ -136,8 +158,8 @@ abstract class ConnectionDelegate {
   void onConnectionHanlder() {}
 
   /// Internal API to pass [ConnectionStatus] to sink of [connectionStatusController]
-  @mustCallSuper
   @protected
+  @mustCallSuper
   void passConnectionStatus(ConnectionStatus status) {
     if (!connectionStatusController.isClosed) {
       connectionStatusController.add(status);
@@ -147,41 +169,47 @@ abstract class ConnectionDelegate {
   /// External event factory to return events if [internalEventFactory] returns null
   @protected
   RecieveEvent? externalEventFactory(
-      String name, String? channelName, Map data);
+    String name,
+    String? channelName,
+    Map data,
+  );
 
   /// Identifies Pusher's internal events
-  @mustCallSuper
   @protected
+  @mustCallSuper
   RecieveEvent? internalEventFactory(String name, Map data) {
     switch (name) {
       case PusherEventNames.error:
-        var event = RecieveEvent(
-            data: data,
-            name: name,
-            channelName: null,
-            onEventRecieved: (_, ___, d) => onErrorHandler(d));
+        final event = RecieveEvent(
+          data: data,
+          name: name,
+          channelName: null,
+          onEventRecieved: (_, ___, d) => onErrorHandler(d),
+        );
         if (!connectionStatusController.isClosed) {
           connectionStatusController.add(ConnectionStatus.connected);
         }
         return event;
       case PusherEventNames.connectionEstablished:
-        var sockId = data["socket_id"]?.toString();
+        final sockId = data['socket_id']?.toString();
         socketId = sockId;
-        var event = RecieveEvent(
-            data: data,
-            name: name,
-            channelName: null,
-            onEventRecieved: (_, ___, __) => onConnectionHanlder());
+        final event = RecieveEvent(
+          data: data,
+          name: name,
+          channelName: null,
+          onEventRecieved: (_, ___, __) => onConnectionHanlder(),
+        );
         if (!connectionStatusController.isClosed) {
           connectionStatusController.add(ConnectionStatus.established);
         }
         return event;
       case PusherEventNames.pong:
-        var event = RecieveEvent(
-            channelName: null,
-            data: data,
-            name: name,
-            onEventRecieved: (_, __, ___) {});
+        final event = RecieveEvent(
+          channelName: null,
+          data: data,
+          name: name,
+          onEventRecieved: (_, __, ___) {},
+        );
         return event;
       default:
         return null;
@@ -200,26 +228,20 @@ abstract class ConnectionDelegate {
     return data;
   }
 
-  /// Reconnect to server
-  @mustCallSuper
-  Future<void> reconnect() async {
-    final _prevCycle = _currentConnectionLifeCycle;
-    await disconnect();
-    if (_prevCycle == _currentConnectionLifeCycle) connect();
-  }
-
   /// Deserializes string from a server to [RecieveEvent] with factories and calls its `callHandler` method
-  @mustCallSuper
   @protected
+  @mustCallSuper
   void onEventRecieved(data) async {
-    if (_isDisconnected) return;
+    if (_isDisconnected) {
+      return;
+    }
     await onPong();
     PusherChannelsPackageLogger.log(data);
-    Map raw = jsonize(data);
-    var name = raw['event']?.toString() ?? "";
-    var payload = jsonize(raw['data']);
-    var channelName = raw['channel']?.toString();
-    var event = internalEventFactory(name, payload) ??
+    final Map raw = jsonize(data);
+    final name = raw['event']?.toString() ?? '';
+    final payload = jsonize(raw['data']);
+    final channelName = raw['channel']?.toString();
+    final event = internalEventFactory(name, payload) ??
         externalEventFactory(name, channelName, payload);
 
     event?.callHandler();
@@ -230,8 +252,8 @@ abstract class ConnectionDelegate {
   }
 
   /// When event with name [PusherEventNames.pong] is recieved
-  @mustCallSuper
   @protected
+  @mustCallSuper
   Future<void> onPong() {
     PusherChannelsPackageLogger.log('Got pong');
     _pongRecieved = true;
@@ -239,8 +261,8 @@ abstract class ConnectionDelegate {
   }
 
   /// Pings connection when [activityDuration] exceeds.
-  @mustCallSuper
   @protected
+  @mustCallSuper
   void checkPong() {
     PusherChannelsPackageLogger.log('checking for pong');
     if (_pongRecieved) {
@@ -252,32 +274,22 @@ abstract class ConnectionDelegate {
     }
   }
 
-  /// Closing all sinks and disconnecting from a server
-  @mustCallSuper
-  Future<void> dispose() async {
-    try {
-      await disconnect();
-      // ignore: empty_catches
-    } catch (e) {}
-    isDisposed = true;
-    await cancelTimer();
-  }
-
-  /// Called when [pings] or [reconnect] succeed to connect or ping to a server
-  @mustCallSuper
+  /// Called when [ping] or [reconnect] succeed to connect or ping to a server
   @protected
+  @mustCallSuper
   Future<void> resetTimer([Duration? timeoutDuration]) async {
     _timer?.cancel();
     _timer = null;
     final duration = timeoutDuration ?? activityDuration;
     PusherChannelsPackageLogger.log(
-        'Timer is reset. Activity duration: $duration');
+      'Timer is reset. Activity duration: $duration',
+    );
     _timer = Timer(duration, checkPong);
   }
 
   /// Cancelling a timer
-  @mustCallSuper
   @protected
+  @mustCallSuper
   Future<void> cancelTimer() async {
     PusherChannelsPackageLogger.log('Timer is canceled');
     _timer?.cancel();

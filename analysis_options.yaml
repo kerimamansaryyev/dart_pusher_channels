@@ -1,30 +1,128 @@
-# This file configures the static analysis results for your project (errors,
-# warnings, and lints).
-#
-# This enables the 'recommended' set of lints from `package:lints`.
-# This set helps identify many issues that may lead to problems when running
-# or consuming Dart code, and enforces writing Dart using a single, idiomatic
-# style and format.
-#
-# If you want a smaller set of lints you can change this to specify
-# 'package:lints/core.yaml'. These are just the most critical lints
-# (the recommended set includes the core lints).
-# The core lints are also what is used by pub.dev for scoring packages.
-
 include: package:lints/recommended.yaml
 
-# Uncomment the following section to specify additional rules.
+analyzer:
+  plugins:
+    - dart_code_metrics
 
-# linter:
-#   rules:
-#     - camel_case_types
+linter:
+  rules:
+    - always_declare_return_types
+    - always_put_control_body_on_new_line
+    - always_put_required_named_parameters_first
+    - avoid_returning_null_for_future
+    - avoid_slow_async_io
+    - avoid_type_to_string
+    - comment_references
+    - join_return_with_assignment
+    - literal_only_boolean_expressions
+    - no_adjacent_strings_in_list
+    - prefer_single_quotes
+    - unawaited_futures
+    - unnecessary_parenthesis
+    - unnecessary_statements
+    - use_named_constants
+    - require_trailing_commas
+    - prefer_constructors_over_static_methods
+    - prefer_final_locals
+    - prefer_final_fields
+    - avoid_setters_without_getters
+    - sort_unnamed_constructors_first
+    - use_enums
+    - sort_pub_dependencies
 
-# analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
+dart_code_metrics:
+  anti-patterns:
+    - long-method
+    - long-parameter-list
+  metrics:
+    cyclomatic-complexity: 20
+    maximum-nesting-level: 5
+    number-of-methods: 10
+    number-of-parameters: 5
+    source-lines-of-code: 75
+    maintainability-index: 50
+  rules:
+    - avoid-collection-methods-with-unrelated-types
+    - avoid-global-state
+    - avoid-unnecessary-type-assertions
+    - avoid-unnecessary-type-casts
+    - avoid-unrelated-type-assertions
+    - avoid-unused-parameters
+    - binary-expression-operand-order
+    - member-ordering-extended:
+        alphabetize: false
+        alphabetize-by-type: false
+        order:
+          - private-static-const-fields
+          - private-static-final-fields
+          - private-static-var-fields
+          - private-static-late-const-fields
+          - private-static-late-final-fields
+          - private-static-late-var-fields
 
-# For more information about the core and recommended set of lints, see
-# https://dart.dev/go/core-lints
+          - public-static-const-fields
+          - public-static-final-fields
+          - public-static-var-fields
+          - public-static-late-const-fields
+          - public-static-late-final-fields
+          - public-static-late-var-fields
 
-# For additional information about configuring this file, see
-# https://dart.dev/guides/language/analysis-options
+          - private-const-fields
+          - private-final-fields
+          - private-var-fields
+          - private-late-const-fields
+          - private-late-final-fields
+          - private-late-var-fields
+
+          - protected-public-const-fields
+          - protected-public-final-fields
+          - protected-public-var-fields
+          - protected-public-late-const-fields
+          - protected-public-late-final-fields
+          - protected-public-late-var-fields
+
+          - public-const-fields
+          - public-final-fields
+          - public-var-fields
+          - public-late-const-fields
+          - public-late-final-fields
+          - public-late-var-fields
+
+          - overridden-public-const-fields
+          - overridden-public-final-fields
+          - overridden-public-var-fields
+          - overridden-public-late-const-fields
+          - overridden-public-late-final-fields
+          - overridden-public-late-var-fields
+
+          - const-constructors
+          - constructors
+          - named-constructors
+          - factory-constructors
+
+          - protected-getters
+          - overriden-getters
+          - public-getters
+          - getters
+
+          - protected-setters
+          - overriden-setters
+          - public-setters
+          - setters
+
+          - overriden-public-methods
+          - public-methods
+          - protected-public-methods
+          - private-methods
+
+          - public-static-methods
+          - protected-static-methods
+          - private-static-methods
+    - no-boolean-literal-compare
+    - no-equal-then-else
+    - prefer-commenting-analyzer-ignores
+    - prefer-first
+    - prefer-immediate-return
+    - prefer-last
+    - prefer-extracting-callbacks:
+        allowed-line-count: 5

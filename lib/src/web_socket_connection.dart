@@ -11,22 +11,13 @@ import 'event_names.dart';
 import 'options.dart';
 
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
-  WebSocketChannelConnectionDelegate(
-      {required PusherChannelOptions options,
-      required this.pingWaitPongDuration,
-      this.eventFactory,
-      this.onConnectionErrorHandler,
-      this.reconnectTries = 4})
-      : super(options: options);
-
   final RecieveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
   /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
 
-  @override
-  bool get canConnectSafely => _socketChannel == null;
+  final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
 
   @override
   final Duration pingWaitPongDuration;
@@ -39,8 +30,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final PublishSubject<RecieveEvent> onEventRecievedController =
       PublishSubject<RecieveEvent>();
 
-  final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
-
   WebSocketChannel? _socketChannel;
   StreamSubscription? _socketChannelSubs;
   bool _isDisconnected = true;
@@ -51,24 +40,19 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   Duration _activityDuration = const Duration(seconds: 60);
 
-  void _preEventHandler(data) {
-    var root = jsonize(data);
-    var d = jsonize(root['data']);
-    var timeout = d['activity_timeout'];
-    if (timeout is int) {
-      _activityDuration = Duration(seconds: timeout);
-    }
-  }
+  WebSocketChannelConnectionDelegate({
+    required PusherChannelOptions options,
+    required this.pingWaitPongDuration,
+    this.eventFactory,
+    this.onConnectionErrorHandler,
+    this.reconnectTries = 4,
+  }) : super(options: options);
 
-  void _shouldReconnectOnDone() {
-    final shouldReconnect =
-        !isDisposed && !isManuallyDisconnected && !_isDisconnected;
-    if (shouldReconnect) {
-      reconnect();
-    } else {
-      disconnect();
-    }
-  }
+  @override
+  bool get canConnectSafely => _socketChannel == null;
+
+  @override
+  Duration get activityDuration => _activityDuration;
 
   @override
   void onEventRecieved(data) {
@@ -81,9 +65,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   }
 
   @override
-  Duration get activityDuration => _activityDuration;
-
-  @override
   Future<void> connect() async {
     _isDisconnected = false;
     await super.connect();
@@ -91,13 +72,18 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       _connectionCompleter.complete();
     }
     _connectionCompleter = Completer();
-    runZonedGuarded(() {
-      _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannelSubs = _socketChannel?.stream.listen(onEventRecieved,
+    runZonedGuarded(
+      () {
+        _socketChannel = WebSocketChannel.connect(options.uri);
+        _socketChannelSubs = _socketChannel?.stream.listen(
+          onEventRecieved,
           cancelOnError: true,
           onError: _onConnectionError,
-          onDone: _shouldReconnectOnDone);
-    }, _onConnectionError);
+          onDone: _shouldReconnectOnDone,
+        );
+      },
+      _onConnectionError,
+    );
     return _connectionCompleter.future;
   }
 
@@ -108,13 +94,15 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     try {
       await _socketChannelSubs?.cancel();
       await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (_) {}
   }
 
   @override
   RecieveEvent? externalEventFactory(
-          String name, String? channelName, Map data) =>
+    String name,
+    String? channelName,
+    Map data,
+  ) =>
       eventFactory?.call(name, channelName, data);
 
   @override
@@ -125,11 +113,24 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   void send(SendEvent event) {
-    _socketChannel?.sink.add(jsonEncode({
-      'event': event.name,
-      if (event.channelName != null) 'channel': event.channelName,
-      'data': {...event.data}
-    }));
+    _socketChannel?.sink.add(
+      jsonEncode({
+        'event': event.name,
+        if (event.channelName != null) 'channel': event.channelName,
+        'data': {...event.data}
+      }),
+    );
+  }
+
+  @override
+  Future<void> dispose() async {
+    await super.dispose();
+    await onEventRecievedController.close();
+    await connectionStatusController.close();
+  }
+
+  void resetTries() {
+    _reconnectTries = 0;
   }
 
   void _onConnectionError(error, trace) {
@@ -150,14 +151,22 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     }
   }
 
-  @override
-  Future<void> dispose() async {
-    await super.dispose();
-    await onEventRecievedController.close();
-    await connectionStatusController.close();
+  void _preEventHandler(data) {
+    final root = jsonize(data);
+    final d = jsonize(root['data']);
+    final timeout = d['activity_timeout'];
+    if (timeout is int) {
+      _activityDuration = Duration(seconds: timeout);
+    }
   }
 
-  void resetTries() {
-    _reconnectTries = 0;
+  void _shouldReconnectOnDone() {
+    final shouldReconnect =
+        !isDisposed && !isManuallyDisconnected && !_isDisconnected;
+    if (shouldReconnect) {
+      reconnect();
+    } else {
+      disconnect();
+    }
   }
 }

@@ -19,8 +19,13 @@ part 'event.dart';
 
 ///An interface to represent the channels based on  the [Pusher documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
 abstract class Channel {
+  @protected
+  final ConnectionDelegate connectionDelegate;
+
   /// Channel name
   final String name;
+
+  Channel({required this.name, required this.connectionDelegate});
 
   /// Subscribing to the channel sending [PusherEventNames.subscribe] through [ConnectionDelegate]
   void subscribe();
@@ -28,37 +33,34 @@ abstract class Channel {
   /// Unsubscribing to the channel sending [PusherEventNames.subscribe] through [ConnectionDelegate]
   void unsubscribe();
 
-  @protected
-  final ConnectionDelegate connectionDelegate;
-
-  ///Listening for incoming events by given [eventName] over the [connectionDelegate.onEvent]
+  ///Listening for incoming events by given [eventName] over the [ConnectionDelegate.onEvent]
   Stream<ChannelReadEvent> bind(String eventName) => connectionDelegate.onEvent
       .where((event) => event.channelName == name && eventName == event.name)
-      .map<ChannelReadEvent>((event) =>
-          ChannelReadEvent(name: event.name, data: event.data, channel: this));
-
-  Channel({required this.name, required this.connectionDelegate});
+      .map<ChannelReadEvent>(
+        (event) =>
+            ChannelReadEvent(name: event.name, data: event.data, channel: this),
+      );
 }
 
 /// Implementation of pusher private channels using [AuthorizationDelegate] to get auth code for subscribing through authenticaton
 /// middleware.
 class PrivateChannel extends Channel {
-  PrivateChannel(
-      {required String name,
-      required ConnectionDelegate connectionDelegate,
-      this.onAuthFailed,
-      required this.authorizationDelegate})
-      : super(name: name, connectionDelegate: connectionDelegate);
-
   /// Define AuthorizationDelegate to get auth string and subscribe to a channel
   final AuthorizationDelegate authorizationDelegate;
 
   /// Called when [authorizationDelegate] fails to get auth string
   final void Function(PusherAuthenticationException error)? onAuthFailed;
 
+  PrivateChannel({
+    required String name,
+    required ConnectionDelegate connectionDelegate,
+    required this.authorizationDelegate,
+    this.onAuthFailed,
+  }) : super(name: name, connectionDelegate: connectionDelegate);
+
   /// [PrivateChannel] subscription is established only if
-  /// [connectionDelegate.socketId] is set (if connection is established) and
-  /// [authorizationDelegate.authenticationString] succeeds
+  /// [ConnectionDelegate.socketId] is set (if connection is established) and
+  /// [AuthorizationDelegate.authenticationString] succeeds
   /// with valid auth code.
   @override
   void subscribe() async {
@@ -67,67 +69,78 @@ class PrivateChannel extends Channel {
     }
 
     try {
-      var code = await authorizationDelegate.authenticationString(
+      final code = await authorizationDelegate.authenticationString(
         connectionDelegate.socketId!,
         name,
       );
-      connectionDelegate.send(SendEvent(
-        data: {'channel': name, 'auth': code},
-        name: PusherEventNames.subscribe,
-        channelName: null,
-      ));
+      connectionDelegate.send(
+        SendEvent(
+          data: {'channel': name, 'auth': code},
+          name: PusherEventNames.subscribe,
+          channelName: null,
+        ),
+      );
     } on PusherAuthenticationException catch (ex) {
       onAuthFailed?.call(ex);
-      // ignore: empty_catches
-    } catch (ex) {}
+    } catch (_) {}
   }
 
   /// [PrivateChannel] unsubscription is established only if
-  /// [connectionDelegate.socketId] is set (if connection is established)
+  /// [ConnectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {
     if (connectionDelegate.socketId == null) {
       return;
     }
 
-    connectionDelegate.send(SendEvent(
+    connectionDelegate.send(
+      SendEvent(
         data: {'channel': name},
         name: PusherEventNames.unsubscribe,
-        channelName: null));
+        channelName: null,
+      ),
+    );
   }
 }
 
 /// Implementation of pusher public channels
 class PublicChannel extends Channel {
-  PublicChannel(
-      {required String name, required ConnectionDelegate connectionDelegate})
-      : super(name: name, connectionDelegate: connectionDelegate);
+  PublicChannel({
+    required String name,
+    required ConnectionDelegate connectionDelegate,
+  }) : super(name: name, connectionDelegate: connectionDelegate);
 
   /// [PublicChannel] subscription is established only if
-  /// [connectionDelegate.socketId] is set (if connection is established)
+  /// [ConnectionDelegate.socketId] is set (if connection is established)
   @override
   void subscribe() {
     if (connectionDelegate.socketId == null) {
       return;
     }
 
-    connectionDelegate.send(SendEvent(
+    connectionDelegate.send(
+      SendEvent(
         data: {'channel': name},
         name: PusherEventNames.subscribe,
-        channelName: null));
+        channelName: null,
+      ),
+    );
   }
 
   /// [PublicChannel] unsubscription is established only if
-  /// [connectionDelegate.socketId] is set (if connection is established)
+  /// [ConnectionDelegate.socketId] is set (if connection is established)
   @override
   void unsubscribe() {
     if (connectionDelegate.socketId == null) {
       return;
     }
 
-    connectionDelegate.send(SendEvent(
+    connectionDelegate.send(
+      SendEvent(
         data: {'channel': name},
         name: PusherEventNames.unsubscribe,
-        channelName: null));
+        channelName: null,
+      ),
+    );
   }
 }

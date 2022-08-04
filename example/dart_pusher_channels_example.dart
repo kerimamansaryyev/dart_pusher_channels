@@ -8,22 +8,24 @@ void main() {
 
   // Creating options to use the client over wss:// scheme
   const options = PusherChannelOptions.wss(
-      host: 'my.domain.com',
-      //By default the servers using pusher over wss://
-      // work on 443 port. Specify the port according to your server.
-      port: 443,
-      //Paste your API key that you get after registering and creating a project on Pusher
-      key: 'API_KEY',
-      //The package was tested on the newer versions of Pusher protocol
-      // It is recommended to keep the version of the protocol on your server up-to-data
-      protocol: 7,
-      version: '7.0.3');
+    host: 'my.domain.com',
+    // By default the servers using pusher over wss://
+    // work on 443 port. Specify the port according to your server.
+    port: 443,
+    // Paste your API key that you get after registering and creating a project on Pusher
+    key: 'API_KEY',
+    // The package was tested on the newer versions of Pusher protocol
+    // It is recommended to keep the version of the protocol on your server up-to-data
+    protocol: 7,
+    version: '7.0.3',
+  );
 
   final client = PusherChannelsClient.websocket(
-      reconnectTries: 2,
-      options: options,
-      // Handle the errors based on the web sockets connection
-      onConnectionErrorHandle: (error, trace, refresh) {});
+    reconnectTries: 2,
+    options: options,
+    // Handle the errors based on the web sockets connection
+    onConnectionErrorHandle: (error, trace, refresh) {},
+  );
 
   // Ensure you implement your logic
   // after successfull connection to your server
@@ -36,15 +38,17 @@ void main() {
   client.onConnectionEstablished.listen((_) async {
     channel ??= client.publicChannel('my_public_channel_name');
     privateChannel ??= client.privateChannel(
-        'my_private_channel',
-        // This is a default authorization delegate
-        // to authorize to the channels
-        // You may implement your own authorization delegate
-        // implementing [AuthorizationDelegate] interface
-        TokenAuthorizationDelegate(
-            // User `http` or `https` scheme
-            authorizationEndpoint: Uri.parse('http://my.auth.com/api/auth'),
-            headers: {'Authorization': 'Bearer [YOUR_TOKEN]'}));
+      'my_private_channel',
+      // This is a default authorization delegate
+      // to authorize to the channels
+      // You may implement your own authorization delegate
+      // implementing [AuthorizationDelegate] interface
+      TokenAuthorizationDelegate(
+        // User `http` or `https` scheme
+        authorizationEndpoint: Uri.parse('http://my.auth.com/api/auth'),
+        headers: {'Authorization': 'Bearer [YOUR_TOKEN]'},
+      ),
+    );
     await eventSubscription?.cancel();
     await privateChannelEventSubscription?.cancel();
     // Ensure you bind to the channel before subscribing,

@@ -10,7 +10,7 @@ void main() {
         PusherChannelsPackageConfigs.enableLogs();
         PusherChannelsPackageLogger.log('hello');
         expect(printedLogs.length, 1);
-        expect(printedLogs[0], 'hello');
+        expect(printedLogs.first, 'hello');
 
         PusherChannelsPackageConfigs.disableLogs();
         PusherChannelsPackageLogger.log('bye');
@@ -35,7 +35,7 @@ void main() {
         PusherChannelsPackageLogger.log('hello');
         expect(handledLines.length, 2);
         expect(printedLogs.length, 1);
-        expect(printedLogs[0], 'hello');
+        expect(printedLogs.first, 'hello');
       });
     });
   });
