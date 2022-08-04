@@ -14,7 +14,6 @@ class PusherChannelsClient {
 
   /// If [PusherEventNames.pong] was recieved then this duration is set to timer
   /// while waiting for pong next time
-  final Duration pingWaitPongDuration;
 
   /// Events recieved by client's [ConnectionDelegate] and mapped
   /// as [PusherReadEvent]
@@ -73,18 +72,16 @@ class PusherChannelsClient {
     return _channelEventFactory(name, channelName, data);
   }
 
-  PusherChannelsClient(
-      {required this.options,
-      required ConnectionDelegate delegate,
-      this.pingWaitPongDuration =
-          PusherChannelsPackageConfigs.defaultPingWaitPongDuration})
-      : _delegate = delegate;
+  PusherChannelsClient({
+    required this.options,
+    required ConnectionDelegate delegate,
+  }) : _delegate = delegate;
 
   /// Build a client over the Web socket connection
   PusherChannelsClient.websocket(
       {required this.options,
       int reconnectTries = 4,
-      this.pingWaitPongDuration =
+      Duration pingWaitPongDuration =
           PusherChannelsPackageConfigs.defaultPingWaitPongDuration,
       void Function(dynamic error, StackTrace? trace, void Function() refresh)?
           onConnectionErrorHandle}) {
