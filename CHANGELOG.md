@@ -1,3 +1,5 @@
+## 0.2.6+1
+- Fixed markdown of `README`
 ## 0.2.6
 
 - Updated inline documentation of the package
