@@ -49,6 +49,7 @@ abstract class ConnectionDelegate {
   bool _isManuallyDisconnected = true;
   Timer? _timer;
   int _currentConnectionLifeCycle = 0;
+  ConnectionStatus? _currentConnectionStatus;
 
   /// Check if connection was stopped intentionally.
   @protected
@@ -144,6 +145,7 @@ abstract class ConnectionDelegate {
   void passConnectionStatus(ConnectionStatus status) {
     if (!connectionStatusController.isClosed) {
       connectionStatusController.add(status);
+      _currentConnectionStatus = status;
     }
   }
 
@@ -163,7 +165,8 @@ abstract class ConnectionDelegate {
             name: name,
             channelName: null,
             onEventRecieved: (_, ___, d) => onErrorHandler(d));
-        if (!connectionStatusController.isClosed) {
+        if (!connectionStatusController.isClosed &&
+            _currentConnectionStatus != ConnectionStatus.established) {
           connectionStatusController.add(ConnectionStatus.connected);
         }
         return event;
