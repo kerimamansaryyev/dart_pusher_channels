@@ -43,7 +43,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   WebSocketChannel? _socketChannel;
   StreamSubscription? _socketChannelSubs;
-  bool _isDisconnected = true;
 
   Completer<void> _connectionCompleter = Completer();
 
@@ -84,7 +83,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> connect() async {
-    _isDisconnected = false;
     await super.connect();
     if (!_connectionCompleter.isCompleted) {
       _connectionCompleter.complete();
@@ -102,7 +100,6 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> disconnect() async {
-    _isDisconnected = true;
     await super.disconnect();
     try {
       await _socketChannelSubs?.cancel();
