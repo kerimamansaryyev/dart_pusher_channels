@@ -19,13 +19,14 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       this.reconnectTries = 4})
       : super(options: options);
 
-  int _reconnectTries = 0;
-
   final RecieveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
   /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
+
+  @override
+  bool get canConnectSafely => _socketChannel == null;
 
   @override
   final Duration pingWaitPongDuration;
@@ -41,8 +42,12 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
 
   WebSocketChannel? _socketChannel;
+  StreamSubscription? _socketChannelSubs;
+  bool _isDisconnected = true;
 
   Completer<void> _connectionCompleter = Completer();
+
+  int _reconnectTries = 0;
 
   Duration _activityDuration = const Duration(seconds: 60);
 
@@ -52,6 +57,16 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     var timeout = d['activity_timeout'];
     if (timeout is int) {
       _activityDuration = Duration(seconds: timeout);
+    }
+  }
+
+  void _shouldReconnectOnDone() {
+    final shouldReconnect =
+        !isDisposed && !isManuallyDisconnected && !_isDisconnected;
+    if (shouldReconnect) {
+      reconnect();
+    } else {
+      disconnect();
     }
   }
 
@@ -70,20 +85,28 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
 
   @override
   Future<void> connect() async {
+    _isDisconnected = false;
     await super.connect();
+    if (!_connectionCompleter.isCompleted) {
+      _connectionCompleter.complete();
+    }
     _connectionCompleter = Completer();
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved,
-          cancelOnError: true, onError: _onConnectionError);
+      _socketChannelSubs = _socketChannel?.stream.listen(onEventRecieved,
+          cancelOnError: true,
+          onError: _onConnectionError,
+          onDone: _shouldReconnectOnDone);
     }, _onConnectionError);
     return _connectionCompleter.future;
   }
 
   @override
   Future<void> disconnect() async {
+    _isDisconnected = true;
     await super.disconnect();
     try {
+      await _socketChannelSubs?.cancel();
       await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
       // ignore: empty_catches
     } catch (e) {}
@@ -120,7 +143,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     } else {
       passConnectionStatus(ConnectionStatus.connectionError);
       if (!_connectionCompleter.isCompleted) {
-        _connectionCompleter.complete(null);
+        _connectionCompleter.complete();
       }
       onConnectionErrorHandler?.call(error, trace);
       cancelTimer();
