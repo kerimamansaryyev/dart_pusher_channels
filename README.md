@@ -1,3 +1,9 @@
+[![Pub Version](https://img.shields.io/pub/v/dart_pusher_channels?logo=dart&logoColor=white)](https://pub.dev/packages/dart_pusher_channels/)
+[![Dart SDK Version](https://badgen.net/pub/sdk-version/dart_pusher_channels)](https://pub.dev/packages/dart_pusher_channels/)
+[![License](https://img.shields.io/github/license/mcfugger/dart_pusher_channels)](https://github.com/mcfugger/dart_pusher_channels/blob/master/LICENSE)
+[![Pub popularity](https://badgen.net/pub/popularity/dart_pusher_channels)](https://pub.dev/packages/dart_pusher_channels/score)
+[![GitHub popularity](https://img.shields.io/github/stars/mcfugger/dart_pusher_channels?logo=github&logoColor=white)](https://github.com/mcfugger/dart_pusher_channels/stargazers)
+
 This package is an unofficial pure dart implementation of [Pusher Channels](https://pusher.com/channels).
 
 # Help in development
