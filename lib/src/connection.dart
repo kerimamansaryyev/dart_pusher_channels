@@ -47,6 +47,11 @@ abstract class ConnectionDelegate {
   bool _pongRecieved = false;
   bool _isDisconnectedManually = false;
   Timer? _timer;
+  int _currentConnectionLifeCycle = 0;
+
+  /// Can perform connections without reconnection
+  @protected
+  bool get canConnectSafely;
 
   /// Socket id sent from the server after connection is established
   String? get socketId => _socketId;
@@ -78,10 +83,14 @@ abstract class ConnectionDelegate {
   Stream<ConnectionStatus> get onConnectionStatusChanged =>
       connectionStatusController.stream;
 
+  Future<void> connectSafely() => canConnectSafely ? connect() : reconnect();
+
   /// Connect to a server
   @mustCallSuper
+  @protected
   Future<void> connect() async {
     _isDisconnectedManually = false;
+    _currentConnectionLifeCycle++;
     await cancelTimer();
     PusherChannelsPackageLogger.log(ConnectionStatus.pending);
     passConnectionStatus(ConnectionStatus.pending);
@@ -181,9 +190,10 @@ abstract class ConnectionDelegate {
 
   /// Reconnect to server
   @mustCallSuper
-  void reconnect() async {
+  Future<void> reconnect() async {
+    final _prevCycle = _currentConnectionLifeCycle;
     await disconnect();
-    connect();
+    if (_prevCycle == _currentConnectionLifeCycle) connect();
   }
 
   /// Deserializes string from a server to [RecieveEvent] with factories and calls its `callHandler` method

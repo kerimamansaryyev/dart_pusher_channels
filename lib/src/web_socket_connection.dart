@@ -19,13 +19,14 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
       this.reconnectTries = 4})
       : super(options: options);
 
-  int _reconnectTries = 0;
-
   final RecieveEvent? Function(String name, String? channelName, Map data)?
       eventFactory;
 
   /// The delegate makes a new try when connection fail is occured
   final int reconnectTries;
+
+  @override
+  bool get canConnectSafely => _socketChannel == null;
 
   @override
   final Duration pingWaitPongDuration;
@@ -41,8 +42,11 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   final void Function(dynamic, StackTrace?)? onConnectionErrorHandler;
 
   WebSocketChannel? _socketChannel;
+  StreamSubscription? _socketChannelSubs;
 
   Completer<void> _connectionCompleter = Completer();
+
+  int _reconnectTries = 0;
 
   Duration _activityDuration = const Duration(seconds: 60);
 
@@ -71,10 +75,13 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   @override
   Future<void> connect() async {
     await super.connect();
+    if (!_connectionCompleter.isCompleted) {
+      _connectionCompleter.complete();
+    }
     _connectionCompleter = Completer();
     runZonedGuarded(() {
       _socketChannel = WebSocketChannel.connect(options.uri);
-      _socketChannel?.stream.listen(onEventRecieved,
+      _socketChannelSubs = _socketChannel?.stream.listen(onEventRecieved,
           cancelOnError: true, onError: _onConnectionError);
     }, _onConnectionError);
     return _connectionCompleter.future;
@@ -84,6 +91,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   Future<void> disconnect() async {
     await super.disconnect();
     try {
+      await _socketChannelSubs?.cancel();
       await _socketChannel?.sink.close().timeout(const Duration(seconds: 10));
       // ignore: empty_catches
     } catch (e) {}
@@ -120,7 +128,7 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
     } else {
       passConnectionStatus(ConnectionStatus.connectionError);
       if (!_connectionCompleter.isCompleted) {
-        _connectionCompleter.complete(null);
+        _connectionCompleter.complete();
       }
       onConnectionErrorHandler?.call(error, trace);
       cancelTimer();

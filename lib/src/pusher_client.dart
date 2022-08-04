@@ -114,7 +114,7 @@ class PusherChannelsClient {
   }
 
   /// Connect with current [ConnectionDelegate]
-  Future<void> connect() => _delegate.connect();
+  Future<void> connect() => _delegate.connectSafely();
 
   /// Permanently close this instance
   Future<void> close() => _delegate.dispose();
