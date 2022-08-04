@@ -116,8 +116,11 @@ class PusherChannelsClient {
   /// 1. Manual disconnection was commited. See [disconnect]
   /// 2. No active attempt for connection. If current status [ConnectionStatus.pending]. See [onConnectionStatusChanged].
   Future<void> reconnect() {
-    if (_delegate.currentConnectionStatus != ConnectionStatus.pending ||
-        _delegate.manuallyDisconnected) {
+    if ((_delegate.currentConnectionStatus == ConnectionStatus.disconnected &&
+            _delegate.manuallyDisconnected) ||
+        _delegate.currentConnectionStatus == ConnectionStatus.connected ||
+        _delegate.currentConnectionStatus == ConnectionStatus.established ||
+        _delegate.currentConnectionStatus == ConnectionStatus.connectionError) {
       return _delegate.reconnect();
     } else {
       return Future.value();

@@ -83,6 +83,9 @@ class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   @override
   Future<void> connect() async {
     await super.connect();
+    if (!_connectionCompleter.isCompleted) {
+      _connectionCompleter.complete();
+    }
     _isDisconnected = false;
     _connectionCompleter = Completer();
     runZonedGuarded(() async {
