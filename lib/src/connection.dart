@@ -262,7 +262,7 @@ abstract class ConnectionDelegate {
   @mustCallSuper
   Future<void> dispose() async {
     try {
-      await disconnect();
+      await disconnectSafely();
       // ignore: empty_catches
     } catch (e) {}
     isDisposed = true;
