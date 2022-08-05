@@ -1,3 +1,11 @@
+## 0.2.7
+Bug fixes:
+- Fixed bug when connection status was set to `ConnectionStatus.connceted` each time the pusher error event occured.
+(Even if connection status was set to `ConnectionStatus.established` before).
+- Fixed bug on double connections triggered by concurrent attempts to reconnect.
+
+Internal changes:
+- Using `disconnectSafely` instead of `disconnect` on disposing the delegate.
 ## 0.2.6+1
 - Fixed markdown of `README`
 ## 0.2.6
