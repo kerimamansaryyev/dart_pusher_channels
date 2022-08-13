@@ -6,18 +6,10 @@ void main() {
   // You may enable logs to see what's going on
   PusherChannelsPackageConfigs.enableLogs();
 
-  // Creating options to use the client over wss:// scheme
+  // Creating the options.
+  // Need help with the options? Checkout the informative API reference of [PusherChannelOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions-class.html)
   const options = PusherChannelOptions.wss(
-      host: 'my.domain.com',
-      //By default the servers using pusher over wss://
-      // work on 443 port. Specify the port according to your server.
-      port: 443,
-      //Paste your API key that you get after registering and creating a project on Pusher
-      key: 'API_KEY',
-      //The package was tested on the newer versions of Pusher protocol
-      // It is recommended to keep the version of the protocol on your server up-to-data
-      protocol: 7,
-      version: '7.0.3');
+      host: 'my.domain.com', port: 443, key: 'API_KEY', protocol: 7);
 
   final client = PusherChannelsClient.websocket(
       reconnectTries: 2,

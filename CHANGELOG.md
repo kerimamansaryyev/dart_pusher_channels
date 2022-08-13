@@ -1,3 +1,11 @@
+## 0.2.8
+Minimal changes:
+- `key` parameter of `PusherChannelOptions` is nullable now.
+- Added a feature to set custom endpoint path to `PusherChannelOptions` with `path` parameter.
+- Made `version` parameter of `PusherChannelOptions` equals to `kDartPusherChannelsLibraryVersion`.
+- Updated the inline documentation.
+- Updated `README.md`.
+- Update the example file.
 ## 0.2.7
 Bug fixes:
 - Fixed bug when connection status was set to `ConnectionStatus.connceted` each time the pusher error event occured.

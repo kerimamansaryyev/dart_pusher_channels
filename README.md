@@ -4,6 +4,7 @@ This package is an unofficial pure dart implementation of [Pusher Channels](http
 
 Author of the package currently needs help with testing the package on other OS platforms:
 - Linux
+- MacOS
 
 Development and testing of:
 - Presence channels
@@ -42,6 +43,11 @@ Other platforms are in a test queue.
 
 ## PusherChannelOptions
 
+In order to get known to  the parameters provided to `PusherChannelOptions`, it's highly recommended to read the informative API reference of [PusherChannelOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions-class.html).
+
+## PusherChannelsClient
+Create an instance of `PusherChannelsClient` and use it to establish connection.
+
 1. Create `PusherChannelOptions`
 
 
@@ -49,15 +55,9 @@ Other platforms are in a test queue.
 ```dart
 const options = PusherChannelOptions.wss(
       host: 'my.domain.com',
-      //By default the servers using pusher over wss://
-      // work on 443 port. Specify the port according to your server.
       port: 443,
-      //Paste your API key that you get after registering and creating a project on Pusher
       key: 'API_KEY',
-      //The package was tested on the newer versions of Pusher protocol
-      // It is recommended to keep the version of the protocol on your server up-to-data
-      protocol: 7,
-      version: '7.0.3');
+      protocol: 7);
 
 ```
 2. Create the client.

@@ -1,5 +1,4 @@
-import 'package:dart_pusher_channels/base.dart';
-import 'package:dart_pusher_channels/configs.dart';
+import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:test/test.dart';
 
 import 'utils/log_grabber.dart';
@@ -48,104 +47,89 @@ void main() {
           host: 'example.com',
           port: 12,
           key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          protocol: 7);
       expect(
           withoutCluster.uri,
           Uri.parse(
-              'ws://example.com:12/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'ws://example.com:12/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withCluster = PusherChannelOptions(
           scheme: 'ws',
           host: 'example.com',
           port: 12,
           cluster: 'CLUSTER',
           key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          protocol: 7);
       expect(
           withCluster.uri,
           Uri.parse(
-              'ws://ws-CLUSTER.example.com:12/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'ws://ws-CLUSTER.example.com:12/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withPath = PusherChannelOptions(
           scheme: 'ws',
           host: 'example.com',
           path: '/CUSTOM_PATH',
           port: 12,
-          key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          key: null,
+          protocol: 7);
       expect(
           withPath.uri,
           Uri.parse(
-              'ws://example.com:12/CUSTOM_PATH?client=dart&version=7.0.3&protocol=7'));
+              'ws://example.com:12/CUSTOM_PATH?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
     });
     test('.ws constructor', () {
       const withoutCluster = PusherChannelOptions.ws(
-          host: 'example.com',
-          port: 12,
-          key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          host: 'example.com', port: 12, key: 'API_KEY', protocol: 7);
       expect(
           withoutCluster.uri,
           Uri.parse(
-              'ws://example.com:12/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'ws://example.com:12/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withCluster = PusherChannelOptions.ws(
           host: 'example.com',
           port: 12,
           cluster: 'CLUSTER',
           key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          protocol: 7);
       expect(
           withCluster.uri,
           Uri.parse(
-              'ws://ws-CLUSTER.example.com:12/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'ws://ws-CLUSTER.example.com:12/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withPath = PusherChannelOptions.ws(
           host: 'example.com',
           path: '/CUSTOM_PATH',
           port: 12,
-          key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          key: null,
+          protocol: 7);
       expect(
           withPath.uri,
           Uri.parse(
-              'ws://example.com:12/CUSTOM_PATH?client=dart&version=7.0.3&protocol=7'));
+              'ws://example.com:12/CUSTOM_PATH?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
     });
     test('.wss constructor', () {
       const withoutCluster = PusherChannelOptions.wss(
-          host: 'example.com',
-          port: 443,
-          key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          host: 'example.com', port: 443, key: 'API_KEY', protocol: 7);
       expect(
           withoutCluster.uri,
           Uri.parse(
-              'wss://example.com:443/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'wss://example.com:443/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withCluster = PusherChannelOptions.wss(
           host: 'example.com',
           port: 443,
           cluster: 'CLUSTER',
           key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          protocol: 7);
       expect(
           withCluster.uri,
           Uri.parse(
-              'wss://ws-CLUSTER.example.com:443/app/API_KEY?client=dart&version=7.0.3&protocol=7'));
+              'wss://ws-CLUSTER.example.com:443/app/API_KEY?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
       const withPath = PusherChannelOptions.wss(
           host: 'example.com',
           path: '/CUSTOM_PATH',
           port: 443,
-          key: 'API_KEY',
-          protocol: 7,
-          version: '7.0.3');
+          key: null,
+          protocol: 7);
       expect(
           withPath.uri,
           Uri.parse(
-              'wss://example.com:443/CUSTOM_PATH?client=dart&version=7.0.3&protocol=7'));
+              'wss://example.com:443/CUSTOM_PATH?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
     });
   });
 }
