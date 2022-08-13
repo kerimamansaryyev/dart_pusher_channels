@@ -45,6 +45,11 @@ Other platforms are in a test queue.
 
 In order to get known to  the parameters provided to `PusherChannelOptions`, it's highly recommended to read the informative API reference of [PusherChannelOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions-class.html).
 
+Also, see API references of the constructors to learn more about their parameters:
+- [`PusherChannelOptions.new`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.html)
+- [`PusherChannelOptions.ws`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.ws.html)
+- [`PusherChannelOptions.wss`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.wss.html)
+
 ## PusherChannelsClient
 Create an instance of `PusherChannelsClient` and use it to establish connection.
 

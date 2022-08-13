@@ -11,7 +11,7 @@ class PusherChannelOptions {
   /// Scheme depending on the security context. For web socket connections they are: `ws` or `wss`.
   final String scheme;
 
-  /// Cluster of your app. `Note:` If you provide a cluster, then the [host] will have form of 'ws-$[cluster].$[_host]',
+  /// Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
   final String? cluster;
 

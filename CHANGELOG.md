@@ -1,3 +1,5 @@
+## 0.2.8+1
+Updated `README.md`
 ## 0.2.8
 Minimal changes:
 - `key` parameter of `PusherChannelOptions` is nullable now.
