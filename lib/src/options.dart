@@ -8,6 +8,9 @@ import 'package:meta/meta.dart';
 /// - [PusherChannelsOptions.wss]
 @immutable
 class PusherChannelsOptions {
+  /// If `true` - meta data will be added to generated [uri] as query parameters.
+  final bool shouldSupplyQueryMetaData;
+
   /// Scheme depending on the security context. For web socket connections they are: `ws` or `wss`.
   final String scheme;
 
@@ -59,11 +62,14 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
+  ///
+  /// `shouldSupplyQueryMetaData` - If `true` - the meta data will be added to generated [uri] as query parameters.`true` by default.
   const PusherChannelsOptions(
       {required this.scheme,
       required String host,
       String? path,
       this.cluster,
+      this.shouldSupplyQueryMetaData = true,
       required this.port,
       required this.key,
       required this.protocol,
@@ -95,16 +101,20 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
-  const PusherChannelsOptions.ws({
-    String? cluster,
-    required int? port,
-    required String? key,
-    required int protocol,
-    String version = kDartPusherChannelsLibraryVersion,
-    required String host,
-    String? path,
-  }) : this(
+  ///
+  /// `shouldSupplyQueryMetaData` - If `true` - the meta data will be added to generated [uri] as query parameters. `true` by default.
+  const PusherChannelsOptions.ws(
+      {String? cluster,
+      required int? port,
+      required String? key,
+      required int protocol,
+      String version = kDartPusherChannelsLibraryVersion,
+      required String host,
+      String? path,
+      bool shouldSupplyQueryMetaData = true})
+      : this(
             scheme: 'ws',
+            shouldSupplyQueryMetaData: shouldSupplyQueryMetaData,
             cluster: cluster,
             host: host,
             port: port,
@@ -137,17 +147,21 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
-  const PusherChannelsOptions.wss({
-    String? cluster,
-    required int? port,
-    required String? key,
-    required int protocol,
-    String version = kDartPusherChannelsLibraryVersion,
-    required String host,
-    String? path,
-  }) : this(
+  ///
+  /// `shouldSupplyQueryMetaData` - If `true` - the meta data will be added to generated [uri] as query parameters. `true` by default.
+  const PusherChannelsOptions.wss(
+      {String? cluster,
+      required int? port,
+      required String? key,
+      required int protocol,
+      String version = kDartPusherChannelsLibraryVersion,
+      required String host,
+      String? path,
+      bool shouldSupplyQueryMetaData = true})
+      : this(
             scheme: 'wss',
             cluster: cluster,
+            shouldSupplyQueryMetaData: shouldSupplyQueryMetaData,
             host: host,
             port: port,
             key: key,
@@ -165,12 +179,18 @@ class PusherChannelsOptions {
   }
 
   /// Generated uri.
-  Uri get uri =>
-      Uri(scheme: scheme, host: host, port: port, path: path, queryParameters: {
-        'client': _kClient,
-        'version': version.toString(),
-        'protocol': protocol.toString()
-      });
+  Uri get uri => Uri(
+      scheme: scheme,
+      host: host,
+      port: port,
+      path: path,
+      queryParameters: !shouldSupplyQueryMetaData
+          ? null
+          : {
+              'client': _kClient,
+              'version': version.toString(),
+              'protocol': protocol.toString()
+            });
 }
 
 const _kClient = 'dart';

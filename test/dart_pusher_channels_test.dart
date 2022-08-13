@@ -85,6 +85,15 @@ void main() {
           keyNullPathNull.uri,
           Uri.parse(
               'ws://example.com:12/?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
+      const noQuery = PusherChannelsOptions(
+          scheme: 'ws',
+          host: 'example.com',
+          port: 12,
+          key: null,
+          path: '',
+          shouldSupplyQueryMetaData: false,
+          protocol: 7);
+      expect(noQuery.uri, Uri.parse('ws://example.com:12'));
     });
     test('.ws constructor', () {
       const withoutCluster = PusherChannelsOptions.ws(
@@ -119,6 +128,14 @@ void main() {
           keyNullPathNull.uri,
           Uri.parse(
               'ws://example.com:12/?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
+      const noQuery = PusherChannelsOptions.ws(
+          host: 'example.com',
+          port: 12,
+          key: null,
+          path: '',
+          shouldSupplyQueryMetaData: false,
+          protocol: 7);
+      expect(noQuery.uri, Uri.parse('ws://example.com:12'));
     });
     test('.wss constructor', () {
       const withoutCluster = PusherChannelsOptions.wss(
@@ -153,6 +170,14 @@ void main() {
           keyNullPathNull.uri,
           Uri.parse(
               'wss://example.com:12/?client=dart&version=$kDartPusherChannelsLibraryVersion&protocol=7'));
+      const noQuery = PusherChannelsOptions.wss(
+          host: 'example.com',
+          port: 12,
+          key: null,
+          path: '',
+          shouldSupplyQueryMetaData: false,
+          protocol: 7);
+      expect(noQuery.uri, Uri.parse('wss://example.com:12'));
     });
   });
 }

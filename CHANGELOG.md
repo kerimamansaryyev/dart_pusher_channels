@@ -1,3 +1,5 @@
+## 0.3.1
+Added `shouldSupplyQueryMetaData` to `PusherChannelsOptions`. It will regulate whether to include or omit the metadata such as `client`, `version`, `protocol`.
 ## 0.3.0
 `BREAKING CHANGE`: `PusherChannelOptions` was deprecated and renamed to `PusherChannelsOptions` for conveniency.
 ## 0.2.9
