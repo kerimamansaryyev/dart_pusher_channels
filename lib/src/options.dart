@@ -41,7 +41,11 @@ class PusherChannelOptions {
   ///
   /// `host` - Host of a server. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   ///
-  /// `path` - Custom path to the Pusher Channels endpoint, used if [key] provided as `null`.
+  /// `path` - Custom path to the Pusher Channels endpoint, used if `key` provided as `null`.
+  /// `Note:`
+  /// - If both `key` and `path` are provided as `null` - [path] getter will return `/` (slash).
+  /// - It's recommended to provide a path other than the root (`/`) on a server because query parameters will be added to the generated uri.
+  /// - Do not set a route that ends with `/` on a server because query parameters will be added to the generated uri.
   ///
   /// `port` - Port of a server.
   ///
@@ -74,6 +78,10 @@ class PusherChannelOptions {
   /// `host` - Host of a server. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   ///
   /// `path` - Custom path to the Pusher Channels endpoint, used if [key] provided as `null`.
+  /// `Note:`
+  /// - If both `key` and `path` are provided as `null` - [path] getter will return `/` (slash).
+  /// - It's recommended to provide a path other than the root (`/`) on a server because query parameters will be added to the generated uri.
+  /// - Do not set a route that ends with `/` on a server because query parameters will be added to the generated uri.
   ///
   /// `port` - Port of a server.
   ///
@@ -112,6 +120,10 @@ class PusherChannelOptions {
   /// `host` - Host of a server. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   ///
   /// `path` - Custom path to the Pusher Channels endpoint, used if [key] provided as `null`.
+  /// `Note:`
+  /// - If both `key` and `path` are provided as `null` - [path] getter will return `/` (slash).
+  /// - It's recommended to provide a path other than the root (`/`) on a server because query parameters will be added to the generated uri.
+  /// - Do not set a route that ends with `/` on a server because query parameters will be added to the generated uri.
   ///
   /// `port` - Port of a server.
   ///
@@ -148,7 +160,8 @@ class PusherChannelOptions {
 
   /// If `path` parameter was provided in any of the constructors - it will be set, otherwise the path will look like '/app/[key]'
   String get path {
-    return _path ?? '/app/$key';
+    if (key != null) return '/app/$key';
+    return _path ?? '/';
   }
 
   /// Generated uri.
