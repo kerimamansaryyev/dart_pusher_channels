@@ -39,7 +39,7 @@ abstract class ConnectionDelegate {
   Duration get pingWaitPongDuration;
 
   /// Constraints of the delegate
-  final PusherChannelOptions options;
+  final PusherChannelsOptions options;
 
   ConnectionDelegate({required this.options});
 

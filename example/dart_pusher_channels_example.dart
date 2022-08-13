@@ -7,8 +7,8 @@ void main() {
   PusherChannelsPackageConfigs.enableLogs();
 
   // Creating the options.
-  // Need help with the options? Checkout the informative API reference of [PusherChannelOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions-class.html)
-  const options = PusherChannelOptions.wss(
+  // Need help with the options? Checkout the informative API reference of [PusherChannelsOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelsOptions-class.html)
+  const options = PusherChannelsOptions.wss(
       host: 'my.domain.com', port: 443, key: 'API_KEY', protocol: 7);
 
   final client = PusherChannelsClient.websocket(

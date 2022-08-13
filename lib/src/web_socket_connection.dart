@@ -12,7 +12,7 @@ import 'options.dart';
 
 class WebSocketChannelConnectionDelegate extends ConnectionDelegate {
   WebSocketChannelConnectionDelegate(
-      {required PusherChannelOptions options,
+      {required PusherChannelsOptions options,
       required this.pingWaitPongDuration,
       this.eventFactory,
       this.onConnectionErrorHandler,

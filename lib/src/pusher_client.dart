@@ -8,7 +8,7 @@ import 'event.dart';
 /// on Pusher Channels protocol through [ConnectionDelegate],
 /// generating and managing channels internally
 class PusherChannelsClient {
-  final PusherChannelOptions options;
+  final PusherChannelsOptions options;
   late final ConnectionDelegate _delegate;
   final Map<String, Channel> _channels = {};
 

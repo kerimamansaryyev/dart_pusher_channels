@@ -22,6 +22,9 @@ Development and testing of:
 [#6](https://github.com/mcfugger/dart_pusher_channels/pull/6),
 [#8](https://github.com/mcfugger/dart_pusher_channels/pull/8)
 
+# Migration from 0.2.X to 0.3.X
+`PusherChannelOptions` was deprecated and renamed to `PusherChannelsOptions` for conveniency.
+
 # Description
 
 ***Note: This package needs to be tested and accepting issues. It was tested on a few projects for production.***
@@ -41,24 +44,24 @@ Other platforms are in a test queue.
 
 # Usage
 
-## PusherChannelOptions
+## PusherChannelsOptions
 
-In order to get known to  the parameters provided to `PusherChannelOptions`, it's highly recommended to read the informative API reference of [PusherChannelOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions-class.html).
+In order to get known to  the parameters provided to `PusherChannelsOptions`, it's highly recommended to read the informative API reference of [PusherChannelsOptions](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelsOptions-class.html).
 
 Also, see API references of the constructors to learn more about their parameters:
-- [`PusherChannelOptions.new`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.html)
-- [`PusherChannelOptions.ws`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.ws.html)
-- [`PusherChannelOptions.wss`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelOptions/PusherChannelOptions.wss.html)
+- [`PusherChannelsOptions.new`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelsOptions/PusherChannelsOptions.html)
+- [`PusherChannelsOptions.ws`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelsOptions/PusherChannelsOptions.ws.html)
+- [`PusherChannelsOptions.wss`](https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_base/PusherChannelsOptions/PusherChannelsOptions.wss.html)
 
 ## PusherChannelsClient
 Create an instance of `PusherChannelsClient` and use it to establish connection.
 
-1. Create `PusherChannelOptions`
+1. Create `PusherChannelsOptions`
 
 
 
 ```dart
-const options = PusherChannelOptions.wss(
+const options = PusherChannelsOptions.wss(
       host: 'my.domain.com',
       port: 443,
       key: 'API_KEY',

@@ -3,11 +3,12 @@ import 'package:meta/meta.dart';
 
 /// Options provided to [ConnectionDelegate].
 /// See:
-/// - [PusherChannelsOptions.new]
-/// - [PusherChannelsOptions.ws]
-/// - [PusherChannelsOptions.wss]
+/// - [PusherChannelOptions.new]
+/// - [PusherChannelOptions.ws]
+/// - [PusherChannelOptions.wss]
+@Deprecated('The class was renamed to [PusherChannelsOptions].')
 @immutable
-class PusherChannelsOptions {
+class PusherChannelOptions {
   /// Scheme depending on the security context. For web socket connections they are: `ws` or `wss`.
   final String scheme;
 
@@ -59,7 +60,7 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
-  const PusherChannelsOptions(
+  const PusherChannelOptions(
       {required this.scheme,
       required String host,
       String? path,
@@ -95,7 +96,7 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
-  const PusherChannelsOptions.ws({
+  const PusherChannelOptions.ws({
     String? cluster,
     required int? port,
     required String? key,
@@ -137,7 +138,7 @@ class PusherChannelsOptions {
   ///
   /// `cluster` - Cluster of your app. `Note:` If you provide a cluster, then the [host] getter will return 'ws-$[cluster].$[_host]',
   /// otherwise - the host will be used as it was originally provided.
-  const PusherChannelsOptions.wss({
+  const PusherChannelOptions.wss({
     String? cluster,
     required int? port,
     required String? key,

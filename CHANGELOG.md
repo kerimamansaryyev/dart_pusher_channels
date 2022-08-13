@@ -1,3 +1,5 @@
+## 0.3.0
+`BREAKING CHANGE`: `PusherChannelOptions` was deprecated and renamed to `PusherChannelsOptions` for conveniency.
 ## 0.2.9
 Returning '`/`' in `path` getter of `PusherChannelOptions` if both `key` and `path` parameters are provided as `null`.
 ## 0.2.8+1
