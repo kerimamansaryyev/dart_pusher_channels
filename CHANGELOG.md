@@ -1,3 +1,5 @@
+## 0.3.1+1
+Updated `kDartPusherChannelsLibraryVersion` constant metadata to `0.3.1`
 ## 0.3.1
 Added `shouldSupplyQueryMetaData` to `PusherChannelsOptions`. It will regulate whether to include or omit the metadata such as `client`, `version`, `protocol`.
 ## 0.3.0
