@@ -14,7 +14,7 @@ abstract class PusherChannelsPackageLogger {
   }
 
   static void enableLogs({LogHandler? handler}) {
-    _handler = handler ?? _handler;
+    _handler = handler ?? print;
     _logsEnabled = true;
   }
 
