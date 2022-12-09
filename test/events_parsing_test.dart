@@ -2,12 +2,124 @@ import 'dart:convert';
 
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
+import 'package:dart_pusher_channels/src/events/ping_event.dart';
+import 'package:dart_pusher_channels/src/events/pong_event.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 // Ignoring for testing
 // ignore: long-method
 void main() {
+  group(
+    'PusherChannelsPongEvent |',
+    () {
+      test(
+        'tryParseFromDynamic gives null if message not String or Map, if wrong event name',
+        () {
+          final mapMessage = {
+            'event': 'pusher:pong',
+            'data': jsonEncode(<String, dynamic>{})
+          };
+          final mapMessageWrong = {
+            'event': 'pusher:pong1',
+            'data': jsonEncode(<String, String>{})
+          };
+          final stringMessage = jsonEncode(
+            mapMessage,
+          );
+          final wrongMessage = 1;
+
+          final mustBeNull = PusherChannelsPongEvent.tryParseFromDynamic(
+            wrongMessage,
+          );
+
+          final fromMap = PusherChannelsPongEvent.tryParseFromDynamic(
+            mapMessage,
+          );
+
+          final fromString = PusherChannelsPongEvent.tryParseFromDynamic(
+            stringMessage,
+          );
+
+          final withWrongName = PusherChannelsPongEvent.tryParseFromDynamic(
+            mapMessageWrong,
+          );
+
+          expect(
+            mustBeNull,
+            null,
+          );
+          expect(
+            fromMap,
+            isA<PusherChannelsPongEvent>(),
+          );
+          expect(
+            fromString,
+            isA<PusherChannelsPongEvent>(),
+          );
+          expect(
+            withWrongName,
+            null,
+          );
+        },
+      );
+    },
+  );
+  group(
+    'PusherChannelsPingEvent |',
+    () {
+      test(
+        'tryParseFromDynamic gives null if message not String or Map, if wrong event name',
+        () {
+          final mapMessage = {
+            'event': 'pusher:ping',
+            'data': jsonEncode(<String, dynamic>{})
+          };
+          final mapMessageWrong = {
+            'event': 'pusher:ping1',
+            'data': jsonEncode(<String, String>{})
+          };
+          final stringMessage = jsonEncode(
+            mapMessage,
+          );
+          final wrongMessage = 1;
+
+          final mustBeNull = PusherChannelsPingEvent.tryParseFromDynamic(
+            wrongMessage,
+          );
+
+          final fromMap = PusherChannelsPingEvent.tryParseFromDynamic(
+            mapMessage,
+          );
+
+          final fromString = PusherChannelsPingEvent.tryParseFromDynamic(
+            stringMessage,
+          );
+
+          final withWrongName = PusherChannelsPingEvent.tryParseFromDynamic(
+            mapMessageWrong,
+          );
+
+          expect(
+            mustBeNull,
+            null,
+          );
+          expect(
+            fromMap,
+            isA<PusherChannelsPingEvent>(),
+          );
+          expect(
+            fromString,
+            isA<PusherChannelsPingEvent>(),
+          );
+          expect(
+            withWrongName,
+            null,
+          );
+        },
+      );
+    },
+  );
   group('PusherChannelsErrorEvent |', () {
     test(
       'testing members of PusherChannelsErrorEvent',
