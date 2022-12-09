@@ -13,13 +13,13 @@ platforms:
   web:
   windows:
 
-
 dependencies:
+  http: ^0.13.5
+  meta: ^1.8.0
+  rxdart: ^0.27.7
   web_socket_channel: ^2.2.0
-  http: ^0.13.2
-  rxdart: ^0.27.3
-  meta: ^1.7.0
 
 dev_dependencies:
-  lints: ^1.0.0
-  test: ^1.16.0
+  dart_code_metrics: ^5.2.1
+  lints: ^2.0.1
+  test: ^1.22.1
