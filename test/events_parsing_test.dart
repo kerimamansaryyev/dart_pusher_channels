@@ -1,10 +1,89 @@
 import 'dart:convert';
 
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
+import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
+// Ignoring for testing
+// ignore: long-method
 void main() {
+  group('PusherChannelsErrorEvent |', () {
+    test(
+      'testing members of PusherChannelsErrorEvent',
+      () {
+        final mapMessage = {
+          'event': 'pusher:error',
+          'data': jsonEncode(<String, String>{
+            'code': '123',
+            'message': 'hello',
+          })
+        };
+        final event = PusherChannelsErrorEvent.tryParseFromDynamic(
+          mapMessage,
+        );
+
+        expect(
+          event?.code,
+          123,
+        );
+        expect(
+          event?.message,
+          'hello',
+        );
+      },
+    );
+    test(
+      '.tryParseFromDynamic gives null if message not String or Map, if wrong event name',
+      () {
+        final mapMessage = {
+          'event': 'pusher:error',
+          'data': jsonEncode(<String, dynamic>{})
+        };
+        final mapMessageWrong = {
+          'event': 'pusher:error1',
+          'data': jsonEncode(<String, String>{})
+        };
+        final stringMessage = jsonEncode(
+          mapMessage,
+        );
+        final wrongMessage = 1;
+
+        final mustBeNull = PusherChannelsErrorEvent.tryParseFromDynamic(
+          wrongMessage,
+        );
+
+        final fromMap = PusherChannelsErrorEvent.tryParseFromDynamic(
+          mapMessage,
+        );
+
+        final fromString = PusherChannelsErrorEvent.tryParseFromDynamic(
+          stringMessage,
+        );
+
+        final withWrongName = PusherChannelsErrorEvent.tryParseFromDynamic(
+          mapMessageWrong,
+        );
+
+        expect(
+          mustBeNull,
+          null,
+        );
+        expect(
+          fromMap,
+          isA<PusherChannelsErrorEvent>(),
+        );
+        expect(
+          fromString,
+          isA<PusherChannelsErrorEvent>(),
+        );
+        expect(
+          withWrongName,
+          null,
+        );
+      },
+    );
+  });
   group(
     'PusherChannelsConnectionEstablishedEvent |',
     () {
@@ -81,11 +160,11 @@ void main() {
           );
           expect(
             fromMap,
-            isNot(null),
+            isA<PusherChannelsConnectionEstablishedEvent>(),
           );
           expect(
             fromString,
-            isNot(null),
+            isA<PusherChannelsConnectionEstablishedEvent>(),
           );
           expect(
             withWrongName,

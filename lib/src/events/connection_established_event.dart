@@ -3,17 +3,19 @@ import 'package:dart_pusher_channels/src/utils/event_names.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
+@internal
 @immutable
 class PusherChannelsConnectionEstablishedEvent implements PusherChannelsEvent {
   static const _activityTimeoutKey = 'activity_timeout';
   static const _socketIdKey = 'socket_id';
+  static const _name = PusherChannelsEventNames.connectionEstablished;
 
   final String socketId;
   @protected
   final int? activityTimeoutInSeconds;
 
   @override
-  final String name = PusherChannelsEventNames.connectionEstablished;
+  final String name = _name;
 
   const PusherChannelsConnectionEstablishedEvent._({
     required this.activityTimeoutInSeconds,
@@ -35,8 +37,7 @@ class PusherChannelsConnectionEstablishedEvent implements PusherChannelsEvent {
   ) {
     final root = safeMessageToMapDeserializer(message);
     final name = root?[PusherChannelsEvent.eventNameKey]?.toString();
-    if (root == null ||
-        name != PusherChannelsEventNames.connectionEstablished) {
+    if (root == null || name != _name) {
       return null;
     }
 

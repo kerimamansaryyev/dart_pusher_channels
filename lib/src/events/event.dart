@@ -1,9 +1,16 @@
 import 'package:meta/meta.dart';
 
-mixin ChannelEventMixin<T> on PusherChannelsEvent {
+@internal
+mixin EventWithDataMixin on PusherChannelsEvent {
+  abstract final dynamic data;
+}
+
+@internal
+mixin ChannelEventMixin on PusherChannelsEvent {
   abstract final String channelName;
 }
 
+@internal
 @immutable
 abstract class PusherChannelsEvent {
   abstract final String name;
