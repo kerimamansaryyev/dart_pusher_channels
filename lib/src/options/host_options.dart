@@ -1,38 +1,38 @@
 part of pusher_channels_options;
 
 @immutable
-class _ClusteredOptions with PusherChannelsOptions, _QuerySupplyMixin {
+class _HostOptions with PusherChannelsOptions, _QuerySupplyMixin {
   final String scheme;
+
   final String host;
-  final String cluster;
-  final int? port;
+
   final String key;
+
+  final int? port;
 
   @override
   final PusherChannelsOptionsMetadata metadata;
+
   @override
   final bool shouldSupplyMetadataQueries;
 
-  const _ClusteredOptions({
+  const _HostOptions({
     required this.scheme,
-    required this.cluster,
+    required this.host,
     required this.key,
-    this.shouldSupplyMetadataQueries = true,
-    this.host = kDefaultPusherChannelsHost,
-    this.metadata = const PusherChannelsOptionsMetadata.byDefault(),
     this.port,
+    this.shouldSupplyMetadataQueries = true,
+    this.metadata = const PusherChannelsOptionsMetadata.byDefault(),
   });
 
   @override
   Uri get uri => Uri(
         scheme: scheme,
         port: port,
-        host: _host,
+        host: host,
         path: _path,
         queryParameters: queryParameters,
       );
-
-  String get _host => 'ws-$cluster.$host';
 
   String get _path => '/app/$key';
 }
