@@ -6,6 +6,7 @@ import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
 @internal
+@immutable
 class PusherChannelsPongEvent implements PusherChannelsEvent, SentEventMixin {
   static const _name = PusherChannelsEventNames.pong;
 
