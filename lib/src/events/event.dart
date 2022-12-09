@@ -1,5 +1,9 @@
 import 'package:meta/meta.dart';
 
+mixin SentEventMixin on PusherChannelsEvent {
+  String getEncoded();
+}
+
 @internal
 mixin EventWithDataMixin on PusherChannelsEvent {
   abstract final dynamic data;

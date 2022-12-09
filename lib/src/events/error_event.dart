@@ -1,8 +1,7 @@
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/utils/event_names.dart';
+import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
-
-import '../utils/helpers.dart';
 
 @immutable
 class PusherChannelsErrorEvent implements PusherChannelsEvent {
