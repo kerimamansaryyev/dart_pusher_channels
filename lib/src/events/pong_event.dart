@@ -7,7 +7,11 @@ import 'package:meta/meta.dart';
 
 @internal
 @immutable
-class PusherChannelsPongEvent implements PusherChannelsEvent, SentEventMixin {
+class PusherChannelsPongEvent
+    implements
+        PusherChannelsEvent,
+        PusherChannelsSentEventMixin,
+        PusherChannelsPredefinedEventMixin {
   static const _name = PusherChannelsEventNames.pong;
 
   @override

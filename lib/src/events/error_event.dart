@@ -4,7 +4,8 @@ import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
 @immutable
-class PusherChannelsErrorEvent implements PusherChannelsEvent {
+class PusherChannelsErrorEvent
+    implements PusherChannelsEvent, PusherChannelsPredefinedEventMixin {
   static const _codeKey = 'code';
   static const _messageKey = 'message';
   static const _name = PusherChannelsEventNames.error;

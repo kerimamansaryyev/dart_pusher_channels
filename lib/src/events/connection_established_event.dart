@@ -5,7 +5,8 @@ import 'package:meta/meta.dart';
 
 @internal
 @immutable
-class PusherChannelsConnectionEstablishedEvent implements PusherChannelsEvent {
+class PusherChannelsConnectionEstablishedEvent
+    implements PusherChannelsEvent, PusherChannelsPredefinedEventMixin {
   static const _activityTimeoutKey = 'activity_timeout';
   static const _socketIdKey = 'socket_id';
   static const _name = PusherChannelsEventNames.connectionEstablished;

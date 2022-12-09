@@ -1,17 +1,14 @@
 import 'package:meta/meta.dart';
 
-mixin SentEventMixin on PusherChannelsEvent {
+mixin PusherChannelsPredefinedEventMixin on PusherChannelsEvent {}
+
+mixin PusherChannelsSentEventMixin on PusherChannelsEvent {
   String getEncoded();
 }
 
 @internal
-mixin EventWithDataMixin on PusherChannelsEvent {
+mixin PusherChannelsEventWithDataMixin on PusherChannelsEvent {
   abstract final dynamic data;
-}
-
-@internal
-mixin ChannelEventMixin on PusherChannelsEvent {
-  abstract final String channelName;
 }
 
 @internal
@@ -21,4 +18,5 @@ abstract class PusherChannelsEvent {
 
   static const eventNameKey = 'event';
   static const dataKey = 'data';
+  static const channelKey = 'channel';
 }
