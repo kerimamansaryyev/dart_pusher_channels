@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dart_pusher_channels/src/client/controller_interaction_interface.dart';
+import 'package:dart_pusher_channels/src/client/observer.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
@@ -9,20 +11,27 @@ import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
 typedef PusherChannelsConnectionDelegate = PusherChannelsConnection Function();
+typedef PusherChannelsClientLifeCycleConnectionErrorHandler = void Function(
+  dynamic exception,
+  StackTrace trace,
+  void Function() refresh,
+);
+typedef PusherChannelsClientLifeCycleObserversDelegate
+    = List<PusherChannelsClientLifeCycleObserver> Function(
+  PusherChannelsClientLifeCycleInteractionInterface interactionInterface,
+);
 
 enum PusherChannelsClientLifeCycleState {
-  pendingConnection,
   connectionError,
+  disconnected,
+  disposed,
+  established,
+  pusherError,
+  pendingConnection,
   none,
 }
 
-typedef PusherChannelsClientConnectionLifeCycleControllerConnectionErrorHandler
-    = void Function(
-  dynamic exception,
-  StackTrace trace,
-);
-
-class PusherChannelsClientConnectionLifeCycleController {
+class PusherChannelsClientLifeCycleController {
   int _currentLifeCycleCount = 0;
   bool _isDisposed = false;
   PusherChannelsClientLifeCycleState _currentLifeCycleState =
@@ -33,25 +42,65 @@ class PusherChannelsClientConnectionLifeCycleController {
       _lifeCycleStateController = StreamController.broadcast();
 
   @protected
-  final PusherChannelsClientConnectionLifeCycleControllerConnectionErrorHandler
+  final PusherChannelsClientLifeCycleConnectionErrorHandler
       connectionErrorHandler;
   @protected
   final PusherChannelsConnectionDelegate connectionDelegate;
+  @protected
+  final PusherChannelsClientLifeCycleObserversDelegate observersDelegate;
 
-  PusherChannelsClientConnectionLifeCycleController({
+  late final PusherChannelsClientLifeCycleInteractionInterface
+      interactionInterface = PusherChannelsClientLifeCycleInteractionInterface(
+    reconnectDelegate: reconnectSafely,
+    sendEventDelegate: _sendEvent,
+  );
+
+  late final List<PusherChannelsClientLifeCycleObserver> _observers = [
+    ...observersDelegate(
+      interactionInterface,
+    ),
+  ];
+
+  PusherChannelsClientLifeCycleController({
     required this.connectionDelegate,
     required this.connectionErrorHandler,
+    required this.observersDelegate,
   });
 
-  Future<void> connect() async {
+  Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
+      _lifeCycleStateController.stream;
+
+  Future<void> connectSafely() {
+    return _connect();
+  }
+
+  Future<void> disconnectSafely() {
+    _changeLifeCycleState(PusherChannelsClientLifeCycleState.disconnected);
+    return _disconnect();
+  }
+
+  void reconnectSafely() {
+    _reconnect();
+  }
+
+  Future<void> dispose() async {
+    _isDisposed = true;
+    _currentLifeCycleCount++;
+    _completeSafely();
+    await _disconnect();
+    _changeLifeCycleState(PusherChannelsClientLifeCycleState.disposed);
+    await _lifeCycleStateController.close();
+  }
+
+  Future<void> _connect() async {
     _completeSafely();
     final fixatedLifeCycleCount = ++_currentLifeCycleCount;
-    _connectionCompleter = Completer();
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.pendingConnection);
     await _disconnect();
     if (fixatedLifeCycleCount < _currentLifeCycleCount) {
       return;
     }
+    _connectionCompleter = Completer();
     runZonedGuarded(
       () {
         _connection = connectionDelegate();
@@ -91,6 +140,14 @@ class PusherChannelsClientConnectionLifeCycleController {
     _connection = null;
   }
 
+  void _sendEvent(PusherChannelsSentEventMixin event) {
+    try {
+      _connection?.sendEvent(
+        event.getEncoded(),
+      );
+    } catch (_) {}
+  }
+
   void _reconnect() async {
     final fixatedLifeCycleCount = _currentLifeCycleCount;
     await _disconnect();
@@ -98,7 +155,7 @@ class PusherChannelsClientConnectionLifeCycleController {
       return;
     }
     unawaited(
-      connect(),
+      _connect(),
     );
   }
 
@@ -121,6 +178,11 @@ class PusherChannelsClientConnectionLifeCycleController {
     if (fixatedLifeCycleCount < _currentLifeCycleCount || _isDisposed) {
       return;
     }
+    if (_currentLifeCycleState ==
+        PusherChannelsClientLifeCycleState.disconnected) {
+      return;
+    }
+    _completeSafely();
     _reconnect();
   }
 
@@ -138,7 +200,9 @@ class PusherChannelsClientConnectionLifeCycleController {
       connectionErrorHandler(
         exception,
         trace,
+        interactionInterface.reconnect,
       );
+      _completeSafely();
     }
   }
 
@@ -163,5 +227,11 @@ class PusherChannelsClientConnectionLifeCycleController {
     }
     final pusherEvent = _internalEventFactory(event) ??
         PusherChannelsReadEvent.tryParseFromDynamic(event);
+    if (pusherEvent is PusherChannelsConnectionEstablishedEvent) {
+      _changeLifeCycleState(PusherChannelsClientLifeCycleState.established);
+    } else if (pusherEvent is PusherChannelsErrorEvent) {
+      _changeLifeCycleState(PusherChannelsClientLifeCycleState.pusherError);
+    }
+    _completeSafely();
   }
 }
