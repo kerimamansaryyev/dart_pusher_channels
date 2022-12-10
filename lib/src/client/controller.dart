@@ -8,6 +8,7 @@ import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/pong_event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
+import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 
 typedef PusherChannelsConnectionDelegate = PusherChannelsConnection Function();
@@ -70,6 +71,8 @@ class PusherChannelsClientLifeCycleController {
 
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       _lifeCycleStateController.stream;
+
+  String? get socketId => _socketId;
 
   Future<void> connectSafely() {
     return _connect();
@@ -164,9 +167,13 @@ class PusherChannelsClientLifeCycleController {
     if (newState == _currentLifeCycleState) {
       return;
     }
+
     _currentLifeCycleState = newState;
     _lifeCycleStateController.add(
       _currentLifeCycleState,
+    );
+    PusherChannelsPackageLogger.log(
+      'Current lifecycle state: $_currentLifeCycleState',
     );
   }
 
@@ -233,6 +240,9 @@ class PusherChannelsClientLifeCycleController {
     if (fixatedLifeCycleCount < _currentLifeCycleCount || _isDisposed) {
       return;
     }
+    PusherChannelsPackageLogger.log(
+      'Received an event: $event',
+    );
     final pusherEvent = _internalEventFactory(event) ??
         PusherChannelsReadEvent.tryParseFromDynamic(event);
     if (pusherEvent is PusherChannelsConnectionEstablishedEvent) {

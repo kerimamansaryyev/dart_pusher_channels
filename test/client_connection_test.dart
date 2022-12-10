@@ -100,6 +100,9 @@ class TestConnection implements PusherChannelsConnection {
       trace,
     );
   }
+
+  @override
+  void ping() {}
 }
 
 // Ignoring while testing

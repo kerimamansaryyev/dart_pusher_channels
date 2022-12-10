@@ -93,4 +93,7 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
       trace,
     );
   }
+
+  @override
+  void ping() {}
 }
