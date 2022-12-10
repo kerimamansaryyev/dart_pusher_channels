@@ -1,13 +1,37 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
+import 'package:dart_pusher_channels/src/utils/event_names.dart';
+import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 class TestConnection implements PusherChannelsConnection {
   bool _isClosed = false;
-  final StreamController<String> _messageStreamController = StreamController();
+  StreamController<String>? _messageStreamController;
   StreamSubscription? _streamSubscription;
+
+  TestConnection();
+
+  @visibleForTesting
+  void fireConnectionEstablished() {
+    _messageStreamController?.add(
+      jsonEncode({
+        'event': PusherChannelsEventNames.connectionEstablished,
+        'data': jsonEncode({
+          'socket_id': '123',
+        })
+      }),
+    );
+  }
+
+  @visibleForTesting
+  void fireException() {
+    _messageStreamController?.addError(
+      Exception('Some exception'),
+    );
+  }
 
   @override
   Future<void> close() async {
@@ -16,7 +40,7 @@ class TestConnection implements PusherChannelsConnection {
     }
     _isClosed = true;
     await _streamSubscription?.cancel();
-    await _messageStreamController.close();
+    await _messageStreamController?.close();
   }
 
   @override
@@ -28,18 +52,19 @@ class TestConnection implements PusherChannelsConnection {
     if (_isClosed) {
       throw Exception('closed');
     }
-    _streamSubscription = _messageStreamController.stream.listen(
-      (event) => _onEvent(
-        event,
-        onEventCallback,
-      ),
-      onDone: () => _onDone(onDoneCallback),
-      onError: (error, trace) => _onError(
-        exception: error,
-        trace: trace,
-        callback: onErrorCallback,
-      ),
-    );
+    _streamSubscription =
+        (_messageStreamController ??= StreamController()).stream.listen(
+              (event) => _onEvent(
+                event,
+                onEventCallback,
+              ),
+              onDone: () => _onDone(onDoneCallback),
+              onError: (error, trace) => _onError(
+                exception: error,
+                trace: trace,
+                callback: onErrorCallback,
+              ),
+            );
   }
 
   @override
@@ -137,5 +162,35 @@ void main() {
         3,
       );
     });
+    test(
+      'If PusherChannelsConnectionEstablishedEvent fires - connection is established',
+      () async {
+        TestConnection? currentTestConnection;
+        final client = PusherChannelsClient.custom(
+          connectionDelegate: () {
+            return currentTestConnection = TestConnection();
+          },
+          connectionErrorHandler: (exception, trace, refresh) {},
+        );
+        final stream = client.lifecycleStream;
+        unawaited(
+          expectLater(
+            stream,
+            emitsInOrder(
+              [
+                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.establishedConnection,
+                PusherChannelsClientLifeCycleState.disposed,
+                emitsDone,
+              ],
+            ),
+          ),
+        );
+
+        final future = client.connect().then((value) => client.dispose());
+        await Future(() => currentTestConnection?.fireConnectionEstablished());
+        await future;
+      },
+    );
   });
 }
