@@ -6,14 +6,23 @@ mixin PusherChannelsSentEventMixin on PusherChannelsEvent {
   String getEncoded();
 }
 
-@internal
-mixin PusherChannelsEventWithDataMixin on PusherChannelsEvent {
-  abstract final dynamic data;
+mixin PusherChannelsMapDataEventMixin on PusherChannelsReadEventMixin {
+  abstract final Map<String, dynamic> deserializedMapData;
+}
+
+mixin PusherChannelsReadEventMixin on PusherChannelsEvent {
+  abstract final Map<String, dynamic> rootObject;
+
+  @override
+  String get name =>
+      rootObject[PusherChannelsEvent.eventNameKey]?.toString() ?? '';
+
+  dynamic get data => rootObject[PusherChannelsEvent.dataKey];
 }
 
 @immutable
 abstract class PusherChannelsEvent {
-  abstract final String name;
+  String get name;
 
   static const eventNameKey = 'event';
   static const dataKey = 'data';

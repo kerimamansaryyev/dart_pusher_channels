@@ -7,7 +7,7 @@ import 'package:meta/meta.dart';
 
 @immutable
 class PusherChannelsPingEvent
-    implements
+    with
         PusherChannelsEvent,
         PusherChannelsSentEventMixin,
         PusherChannelsPredefinedEventMixin {

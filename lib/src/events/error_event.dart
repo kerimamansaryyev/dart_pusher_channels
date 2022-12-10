@@ -5,20 +5,29 @@ import 'package:meta/meta.dart';
 
 @immutable
 class PusherChannelsErrorEvent
-    implements PusherChannelsEvent, PusherChannelsPredefinedEventMixin {
+    with
+        PusherChannelsEvent,
+        PusherChannelsReadEventMixin,
+        PusherChannelsMapDataEventMixin,
+        PusherChannelsPredefinedEventMixin {
   static const _codeKey = 'code';
   static const _messageKey = 'message';
   static const _name = PusherChannelsEventNames.error;
 
-  final int? code;
-  final String? message;
+  int? get code => int.tryParse(
+        deserializedMapData[_codeKey]?.toString() ?? '',
+      );
+  String? get message => deserializedMapData[_messageKey]?.toString();
 
   @override
-  final String name = PusherChannelsEventNames.error;
+  final Map<String, dynamic> rootObject;
+
+  @override
+  final Map<String, dynamic> deserializedMapData;
 
   const PusherChannelsErrorEvent._({
-    required this.code,
-    required this.message,
+    required this.deserializedMapData,
+    required this.rootObject,
   });
 
   static PusherChannelsErrorEvent? tryParseFromDynamic(dynamic message) {
@@ -32,14 +41,9 @@ class PusherChannelsErrorEvent
       root[PusherChannelsEvent.dataKey],
     );
 
-    final code = int.tryParse(
-      data?[_codeKey]?.toString() ?? '',
-    );
-    final errorMessage = data?[_messageKey]?.toString();
-
     return PusherChannelsErrorEvent._(
-      code: code,
-      message: errorMessage,
+      rootObject: root,
+      deserializedMapData: <String, dynamic>{...?data},
     );
   }
 }

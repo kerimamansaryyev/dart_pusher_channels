@@ -4,12 +4,37 @@ import 'package:dart_pusher_channels/src/events/connection_established_event.dar
 import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/ping_event.dart';
 import 'package:dart_pusher_channels/src/events/pong_event.dart';
+import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 // Ignoring for testing
 // ignore: long-method
 void main() {
+  group(
+    'PusherChannelsReadEvent',
+    () {
+      test(
+        'getters name and data must be respective to the one from rootObject',
+        () {
+          final event = jsonEncode({
+            'event': 'hello',
+            'data': jsonEncode(
+              {
+                'payload': 3,
+              },
+            )
+          });
+          final readEvent = PusherChannelsReadEvent.tryParseFromDynamic(
+            event,
+          );
+          expect(readEvent?.name, 'hello');
+          expect(readEvent?.data, isA<String>());
+          expect(readEvent?.data, '{"payload":3}');
+        },
+      );
+    },
+  );
   group(
     'PusherChannelsPongEvent |',
     () {
@@ -100,6 +125,8 @@ void main() {
             mapMessageWrong,
           );
 
+          expect(fromMap?.name, 'pusher:ping');
+
           expect(
             mustBeNull,
             null,
@@ -134,6 +161,8 @@ void main() {
         final event = PusherChannelsErrorEvent.tryParseFromDynamic(
           mapMessage,
         );
+
+        expect(event?.name, 'pusher:error');
 
         expect(
           event?.code,
@@ -217,6 +246,7 @@ void main() {
             event?.activityTimeoutDuration?.inSeconds,
             12,
           );
+          expect(event?.socketId, '123');
         },
       );
       test(
@@ -265,6 +295,8 @@ void main() {
               PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
             mapMessageNoSocketId,
           );
+
+          expect(fromMap?.name, 'pusher:connection_established');
 
           expect(
             mustBeNull,

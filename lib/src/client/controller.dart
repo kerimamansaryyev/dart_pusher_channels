@@ -209,7 +209,7 @@ class PusherChannelsClientLifeCycleController {
     }
   }
 
-  PusherChannelsPredefinedEventMixin? _internalEventFactory(String event) {
+  PusherChannelsEvent? _internalEventFactory(String event) {
     return PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
           event,
         ) ??
