@@ -102,6 +102,8 @@ class TestConnection implements PusherChannelsConnection {
   }
 }
 
+// Ignoring while testing
+// ignore: long-method
 void main() {
   group(
     'TestConnection methods |',
@@ -130,10 +132,11 @@ void main() {
   );
   group('Testing pusher channels lifecycle |', () {
     test('Connection is pending until connection is established', () async {
-      final testConnection = TestConnection();
       final client = PusherChannelsClient.custom(
-        connectionDelegate: () => testConnection,
-        connectionErrorHandler: (exception, trace, refresh) {},
+        connectionDelegate: () => TestConnection(),
+        connectionErrorHandler: (exception, trace, refresh) {
+          print(exception);
+        },
       );
       final stream = client.lifecycleStream;
       final stopWatch = Stopwatch()..start();
@@ -190,6 +193,78 @@ void main() {
         final future = client.connect().then((value) => client.dispose());
         await Future(() => currentTestConnection?.fireConnectionEstablished());
         await future;
+      },
+    );
+    test(
+      'If exception fires in the flow - PusherChannelsClientLifeCycleState.connectionError is added to the lifecycle stream',
+      () async {
+        TestConnection? currentTestConnection;
+        final client = PusherChannelsClient.custom(
+          connectionDelegate: () {
+            return currentTestConnection = TestConnection();
+          },
+          connectionErrorHandler: (exception, trace, refresh) {},
+        );
+        final stream = client.lifecycleStream;
+        unawaited(
+          expectLater(
+            stream,
+            emitsInOrder(
+              [
+                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.establishedConnection,
+                PusherChannelsClientLifeCycleState.connectionError,
+                PusherChannelsClientLifeCycleState.disposed,
+                emitsDone,
+              ],
+            ),
+          ),
+        );
+
+        final future = client.connect();
+        await Future(() => currentTestConnection?.fireConnectionEstablished());
+        await future;
+        await Future(() => currentTestConnection?.fireException());
+        await Future(() => client.dispose());
+      },
+    );
+    test(
+      'connectionErrorHandler provided to the client fires when PusherChannelsClientLifeCycleState.connectionError occures',
+      () async {
+        TestConnection? currentTestConnection;
+        final Completer onConnectionErrorHandlerCompleter = Completer();
+        final client = PusherChannelsClient.custom(
+          connectionDelegate: () {
+            return currentTestConnection = TestConnection();
+          },
+          connectionErrorHandler: (exception, trace, refresh) {
+            refresh();
+            onConnectionErrorHandlerCompleter.complete();
+          },
+        );
+        final stream = client.lifecycleStream;
+        unawaited(
+          expectLater(
+            stream,
+            emitsInOrder(
+              [
+                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.establishedConnection,
+                PusherChannelsClientLifeCycleState.connectionError,
+                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.disposed,
+                emitsDone,
+              ],
+            ),
+          ),
+        );
+
+        final future = client.connect();
+        await Future(() => currentTestConnection?.fireConnectionEstablished());
+        await future;
+        await Future(() => currentTestConnection?.fireException());
+        await onConnectionErrorHandlerCompleter.future;
+        await Future(() => client.dispose());
       },
     );
   });

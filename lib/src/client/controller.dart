@@ -37,6 +37,7 @@ class PusherChannelsClientLifeCycleController {
   PusherChannelsClientLifeCycleState _currentLifeCycleState =
       PusherChannelsClientLifeCycleState.inactive;
   Completer<void> _connectionCompleter = Completer();
+  String? _socketId;
   late PusherChannelsConnection? _connection = connectionDelegate();
   final StreamController<PusherChannelsClientLifeCycleState>
       _lifeCycleStateController = StreamController.broadcast();
@@ -221,6 +222,10 @@ class PusherChannelsClientLifeCycleController {
         );
   }
 
+  void _setSocketId(String sockId) {
+    _socketId = sockId;
+  }
+
   void _handleEvent({
     required String event,
     required int fixatedLifeCycleCount,
@@ -231,6 +236,7 @@ class PusherChannelsClientLifeCycleController {
     final pusherEvent = _internalEventFactory(event) ??
         PusherChannelsReadEvent.tryParseFromDynamic(event);
     if (pusherEvent is PusherChannelsConnectionEstablishedEvent) {
+      _setSocketId(pusherEvent.socketId);
       _changeLifeCycleState(
         PusherChannelsClientLifeCycleState.establishedConnection,
       );
