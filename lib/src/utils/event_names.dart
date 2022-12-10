@@ -1,6 +1,3 @@
-import 'package:meta/meta.dart';
-
-@internal
 abstract class PusherChannelsEventNames {
   static const connectionEstablished = 'pusher:connection_established';
   static const error = 'pusher:error';

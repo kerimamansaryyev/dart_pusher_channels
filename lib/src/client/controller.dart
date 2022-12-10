@@ -25,17 +25,17 @@ enum PusherChannelsClientLifeCycleState {
   connectionError,
   disconnected,
   disposed,
-  established,
-  pusherError,
+  gotPusherError,
+  establishedConnection,
   pendingConnection,
-  none,
+  inactive,
 }
 
 class PusherChannelsClientLifeCycleController {
   int _currentLifeCycleCount = 0;
   bool _isDisposed = false;
   PusherChannelsClientLifeCycleState _currentLifeCycleState =
-      PusherChannelsClientLifeCycleState.none;
+      PusherChannelsClientLifeCycleState.inactive;
   Completer<void> _connectionCompleter = Completer();
   late PusherChannelsConnection? _connection = connectionDelegate();
   final StreamController<PusherChannelsClientLifeCycleState>
@@ -160,6 +160,9 @@ class PusherChannelsClientLifeCycleController {
   }
 
   void _changeLifeCycleState(PusherChannelsClientLifeCycleState newState) {
+    if (newState == _currentLifeCycleState) {
+      return;
+    }
     _currentLifeCycleState = newState;
     _lifeCycleStateController.add(
       _currentLifeCycleState,
@@ -228,9 +231,11 @@ class PusherChannelsClientLifeCycleController {
     final pusherEvent = _internalEventFactory(event) ??
         PusherChannelsReadEvent.tryParseFromDynamic(event);
     if (pusherEvent is PusherChannelsConnectionEstablishedEvent) {
-      _changeLifeCycleState(PusherChannelsClientLifeCycleState.established);
+      _changeLifeCycleState(
+        PusherChannelsClientLifeCycleState.establishedConnection,
+      );
     } else if (pusherEvent is PusherChannelsErrorEvent) {
-      _changeLifeCycleState(PusherChannelsClientLifeCycleState.pusherError);
+      _changeLifeCycleState(PusherChannelsClientLifeCycleState.gotPusherError);
     }
     _completeSafely();
   }

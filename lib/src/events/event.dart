@@ -11,7 +11,6 @@ mixin PusherChannelsEventWithDataMixin on PusherChannelsEvent {
   abstract final dynamic data;
 }
 
-@internal
 @immutable
 abstract class PusherChannelsEvent {
   abstract final String name;
