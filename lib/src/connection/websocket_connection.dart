@@ -8,7 +8,7 @@ class PusherChannelsWebSocketConnectionWasClosedException
     implements PusherChannelsException {
   @override
   final String message =
-      'PusherChannelsWebSocketConnection is closed and can not be reused';
+      'The instance of PusherChannelsWebSocketConnection is closed and can not be reused';
 
   const PusherChannelsWebSocketConnectionWasClosedException();
 }
