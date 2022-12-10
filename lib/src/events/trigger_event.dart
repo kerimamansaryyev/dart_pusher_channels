@@ -26,6 +26,9 @@ class PusherChannelsTriggerEvent
       });
 
   String _getDataEncoded() {
+    if (data is String) {
+      return data;
+    }
     try {
       return jsonEncode(data);
     } catch (_) {
