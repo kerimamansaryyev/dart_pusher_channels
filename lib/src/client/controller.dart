@@ -16,6 +16,10 @@ typedef PusherChannelsClientLifeCycleConnectionErrorHandler = void Function(
   StackTrace trace,
   void Function() refresh,
 );
+typedef PusherChannelsClientLifeCycleEventHandler = void Function(
+  PusherChannelsEvent event,
+);
+
 typedef _TimeoutHandler = void Function();
 
 enum PusherChannelsClientLifeCycleState {
@@ -25,6 +29,7 @@ enum PusherChannelsClientLifeCycleState {
   gotPusherError,
   establishedConnection,
   pendingConnection,
+  reconnecting,
   inactive,
 }
 
@@ -38,6 +43,8 @@ class PusherChannelsClientLifeCycleController {
   Duration? _serverActivityDuration;
   Timer? _activityTimer;
   late PusherChannelsConnection? _connection = connectionDelegate();
+  final StreamController<PusherChannelsEvent> _eventsController =
+      StreamController.broadcast();
   final StreamController<PusherChannelsClientLifeCycleState>
       _lifeCycleStateController = StreamController.broadcast();
 
@@ -46,13 +53,17 @@ class PusherChannelsClientLifeCycleController {
       connectionErrorHandler;
   @protected
   final PusherChannelsConnectionDelegate connectionDelegate;
+  @protected
+  final PusherChannelsClientLifeCycleEventHandler externalEventHandler;
 
   final Duration? activityDurationOverride;
   final Duration defaultActivityDuration;
-
+  final Duration minimumReconnectDuration;
   final Duration waitForPongDuration;
 
   PusherChannelsClientLifeCycleController({
+    required this.minimumReconnectDuration,
+    required this.externalEventHandler,
     required this.connectionDelegate,
     required this.connectionErrorHandler,
     required this.defaultActivityDuration,
@@ -62,6 +73,8 @@ class PusherChannelsClientLifeCycleController {
 
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       _lifeCycleStateController.stream;
+
+  Stream<PusherChannelsEvent> get eventStream => _eventsController.stream;
 
   String? get socketId => _socketId;
 
@@ -93,6 +106,7 @@ class PusherChannelsClientLifeCycleController {
     await _disconnect();
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.disposed);
     await _lifeCycleStateController.close();
+    await _eventsController.close();
   }
 
   Future<void> _connect() async {
@@ -155,12 +169,22 @@ class PusherChannelsClientLifeCycleController {
       _connection?.sendEvent(
         event.getEncoded(),
       );
-    } catch (_) {}
+    } catch (exception, trace) {
+      PusherChannelsPackageLogger.log(
+        'Failed to send an event "${event.name}" because "$exception" was thrown. Stacktrace:\n $trace',
+      );
+    }
   }
 
   void _reconnect() async {
-    final fixatedLifeCycleCount = _currentLifeCycleCount;
+    _completeSafely();
+    final fixatedLifeCycleCount = ++_currentLifeCycleCount;
+    _changeLifeCycleState(PusherChannelsClientLifeCycleState.reconnecting);
     await _disconnect();
+    if (fixatedLifeCycleCount < _currentLifeCycleCount) {
+      return;
+    }
+    await Future.delayed(minimumReconnectDuration);
     if (fixatedLifeCycleCount < _currentLifeCycleCount) {
       return;
     }
@@ -299,6 +323,11 @@ class PusherChannelsClientLifeCycleController {
 
     if (pusherEvent is PusherChannelsPingEvent) {
       _replyWithPong();
+    }
+
+    if (pusherEvent != null) {
+      _eventsController.add(pusherEvent);
+      Future.microtask(() => externalEventHandler(pusherEvent));
     }
 
     _completeSafely();

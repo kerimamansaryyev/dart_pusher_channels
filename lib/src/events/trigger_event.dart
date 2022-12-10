@@ -22,17 +22,6 @@ class PusherChannelsTriggerEvent
   String getEncoded() => jsonEncode({
         PusherChannelsEvent.eventNameKey: name,
         if (channelName != null) PusherChannelsEvent.channelKey: channelName,
-        PusherChannelsEvent.dataKey: _getDataEncoded(),
+        PusherChannelsEvent.dataKey: data,
       });
-
-  String _getDataEncoded() {
-    if (data is String) {
-      return data;
-    }
-    try {
-      return jsonEncode(data);
-    } catch (_) {
-      return data.toString();
-    }
-  }
 }

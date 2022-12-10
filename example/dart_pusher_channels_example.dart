@@ -1,9 +1,12 @@
+import 'dart:async';
+
+import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/client/client.dart';
-import 'package:dart_pusher_channels/src/events/trigger_event.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
 
-void main() {
+void main() async {
+  Stream.periodic(const Duration(seconds: 5)).listen((event) {});
   PusherChannelsPackageLogger.enableLogs();
   const testOptions = PusherChannelsOptions.fromCluster(
     scheme: 'wss',
@@ -12,21 +15,33 @@ void main() {
     port: 443,
   );
   final client = PusherChannelsClient.websocket(
+    activityDurationOverride: const Duration(seconds: 10),
     options: testOptions,
-    connectionErrorHandler: (exception, trace, refresh) {
+    connectionErrorHandler: (exception, trace, refresh) async {
       print('Exception: $exception');
+      refresh();
     },
   );
-  client.connect();
-  Stream.periodic(
-    const Duration(seconds: 3),
-  ).listen((_) {
-    client.trigger(
-      PusherChannelsTriggerEvent(
-        name: 'client-event',
-        data: {'data': 'hello client'},
-        channelName: 'presence-channel',
-      ),
+
+  PublicChannel? channel;
+
+  client.onConnectionEstablished.listen((_) {
+    channel = client.publicChannel(
+      'hello',
+      whenChannelStateChanged: (state) {
+        print(state.status);
+      },
     );
+    channel!.subscribeIfNotUnsubscribed();
   });
+
+  unawaited(client.connect());
+
+  await Future.delayed(
+    const Duration(seconds: 3),
+  );
+  await Future.delayed(
+    const Duration(seconds: 3),
+  );
+  client.reconnect();
 }

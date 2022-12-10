@@ -12,7 +12,7 @@ typedef PusherChannelsConnectionOnDoneCallback = void Function();
 abstract class PusherChannelsConnection {
   void sendEvent(String eventEncoded);
   void ping();
-  FutureOr<void> connect({
+  void connect({
     required PusherChannelsConnectionOnDoneCallback onDoneCallback,
     required PusherChannelsConnectionOnErrorCallback onErrorCallback,
     required PusherChannelsConnectionOnEventCallback onEventCallback,

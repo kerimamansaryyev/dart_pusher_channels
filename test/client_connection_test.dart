@@ -253,7 +253,7 @@ void main() {
                 PusherChannelsClientLifeCycleState.pendingConnection,
                 PusherChannelsClientLifeCycleState.establishedConnection,
                 PusherChannelsClientLifeCycleState.connectionError,
-                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.reconnecting,
                 PusherChannelsClientLifeCycleState.disposed,
                 emitsDone,
               ],

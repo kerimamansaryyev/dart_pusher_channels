@@ -6,9 +6,12 @@ class PusherChannelsReadEvent
   @override
   final Map<String, dynamic> rootObject;
 
-  PusherChannelsReadEvent._({
+  PusherChannelsReadEvent({
     required this.rootObject,
   });
+
+  String? get channelName =>
+      rootObject[PusherChannelsEvent.channelKey]?.toString();
 
   static PusherChannelsReadEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
@@ -16,7 +19,7 @@ class PusherChannelsReadEvent
       return null;
     }
 
-    return PusherChannelsReadEvent._(
+    return PusherChannelsReadEvent(
       rootObject: root,
     );
   }

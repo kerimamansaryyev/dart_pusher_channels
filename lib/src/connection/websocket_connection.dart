@@ -37,6 +37,7 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
     _webSocketChannel ??= WebSocketChannel.connect(uri);
     _webSocketEventsSubscription ??= _webSocketChannel?.stream.listen(
       (event) => _onEvent(event.toString(), onEventCallback),
+      cancelOnError: true,
       onDone: () => _onDone(onDoneCallback),
       onError: (exception, trace) => _onError(
         exception: exception,
@@ -89,6 +90,7 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
     if (_isClosed) {
       return;
     }
+    _webSocketChannel = null;
     callback(
       exception,
       trace,

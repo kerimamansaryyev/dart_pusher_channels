@@ -22,3 +22,7 @@ Map<String, dynamic> leaveOnlyStringKeys(Map other) {
   final copy = {...other}..removeWhere((key, value) => key is! String);
   return {...copy};
 }
+
+void voidStreamMapper(_) {
+  return;
+}
