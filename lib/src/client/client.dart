@@ -1,5 +1,4 @@
 import 'package:dart_pusher_channels/src/client/controller.dart';
-import 'package:dart_pusher_channels/src/client/pong_observer.dart';
 import 'package:dart_pusher_channels/src/connection/websocket_connection.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 
@@ -23,11 +22,6 @@ class PusherChannelsClient {
     controller = PusherChannelsClientLifeCycleController(
       connectionDelegate: connectionDelegate,
       connectionErrorHandler: connectionErrorHandler,
-      observersDelegate: (interactionInterface) => [
-        PusherChannelsClientPongLifeCycleObserver(
-          interactionInterface: interactionInterface,
-        )
-      ],
     );
 
     return PusherChannelsClient._(

@@ -1,7 +1,4 @@
 import 'dart:async';
-
-import 'package:dart_pusher_channels/src/client/controller_interaction_interface.dart';
-import 'package:dart_pusher_channels/src/client/observer.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
@@ -16,10 +13,6 @@ typedef PusherChannelsClientLifeCycleConnectionErrorHandler = void Function(
   dynamic exception,
   StackTrace trace,
   void Function() refresh,
-);
-typedef PusherChannelsClientLifeCycleObserversDelegate
-    = List<PusherChannelsClientLifeCycleObserver> Function(
-  PusherChannelsClientLifeCycleInteractionInterface interactionInterface,
 );
 
 enum PusherChannelsClientLifeCycleState {
@@ -48,25 +41,10 @@ class PusherChannelsClientLifeCycleController {
       connectionErrorHandler;
   @protected
   final PusherChannelsConnectionDelegate connectionDelegate;
-  @protected
-  final PusherChannelsClientLifeCycleObserversDelegate observersDelegate;
-
-  late final PusherChannelsClientLifeCycleInteractionInterface
-      interactionInterface = PusherChannelsClientLifeCycleInteractionInterface(
-    reconnectDelegate: reconnectSafely,
-    sendEventDelegate: _sendEvent,
-  );
-
-  late final List<PusherChannelsClientLifeCycleObserver> _observers = [
-    ...observersDelegate(
-      interactionInterface,
-    ),
-  ];
 
   PusherChannelsClientLifeCycleController({
     required this.connectionDelegate,
     required this.connectionErrorHandler,
-    required this.observersDelegate,
   });
 
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
@@ -211,7 +189,7 @@ class PusherChannelsClientLifeCycleController {
       connectionErrorHandler(
         exception,
         trace,
-        interactionInterface.reconnect,
+        reconnectSafely,
       );
       _completeSafely();
     }
