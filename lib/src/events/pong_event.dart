@@ -16,7 +16,7 @@ class PusherChannelsPongEvent
   @override
   final String name = _name;
 
-  const PusherChannelsPongEvent._();
+  const PusherChannelsPongEvent();
 
   static PusherChannelsPongEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
@@ -25,7 +25,7 @@ class PusherChannelsPongEvent
       return null;
     }
 
-    return const PusherChannelsPongEvent._();
+    return const PusherChannelsPongEvent();
   }
 
   @override

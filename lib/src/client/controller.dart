@@ -3,8 +3,10 @@ import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
+import 'package:dart_pusher_channels/src/events/ping_event.dart';
 import 'package:dart_pusher_channels/src/events/pong_event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
+import 'package:dart_pusher_channels/src/events/trigger_event.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 
@@ -14,6 +16,7 @@ typedef PusherChannelsClientLifeCycleConnectionErrorHandler = void Function(
   StackTrace trace,
   void Function() refresh,
 );
+typedef _TimeoutHandler = void Function();
 
 enum PusherChannelsClientLifeCycleState {
   connectionError,
@@ -32,6 +35,8 @@ class PusherChannelsClientLifeCycleController {
       PusherChannelsClientLifeCycleState.inactive;
   Completer<void> _connectionCompleter = Completer();
   String? _socketId;
+  Duration? _serverActivityDuration;
+  Timer? _activityTimer;
   late PusherChannelsConnection? _connection = connectionDelegate();
   final StreamController<PusherChannelsClientLifeCycleState>
       _lifeCycleStateController = StreamController.broadcast();
@@ -42,15 +47,35 @@ class PusherChannelsClientLifeCycleController {
   @protected
   final PusherChannelsConnectionDelegate connectionDelegate;
 
+  final Duration? activityDurationOverride;
+  final Duration defaultActivityDuration;
+
+  final Duration waitForPongDuration;
+
   PusherChannelsClientLifeCycleController({
     required this.connectionDelegate,
     required this.connectionErrorHandler,
+    required this.defaultActivityDuration,
+    required this.activityDurationOverride,
+    required this.waitForPongDuration,
   });
 
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       _lifeCycleStateController.stream;
 
   String? get socketId => _socketId;
+
+  void reconnectSafely() {
+    _reconnect();
+  }
+
+  void sendEvent(PusherChannelsSentEventMixin event) {
+    _sendEvent(event);
+  }
+
+  void triggerEvent(PusherChannelsTriggerEvent event) {
+    _triggerEvent(event);
+  }
 
   Future<void> connectSafely() {
     return _connect();
@@ -59,10 +84,6 @@ class PusherChannelsClientLifeCycleController {
   Future<void> disconnectSafely() {
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.disconnected);
     return _disconnect();
-  }
-
-  void reconnectSafely() {
-    _reconnect();
   }
 
   Future<void> dispose() async {
@@ -120,6 +141,13 @@ class PusherChannelsClientLifeCycleController {
       return;
     }
     _connection = null;
+    _cancelTimer();
+  }
+
+  void _triggerEvent(PusherChannelsTriggerEvent event) {
+    final messageEncoded = event.getEncoded();
+    PusherChannelsPackageLogger.log('Attempt to trigger: $messageEncoded');
+    _sendEvent(event);
   }
 
   void _sendEvent(PusherChannelsSentEventMixin event) {
@@ -195,20 +223,44 @@ class PusherChannelsClientLifeCycleController {
     }
   }
 
-  PusherChannelsEvent? _internalEventFactory(String event) {
-    return PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
-          event,
-        ) ??
-        PusherChannelsErrorEvent.tryParseFromDynamic(
-          event,
-        ) ??
-        PusherChannelsPongEvent.tryParseFromDynamic(
-          event,
-        );
+  void _establishConnectionParameters(
+    String sockId,
+    Duration? serverActivityDuration,
+  ) {
+    _socketId = sockId;
+    _serverActivityDuration = serverActivityDuration;
   }
 
-  void _setSocketId(String sockId) {
-    _socketId = sockId;
+  void _replyWithPong() {
+    _sendEvent(
+      const PusherChannelsPongEvent(),
+    );
+  }
+
+  void _performPing() {
+    PusherChannelsPackageLogger.log(
+      'Performing ping, waiting for pong for $waitForPongDuration',
+    );
+    _connection?.ping();
+    _setTimer(
+      duration: waitForPongDuration,
+      timeoutHandler: _reconnect,
+    );
+  }
+
+  void _setTimer({
+    required Duration duration,
+    required _TimeoutHandler timeoutHandler,
+  }) {
+    _cancelTimer();
+    _activityTimer = Timer(duration, timeoutHandler);
+    PusherChannelsPackageLogger.log('Timer is set to: $duration');
+  }
+
+  void _cancelTimer() {
+    _activityTimer?.cancel();
+    _activityTimer = null;
+    PusherChannelsPackageLogger.log('Timer was canceled');
   }
 
   void _handleEvent({
@@ -224,13 +276,49 @@ class PusherChannelsClientLifeCycleController {
     final pusherEvent = _internalEventFactory(event) ??
         PusherChannelsReadEvent.tryParseFromDynamic(event);
     if (pusherEvent is PusherChannelsConnectionEstablishedEvent) {
-      _setSocketId(pusherEvent.socketId);
+      _establishConnectionParameters(
+        pusherEvent.socketId,
+        pusherEvent.activityTimeoutDuration,
+      );
+      _setTimer(
+        duration: _getActivityDuration(),
+        timeoutHandler: _performPing,
+      );
       _changeLifeCycleState(
         PusherChannelsClientLifeCycleState.establishedConnection,
       );
     } else if (pusherEvent is PusherChannelsErrorEvent) {
       _changeLifeCycleState(PusherChannelsClientLifeCycleState.gotPusherError);
+    } else if (pusherEvent is PusherChannelsPongEvent || pusherEvent != null) {
+      PusherChannelsPackageLogger.log('Got an event, continuing activity');
+      _setTimer(
+        duration: _getActivityDuration(),
+        timeoutHandler: _performPing,
+      );
     }
+
+    if (pusherEvent is PusherChannelsPingEvent) {
+      _replyWithPong();
+    }
+
     _completeSafely();
   }
+
+  PusherChannelsEvent? _internalEventFactory(String event) {
+    return PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
+          event,
+        ) ??
+        PusherChannelsErrorEvent.tryParseFromDynamic(
+          event,
+        ) ??
+        PusherChannelsPongEvent.tryParseFromDynamic(
+          event,
+        ) ??
+        PusherChannelsPingEvent.tryParseFromDynamic(event);
+  }
+
+  Duration _getActivityDuration() =>
+      activityDurationOverride ??
+      _serverActivityDuration ??
+      defaultActivityDuration;
 }

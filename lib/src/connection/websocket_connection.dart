@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_pusher_channels/src/connection/connection.dart';
+import 'package:dart_pusher_channels/src/events/ping_event.dart';
 import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -95,5 +96,7 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
   }
 
   @override
-  void ping() {}
+  void ping() {
+    sendEvent(const PusherChannelsPingEvent().getEncoded());
+  }
 }
