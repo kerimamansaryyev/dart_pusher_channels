@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:dart_pusher_channels/src/events/event.dart';
-import 'package:dart_pusher_channels/src/utils/event_names.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
@@ -11,17 +9,17 @@ class PusherChannelsPongEvent
         PusherChannelsEvent,
         PusherChannelsSentEventMixin,
         PusherChannelsPredefinedEventMixin {
-  static const _name = PusherChannelsEventNames.pong;
+  static const eventName = 'pusher:pong';
 
   @override
-  final String name = _name;
+  final String name = eventName;
 
   const PusherChannelsPongEvent();
 
   static PusherChannelsPongEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
     final name = root?[PusherChannelsEvent.eventNameKey]?.toString();
-    if (root == null || name != _name) {
+    if (root == null || name != PusherChannelsPongEvent.eventName) {
       return null;
     }
 

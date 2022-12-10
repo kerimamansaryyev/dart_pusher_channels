@@ -1,5 +1,4 @@
 import 'package:dart_pusher_channels/src/events/event.dart';
-import 'package:dart_pusher_channels/src/utils/event_names.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
@@ -10,9 +9,9 @@ class PusherChannelsConnectionEstablishedEvent
         PusherChannelsReadEventMixin,
         PusherChannelsMapDataEventMixin,
         PusherChannelsPredefinedEventMixin {
+  static const eventName = 'pusher:connection_established';
   static const _activityTimeoutKey = 'activity_timeout';
   static const _socketIdKey = 'socket_id';
-  static const _name = PusherChannelsEventNames.connectionEstablished;
 
   @override
   final Map<String, dynamic> rootObject;
@@ -46,7 +45,8 @@ class PusherChannelsConnectionEstablishedEvent
   ) {
     final root = safeMessageToMapDeserializer(message);
     final name = root?[PusherChannelsEvent.eventNameKey]?.toString();
-    if (root == null || name != _name) {
+    if (root == null ||
+        name != PusherChannelsConnectionEstablishedEvent.eventName) {
       return null;
     }
 

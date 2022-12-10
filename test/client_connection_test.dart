@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
-import 'package:dart_pusher_channels/src/utils/event_names.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
@@ -18,7 +17,7 @@ class TestConnection implements PusherChannelsConnection {
   void fireConnectionEstablished() {
     _messageStreamController?.add(
       jsonEncode({
-        'event': PusherChannelsEventNames.connectionEstablished,
+        'event': 'pusher:connection_established',
         'data': jsonEncode({
           'socket_id': '123',
         })

@@ -1,5 +1,4 @@
 import 'package:dart_pusher_channels/src/events/event.dart';
-import 'package:dart_pusher_channels/src/utils/event_names.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
@@ -10,9 +9,9 @@ class PusherChannelsErrorEvent
         PusherChannelsReadEventMixin,
         PusherChannelsMapDataEventMixin,
         PusherChannelsPredefinedEventMixin {
+  static const eventName = 'pusher:error';
   static const _codeKey = 'code';
   static const _messageKey = 'message';
-  static const _name = PusherChannelsEventNames.error;
 
   int? get code => int.tryParse(
         deserializedMapData[_codeKey]?.toString() ?? '',
@@ -33,7 +32,7 @@ class PusherChannelsErrorEvent
   static PusherChannelsErrorEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
     final name = root?[PusherChannelsEvent.eventNameKey]?.toString();
-    if (root == null || name != _name) {
+    if (root == null || name != PusherChannelsErrorEvent.eventName) {
       return null;
     }
 
