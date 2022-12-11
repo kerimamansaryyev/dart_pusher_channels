@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscription_succeeded_event.dart';
@@ -112,5 +114,20 @@ abstract class Channel<T extends ChannelState> {
           rootObject: {...event.rootObject},
           channel: this,
         ),
+      )
+      .transform<ChannelReadEvent>(
+        StreamTransformer.fromHandlers(
+          handleData: _decideIfAllowSinkOnBind,
+        ),
       );
+
+  void _decideIfAllowSinkOnBind(
+    ChannelReadEvent data,
+    EventSink<ChannelReadEvent> sink,
+  ) {
+    if (state?.status == ChannelStatus.unsubscribed) {
+      return;
+    }
+    sink.add(data);
+  }
 }
