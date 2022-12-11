@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:http/http.dart' as http;
@@ -77,6 +78,20 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         parser: parser,
       );
 
+  static EndpointAuthorizableChannelTokenAuthorizationDelegate<
+      PresenceChannelAuthorizationData> forPresenceChannel({
+    required Uri authorizationEndpoint,
+    required Map<String, String> headers,
+    EndpointAuthorizableChannelTokenAuthorizationParser<
+            PresenceChannelAuthorizationData>
+        parser = defaultParserForPresenceChannel,
+  }) =>
+      EndpointAuthorizableChannelTokenAuthorizationDelegate._(
+        authorizationEndpoint: authorizationEndpoint,
+        headers: headers,
+        parser: parser,
+      );
+
   static PrivateChannelAuthorizationData defaultParserForPrivateChannel(
     http.Response response,
   ) {
@@ -85,6 +100,19 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
 
     return PrivateChannelAuthorizationData(
       authKey: auth,
+    );
+  }
+
+  static PresenceChannelAuthorizationData defaultParserForPresenceChannel(
+    http.Response response,
+  ) {
+    final decoded = jsonDecode(response.body) as Map;
+    final auth = decoded['auth'] as String;
+    final channelData = decoded['channel_data'] as String;
+
+    return PresenceChannelAuthorizationData(
+      authKey: auth,
+      channelDataEncoded: channelData,
     );
   }
 }

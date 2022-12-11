@@ -1,6 +1,7 @@
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
@@ -100,6 +101,26 @@ class ChannelsManager {
       _createChannelSafely<PrivateChannel>(
         channelName: channelName,
         constructorDelegate: () => PrivateChannel.internal(
+          authorizationDelegate: authorizationDelegate,
+          connectionDelegate: channelsConnectionDelegate,
+          name: channelName,
+          whenChannelStateChanged: whenChannelStateChanged,
+          onAuthFailed: onAuthFailed,
+        ),
+      );
+
+  PresenceChannel presenceChannel(
+    String channelName, {
+    required ChannelStateChangedCallback<PresenceChannelState>?
+        whenChannelStateChanged,
+    required EndpointAuthorizableChannelAuthorizationDelegate<
+            PresenceChannelAuthorizationData>
+        authorizationDelegate,
+    required EndpointAuthorizationErrorCallback? onAuthFailed,
+  }) =>
+      _createChannelSafely<PresenceChannel>(
+        channelName: channelName,
+        constructorDelegate: () => PresenceChannel.internal(
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
           name: channelName,

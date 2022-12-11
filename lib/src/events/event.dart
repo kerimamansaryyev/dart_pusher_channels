@@ -27,4 +27,5 @@ abstract class PusherChannelsEvent {
   static const eventNameKey = 'event';
   static const dataKey = 'data';
   static const channelKey = 'channel';
+  static const userIdKey = 'user_id';
 }

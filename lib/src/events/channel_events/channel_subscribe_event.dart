@@ -38,6 +38,16 @@ class ChannelSubscribeEvent
           channelDataEncoded: null,
         );
 
+  const ChannelSubscribeEvent.forPresenceChannel({
+    required String channelName,
+    required String authKey,
+    required String channelDataEncoded,
+  }) : this(
+          channelName: channelName,
+          authKey: authKey,
+          channelDataEncoded: channelDataEncoded,
+        );
+
   @override
   String getEncoded() {
     final authorizationKey = authKey;

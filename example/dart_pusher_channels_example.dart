@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
-import 'package:dart_pusher_channels/src/channels/private_channel.dart';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/client/client.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_trigger_event.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
 
@@ -15,7 +17,6 @@ void main() async {
     port: 443,
   );
   final client = PusherChannelsClient.websocket(
-    activityDurationOverride: const Duration(seconds: 10),
     options: testOptions,
     connectionErrorHandler: (exception, trace, refresh) async {
       print('Exception: $exception');
@@ -23,20 +24,31 @@ void main() async {
     },
   );
 
-  PrivateChannel? channel;
+  PresenceChannel? channel;
 
   client.onConnectionEstablished.listen((_) {
-    channel = client.privateChannel(
-      'hello',
+    channel = client.presenceChannel(
+      'presence-channel',
+      whenChannelStateChanged: (state) {
+        if (state.status == ChannelStatus.subscribed) {
+          print('object');
+          channel?.trigger(
+            ChannelTriggerEvent(
+              channel: channel!,
+              name: 'client-event',
+              data: {
+                'data': 'Hello guys!',
+              },
+            ),
+          );
+        }
+      },
       authorizationDelegate:
           EndpointAuthorizableChannelTokenAuthorizationDelegate
-              .forPrivateChannel(
-        authorizationEndpoint: Uri.parse('https://google.com'),
+              .forPresenceChannel(
+        authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
         headers: const {},
       ),
-      whenChannelStateChanged: (state) {
-        print(state.status);
-      },
     );
     channel!.subscribeIfNotUnsubscribed();
   });

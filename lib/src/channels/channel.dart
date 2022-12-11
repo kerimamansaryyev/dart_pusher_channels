@@ -38,14 +38,12 @@ mixin ChannelHandledSubscriptionMixin<T extends ChannelState> on Channel<T> {
 
   @mustCallSuper
   void setUnsubscribedStatus() {
-    if (_currentStatus != ChannelStatus.unsubscribed) {
-      _currentStatus = ChannelStatus.unsubscribed;
-      updateState(
-        getStateWithNewStatus(
-          _currentStatus,
-        ),
-      );
-    }
+    _currentStatus = ChannelStatus.unsubscribed;
+    updateState(
+      getStateWithNewStatus(
+        _currentStatus,
+      ),
+    );
   }
 
   @mustCallSuper

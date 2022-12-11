@@ -9,37 +9,39 @@ import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
 @immutable
-class PrivateChannelAuthorizationData implements EndpointAuthorizationData {
+class PresenceChannelAuthorizationData implements EndpointAuthorizationData {
   final String authKey;
+  final String channelDataEncoded;
 
-  const PrivateChannelAuthorizationData({
+  const PresenceChannelAuthorizationData({
     required this.authKey,
+    required this.channelDataEncoded,
   });
 }
 
 @immutable
-class PrivateChannelState implements ChannelState {
+class PresenceChannelState implements ChannelState {
   @override
   final ChannelStatus status;
 
-  const PrivateChannelState({
+  const PresenceChannelState({
     required this.status,
   });
 }
 
-class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
-        PrivateChannelAuthorizationData>
+class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
+        PresenceChannelAuthorizationData>
     with
-        ChannelHandledSubscriptionMixin<PrivateChannelState>,
-        TriggerableChannelMixin<PrivateChannelState> {
+        ChannelHandledSubscriptionMixin<PresenceChannelState>,
+        TriggerableChannelMixin<PresenceChannelState> {
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
   @override
-  final ChannelStateChangedCallback<PrivateChannelState>?
+  final ChannelStateChangedCallback<PresenceChannelState>?
       whenChannelStateChanged;
   @override
   final EndpointAuthorizableChannelAuthorizationDelegate<
-      PrivateChannelAuthorizationData> authorizationDelegate;
+      PresenceChannelAuthorizationData> authorizationDelegate;
 
   @override
   final EndpointAuthorizationErrorCallback? onAuthFailed;
@@ -48,7 +50,7 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
   final String name;
 
   @internal
-  PrivateChannel.internal({
+  PresenceChannel.internal({
     required this.connectionDelegate,
     required this.name,
     required this.whenChannelStateChanged,
@@ -62,15 +64,18 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
     final fixatedLifeCycleCount = startNewAuthRequestCycle();
     await setAuthKeyFromDelegate();
     final currentAuthKey = authData?.authKey;
+    final currentChannelDataEncoded = authData?.channelDataEncoded;
     if (fixatedLifeCycleCount < authRequestCycle ||
         currentAuthKey == null ||
-        state?.status == ChannelStatus.unsubscribed) {
+        state?.status == ChannelStatus.unsubscribed ||
+        currentChannelDataEncoded == null) {
       return;
     }
     connectionDelegate.sendEvent(
-      ChannelSubscribeEvent.forPrivateChannel(
+      ChannelSubscribeEvent.forPresenceChannel(
         channelName: name,
         authKey: currentAuthKey,
+        channelDataEncoded: currentChannelDataEncoded,
       ),
     );
   }
@@ -86,8 +91,8 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
   }
 
   @override
-  PrivateChannelState getStateWithNewStatus(ChannelStatus status) =>
-      PrivateChannelState(
+  PresenceChannelState getStateWithNewStatus(ChannelStatus status) =>
+      PresenceChannelState(
         status: status,
       );
 
