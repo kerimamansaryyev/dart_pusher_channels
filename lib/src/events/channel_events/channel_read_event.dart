@@ -1,5 +1,4 @@
 import 'package:dart_pusher_channels/src/channels/channel.dart';
-import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
 
 class ChannelReadEvent extends PusherChannelsReadEvent {
@@ -21,6 +20,4 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
 
   @override
   String get channelName => channel.name;
-
-  String? get userId => rootObject[PusherChannelsEvent.userIdKey]?.toString();
 }

@@ -13,6 +13,8 @@ class PusherChannelsReadEvent
   String? get channelName =>
       rootObject[PusherChannelsEvent.channelKey]?.toString();
 
+  String? get userId => rootObject[PusherChannelsEvent.userIdKey]?.toString();
+
   static PusherChannelsReadEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
     if (root == null) {
