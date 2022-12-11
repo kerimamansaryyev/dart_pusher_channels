@@ -1,6 +1,6 @@
 import 'dart:async';
-
-import 'package:dart_pusher_channels/src/channels/public_channel.dart';
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
@@ -23,11 +23,17 @@ void main() async {
     },
   );
 
-  PublicChannel? channel;
+  PrivateChannel? channel;
 
   client.onConnectionEstablished.listen((_) {
-    channel = client.publicChannel(
+    channel = client.privateChannel(
       'hello',
+      authorizationDelegate:
+          EndpointAuthorizableChannelTokenAuthorizationDelegate
+              .forPrivateChannel(
+        authorizationEndpoint: Uri.parse('https://google.com'),
+        headers: const {},
+      ),
       whenChannelStateChanged: (state) {
         print(state.status);
       },
@@ -36,12 +42,4 @@ void main() async {
   });
 
   unawaited(client.connect());
-
-  await Future.delayed(
-    const Duration(seconds: 3),
-  );
-  await Future.delayed(
-    const Duration(seconds: 3),
-  );
-  client.reconnect();
 }

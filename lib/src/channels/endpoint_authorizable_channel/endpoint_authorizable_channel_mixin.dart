@@ -16,7 +16,7 @@ mixin EndpointAuthorizableChannelMixin<T extends ChannelState,
     }
 
     return Future<A>(
-      () => authorizationDelegate.authenticationData(socketId, name),
+      () => authorizationDelegate.authorizationData(socketId, name),
     );
   }
 }

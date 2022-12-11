@@ -7,5 +7,5 @@ abstract class EndpointAuthorizationData {}
 
 abstract class EndpointAuthorizableChannelAuthorizationDelegate<
     T extends EndpointAuthorizationData> {
-  FutureOr<T> authenticationData(String socketId, String channelName);
+  FutureOr<T> authorizationData(String socketId, String channelName);
 }

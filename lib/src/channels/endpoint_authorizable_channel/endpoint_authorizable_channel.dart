@@ -1,6 +1,7 @@
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel_mixin.dart';
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 
 typedef EndpointAuthorizationErrorCallback = void Function(
@@ -33,7 +34,7 @@ abstract class EndpointAuthorizableChannel<T extends ChannelState,
     final fixatedLifeCycle = _authRequestLifeCycle;
     A? result;
     try {
-      result = await authorizationDelegate.authenticationData(
+      result = await authorizationDelegate.authorizationData(
         socketId,
         name,
       );
@@ -46,6 +47,14 @@ abstract class EndpointAuthorizableChannel<T extends ChannelState,
         return;
       }
       onAuthFailed?.call(exception, trace);
+      PusherChannelsPackageLogger.log(
+        '''
+Failed to get authorizationData.
+Channel: $name,
+Exception: $exception,
+Trace: $trace,
+        ''',
+      );
     }
   }
 }
