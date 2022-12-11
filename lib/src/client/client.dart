@@ -1,7 +1,5 @@
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
-import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
-import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
@@ -54,7 +52,6 @@ class PusherChannelsClient {
         triggerEventDelegate: (event) => client.trigger(event),
         socketIdGetter: () => client.controller.socketId,
         sendEventDelegate: (event) => client.sendEvent(event),
-        eventStreamGetter: () => client.eventStream,
       ),
     );
 
@@ -102,13 +99,9 @@ class PusherChannelsClient {
         connectionErrorHandler: connectionErrorHandler,
       );
 
-  PublicChannel publicChannel(
-    String channelName, {
-    ChannelStateChangedCallback<PublicChannelState>? whenChannelStateChanged,
-  }) =>
+  PublicChannel publicChannel(String channelName) =>
       channelsManager.publicChannel(
         channelName,
-        whenChannelStateChanged: whenChannelStateChanged,
       );
 
   PrivateChannel privateChannel(
@@ -116,14 +109,10 @@ class PusherChannelsClient {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PrivateChannelAuthorizationData>
         authorizationDelegate,
-    EndpointAuthorizationErrorCallback? onAuthFailed,
-    ChannelStateChangedCallback<PrivateChannelState>? whenChannelStateChanged,
   }) =>
       channelsManager.privateChannel(
         channelName,
-        whenChannelStateChanged: whenChannelStateChanged,
         authorizationDelegate: authorizationDelegate,
-        onAuthFailed: onAuthFailed,
       );
 
   PresenceChannel presenceChannel(
@@ -131,14 +120,10 @@ class PusherChannelsClient {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PresenceChannelAuthorizationData>
         authorizationDelegate,
-    EndpointAuthorizationErrorCallback? onAuthFailed,
-    ChannelStateChangedCallback<PresenceChannelState>? whenChannelStateChanged,
   }) =>
       channelsManager.presenceChannel(
         channelName,
-        whenChannelStateChanged: whenChannelStateChanged,
         authorizationDelegate: authorizationDelegate,
-        onAuthFailed: onAuthFailed,
       );
 
   Stream<PusherChannelsEvent> get eventStream => controller.eventStream;

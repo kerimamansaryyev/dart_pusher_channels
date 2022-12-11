@@ -1,6 +1,8 @@
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel_mixin.dart';
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
+import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 
@@ -12,8 +14,6 @@ typedef EndpointAuthorizationErrorCallback = void Function(
 abstract class EndpointAuthorizableChannel<T extends ChannelState,
         A extends EndpointAuthorizationData> extends Channel<T>
     with EndpointAuthorizableChannelMixin<T, A> {
-  @protected
-  abstract final EndpointAuthorizationErrorCallback? onAuthFailed;
   A? _authData;
   int _authRequestLifeCycle = 0;
 
@@ -46,15 +46,40 @@ abstract class EndpointAuthorizableChannel<T extends ChannelState,
       if (fixatedLifeCycle < _authRequestLifeCycle) {
         return;
       }
-      onAuthFailed?.call(exception, trace);
-      PusherChannelsPackageLogger.log(
-        '''
+      _handleAuthFailed(exception, trace);
+    }
+  }
+
+  void _handleAuthFailed(dynamic exception, StackTrace trace) {
+    if (currentStatus == ChannelStatus.unsubscribed) {
+      return;
+    }
+
+    late final String message;
+
+    final defaultMessage = '''
 Failed to get authorizationData.
 Channel: $name,
 Exception: $exception,
 Trace: $trace,
-        ''',
-      );
+        ''';
+
+    if (exception is PusherChannelsException) {
+      message = exception.message;
+    } else {
+      message = defaultMessage;
     }
+
+    PusherChannelsPackageLogger.log(
+      message,
+    );
+
+    publicEventEmitter(
+      ChannelReadEvent.forSubscriptionError(
+        this,
+        type: Channel.authErrorType,
+        errorMessage: message,
+      ),
+    );
   }
 }

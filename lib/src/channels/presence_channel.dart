@@ -3,9 +3,9 @@ import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/triggerable_channel.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscribe_event.dart';
-import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
 @immutable
@@ -24,43 +24,55 @@ class PresenceChannelState implements ChannelState {
   @override
   final ChannelStatus status;
 
+  @override
+  final int? subscriptionCount;
+
   const PresenceChannelState({
     required this.status,
+    required this.subscriptionCount,
   });
+
+  PresenceChannelState copyWith({
+    ChannelStatus? status,
+    int? subscriptionCount,
+  }) =>
+      PresenceChannelState(
+        status: status ?? this.status,
+        subscriptionCount: subscriptionCount ?? this.subscriptionCount,
+      );
 }
 
 class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
         PresenceChannelAuthorizationData>
-    with
-        ChannelHandledSubscriptionMixin<PresenceChannelState>,
-        TriggerableChannelMixin<PresenceChannelState> {
+    with TriggerableChannelMixin<PresenceChannelState> {
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
-  @override
-  final ChannelStateChangedCallback<PresenceChannelState>?
-      whenChannelStateChanged;
+
   @override
   final EndpointAuthorizableChannelAuthorizationDelegate<
       PresenceChannelAuthorizationData> authorizationDelegate;
 
   @override
-  final EndpointAuthorizationErrorCallback? onAuthFailed;
+  final String name;
 
   @override
-  final String name;
+  final ChannelPublicEventEmitter publicEventEmitter;
+
+  @override
+  final ChannelsManagerStreamGetter publicStreamGetter;
 
   @internal
   PresenceChannel.internal({
+    required this.publicStreamGetter,
+    required this.publicEventEmitter,
     required this.connectionDelegate,
     required this.name,
-    required this.whenChannelStateChanged,
     required this.authorizationDelegate,
-    required this.onAuthFailed,
   });
 
   @override
   void subscribe() async {
-    ensureStatusPendingBeforeSubscribe();
+    super.subscribe();
     final fixatedLifeCycleCount = startNewAuthRequestCycle();
     await setAuthKeyFromDelegate();
     final currentAuthKey = authData?.authKey;
@@ -87,17 +99,34 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
         channelName: name,
       ),
     );
-    setUnsubscribedStatus();
+    super.unsubscribe();
   }
 
   @override
   PresenceChannelState getStateWithNewStatus(ChannelStatus status) =>
+      state?.copyWith(
+        status: status,
+      ) ??
       PresenceChannelState(
         status: status,
+        subscriptionCount: null,
       );
 
   @override
-  void handleEvent(PusherChannelsReadEvent event) {
-    detectIfSubscriptionSucceeded(event);
+  PresenceChannelState getStateWithNewSubscriptionCount(
+    int? subscriptionCount,
+  ) =>
+      state?.copyWith(
+        subscriptionCount: subscriptionCount,
+      ) ??
+      PresenceChannelState(
+        status: ChannelStatus.idle,
+        subscriptionCount: subscriptionCount,
+      );
+
+  @override
+  void handleEvent(ChannelReadEvent event) {
+    super.handleEvent(event);
+    //TODO: hadnle presence there
   }
 }

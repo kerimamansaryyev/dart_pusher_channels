@@ -1,3 +1,4 @@
+import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
 mixin PusherChannelsPredefinedEventMixin on PusherChannelsEvent {}
@@ -18,6 +19,8 @@ mixin PusherChannelsReadEventMixin on PusherChannelsEvent {
       rootObject[PusherChannelsEvent.eventNameKey]?.toString() ?? '';
 
   dynamic get data => rootObject[PusherChannelsEvent.dataKey];
+
+  Map<String, dynamic>? tryGetDataAsMap() => safeMessageToMapDeserializer(data);
 }
 
 @immutable

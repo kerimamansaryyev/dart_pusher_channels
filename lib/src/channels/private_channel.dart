@@ -5,7 +5,6 @@ import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/
 import 'package:dart_pusher_channels/src/channels/triggerable_channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscribe_event.dart';
-import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
 @immutable
@@ -21,44 +20,55 @@ class PrivateChannelAuthorizationData implements EndpointAuthorizationData {
 class PrivateChannelState implements ChannelState {
   @override
   final ChannelStatus status;
+  @override
+  final int? subscriptionCount;
 
   const PrivateChannelState({
     required this.status,
+    required this.subscriptionCount,
   });
+
+  PrivateChannelState copyWith({
+    ChannelStatus? status,
+    int? subscriptionCount,
+  }) =>
+      PrivateChannelState(
+        status: status ?? this.status,
+        subscriptionCount: subscriptionCount ?? this.subscriptionCount,
+      );
 }
 
 class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
         PrivateChannelAuthorizationData>
-    with
-        ChannelHandledSubscriptionMixin<PrivateChannelState>,
-        TriggerableChannelMixin<PrivateChannelState> {
+    with TriggerableChannelMixin<PrivateChannelState> {
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
-  @override
-  final ChannelStateChangedCallback<PrivateChannelState>?
-      whenChannelStateChanged;
+
   @override
   final EndpointAuthorizableChannelAuthorizationDelegate<
       PrivateChannelAuthorizationData> authorizationDelegate;
 
   @override
-  final EndpointAuthorizationErrorCallback? onAuthFailed;
+  final ChannelPublicEventEmitter publicEventEmitter;
 
   @override
   final String name;
 
+  @override
+  final ChannelsManagerStreamGetter publicStreamGetter;
+
   @internal
   PrivateChannel.internal({
+    required this.publicStreamGetter,
+    required this.publicEventEmitter,
     required this.connectionDelegate,
     required this.name,
-    required this.whenChannelStateChanged,
     required this.authorizationDelegate,
-    required this.onAuthFailed,
   });
 
   @override
   void subscribe() async {
-    ensureStatusPendingBeforeSubscribe();
+    super.subscribe();
     final fixatedLifeCycleCount = startNewAuthRequestCycle();
     await setAuthKeyFromDelegate();
     final currentAuthKey = authData?.authKey;
@@ -82,17 +92,28 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
         channelName: name,
       ),
     );
-    setUnsubscribedStatus();
+    super.unsubscribe();
   }
 
   @override
   PrivateChannelState getStateWithNewStatus(ChannelStatus status) =>
+      state?.copyWith(
+        status: status,
+      ) ??
       PrivateChannelState(
         status: status,
+        subscriptionCount: null,
       );
 
   @override
-  void handleEvent(PusherChannelsReadEvent event) {
-    detectIfSubscriptionSucceeded(event);
-  }
+  PrivateChannelState getStateWithNewSubscriptionCount(
+    int? subscriptionCount,
+  ) =>
+      state?.copyWith(
+        subscriptionCount: subscriptionCount,
+      ) ??
+      PrivateChannelState(
+        status: ChannelStatus.idle,
+        subscriptionCount: subscriptionCount,
+      );
 }

@@ -1,15 +1,9 @@
 import 'dart:async';
-
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
-import 'package:dart_pusher_channels/src/events/channel_events/channel_subscription_succeeded_event.dart';
-import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 
-typedef ChannelStateChangedCallback<T extends ChannelState> = void Function(
-  T state,
-);
+typedef ChannelsManagerStreamGetter = Stream<ChannelReadEvent> Function();
 
 enum ChannelStatus {
   subscribed,
@@ -18,82 +12,75 @@ enum ChannelStatus {
   idle,
 }
 
-mixin ChannelHandledSubscriptionMixin<T extends ChannelState> on Channel<T> {
-  ChannelStatus _currentStatus = ChannelStatus.idle;
-
-  @mustCallSuper
-  @protected
-  T getStateWithNewStatus(ChannelStatus status);
-
-  @mustCallSuper
-  void ensureStatusPendingBeforeSubscribe() {
-    if (_currentStatus != ChannelStatus.pendingSubscription) {
-      _currentStatus = ChannelStatus.pendingSubscription;
-      updateState(
-        getStateWithNewStatus(
-          _currentStatus,
-        ),
-      );
-    }
-  }
-
-  @mustCallSuper
-  void setUnsubscribedStatus() {
-    _currentStatus = ChannelStatus.unsubscribed;
-    updateState(
-      getStateWithNewStatus(
-        _currentStatus,
-      ),
-    );
-  }
-
-  @mustCallSuper
-  void detectIfSubscriptionSucceeded(PusherChannelsReadEvent event) {
-    final succeededEvent =
-        ChannelSubscriptionSuccededEvent.tryGetFromChannelReadEvent(
-      ChannelReadEvent.fromPusherChannelsReadEvent(this, event),
-    );
-    if (succeededEvent != null &&
-        _currentStatus != ChannelStatus.unsubscribed) {
-      _currentStatus = ChannelStatus.subscribed;
-      updateState(
-        getStateWithNewStatus(
-          _currentStatus,
-        ),
-      );
-    }
-  }
-}
-
 @immutable
 abstract class ChannelState {
   abstract final ChannelStatus status;
+  abstract final int? subscriptionCount;
 }
 
 abstract class Channel<T extends ChannelState> {
+  @protected
+  static const internalSubscriptionSucceededEventName =
+      'pusher_internal:subscription_succeeded';
+  @protected
+  static const internalSubscriptionsCountEventName =
+      'pusher_internal:subscription_count';
+  @protected
+  static const subscriptionsCountEventName = 'pusher:subscription_count';
+  @protected
+  static const subscriptionSucceededEventName = 'pusher:subscription_succeeded';
+  @protected
+  static const pusherInternalPrefix = 'pusher_internal:';
+  @protected
+  static const authErrorType = 'AuthError';
+  static const subscriptionErrorEventName = 'pusher:subscription_error';
+
   T? _currentState;
   abstract final String name;
   @protected
   abstract final ChannelsManagerConnectionDelegate connectionDelegate;
   @protected
-  abstract final ChannelStateChangedCallback<T>? whenChannelStateChanged;
+  abstract final ChannelPublicEventEmitter publicEventEmitter;
+  @protected
+  abstract final ChannelsManagerStreamGetter publicStreamGetter;
+
+  @protected
+  T getStateWithNewStatus(ChannelStatus status);
+
+  @protected
+  T getStateWithNewSubscriptionCount(int? subscriptionCount);
 
   @mustCallSuper
   @protected
   void updateState(T newState) {
     _currentState = newState;
-    whenChannelStateChanged?.call(newState);
   }
 
   @mustCallSuper
-  void subscribe();
+  void subscribe() {
+    _ensureStatusPendingBeforeSubscribe();
+  }
 
   @mustCallSuper
-  void unsubscribe();
+  void unsubscribe() {
+    _setUnsubscribedStatus();
+  }
 
   @internal
   @mustCallSuper
-  void handleEvent(PusherChannelsReadEvent event);
+  void handleEvent(ChannelReadEvent event) {
+    switch (event.name) {
+      case internalSubscriptionSucceededEventName:
+        _handleSubscription(event);
+        break;
+      case internalSubscriptionsCountEventName:
+        _handleSubscriptionCount(event);
+        break;
+      default:
+        _handleOtherExternalEvents(event);
+        break;
+    }
+  }
 
   void subscribeIfNotUnsubscribed() {
     if (state?.status == ChannelStatus.unsubscribed) {
@@ -104,29 +91,97 @@ abstract class Channel<T extends ChannelState> {
 
   T? get state => _currentState;
 
-  Stream<ChannelReadEvent> bind(String eventName) => connectionDelegate
-      .eventStream
-      .whereType<PusherChannelsReadEvent>()
-      .where((event) => event.channelName == name && eventName == event.name)
-      .map<ChannelReadEvent>(
-        (event) => ChannelReadEvent(
-          rootObject: {...event.rootObject},
-          channel: this,
+  @visibleForTesting
+  T? getStateTest() => state;
+
+  @protected
+  ChannelStatus? get currentStatus => state?.status;
+
+  Stream<ChannelReadEvent> bind(String eventName) => publicStreamGetter()
+      .where(
+        (event) => _bindStreamFilterPredicate(
+          targetEventName: eventName,
+          event: event,
         ),
       )
       .transform<ChannelReadEvent>(
         StreamTransformer.fromHandlers(
-          handleData: _decideIfAllowSinkOnBind,
+          handleData: _bindStreamSinkFilter,
         ),
       );
 
-  void _decideIfAllowSinkOnBind(
-    ChannelReadEvent data,
+  bool _bindStreamFilterPredicate({
+    required String targetEventName,
+    required ChannelReadEvent event,
+  }) {
+    return targetEventName == event.name && event.channelName == name;
+  }
+
+  void _bindStreamSinkFilter(
+    ChannelReadEvent event,
     EventSink<ChannelReadEvent> sink,
   ) {
-    if (state?.status == ChannelStatus.unsubscribed) {
+    if (currentStatus == ChannelStatus.unsubscribed) {
       return;
     }
-    sink.add(data);
+    sink.add(
+      event,
+    );
+  }
+
+  void _ensureStatusPendingBeforeSubscribe() {
+    if (currentStatus != ChannelStatus.pendingSubscription) {
+      updateState(
+        getStateWithNewStatus(
+          ChannelStatus.pendingSubscription,
+        ),
+      );
+    }
+  }
+
+  void _setUnsubscribedStatus() {
+    updateState(
+      getStateWithNewStatus(
+        ChannelStatus.unsubscribed,
+      ),
+    );
+  }
+
+  void _handleSubscription(ChannelReadEvent readEvent) {
+    updateState(
+      getStateWithNewStatus(
+        ChannelStatus.subscribed,
+      ),
+    );
+    publicEventEmitter(
+      readEvent.copyWithName(
+        subscriptionSucceededEventName,
+      ),
+    );
+  }
+
+  void _handleSubscriptionCount(ChannelReadEvent readEvent) {
+    final count = int.tryParse(
+      '${readEvent.tryGetDataAsMap()?[internalSubscriptionsCountEventName]}',
+    );
+    updateState(
+      getStateWithNewSubscriptionCount(
+        count,
+      ),
+    );
+    publicEventEmitter(
+      readEvent.copyWithName(
+        subscriptionsCountEventName,
+      ),
+    );
+  }
+
+  void _handleOtherExternalEvents(ChannelReadEvent readEvent) {
+    if (readEvent.name.contains(pusherInternalPrefix)) {
+      return;
+    }
+    publicEventEmitter(
+      readEvent,
+    );
   }
 }

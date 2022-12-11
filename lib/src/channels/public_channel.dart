@@ -2,40 +2,53 @@ import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscribe_event.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
-import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
 @immutable
 class PublicChannelState implements ChannelState {
   @override
   final ChannelStatus status;
+  @override
+  final int? subscriptionCount;
 
   const PublicChannelState({
     required this.status,
+    required this.subscriptionCount,
   });
+
+  PublicChannelState copyWith({
+    ChannelStatus? status,
+    int? subscriptionCount,
+  }) =>
+      PublicChannelState(
+        status: status ?? this.status,
+        subscriptionCount: subscriptionCount ?? this.subscriptionCount,
+      );
 }
 
-class PublicChannel extends Channel<PublicChannelState>
-    with ChannelHandledSubscriptionMixin {
+class PublicChannel extends Channel<PublicChannelState> {
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
-  @override
-  final ChannelStateChangedCallback<PublicChannelState>?
-      whenChannelStateChanged;
 
   @override
   final String name;
+  @override
+  final ChannelPublicEventEmitter publicEventEmitter;
+
+  @override
+  final ChannelsManagerStreamGetter publicStreamGetter;
 
   @internal
   PublicChannel.internal({
+    required this.publicStreamGetter,
     required this.connectionDelegate,
     required this.name,
-    required this.whenChannelStateChanged,
+    required this.publicEventEmitter,
   });
 
   @override
   void subscribe() {
-    ensureStatusPendingBeforeSubscribe();
+    super.subscribe();
     connectionDelegate.sendEvent(
       ChannelSubscribeEvent.forPublicChannel(
         channelName: name,
@@ -50,17 +63,28 @@ class PublicChannel extends Channel<PublicChannelState>
         channelName: name,
       ),
     );
-    setUnsubscribedStatus();
+    super.unsubscribe();
   }
 
   @override
   PublicChannelState getStateWithNewStatus(ChannelStatus status) =>
+      state?.copyWith(
+        status: status,
+      ) ??
       PublicChannelState(
         status: status,
+        subscriptionCount: null,
       );
 
   @override
-  void handleEvent(PusherChannelsReadEvent event) {
-    detectIfSubscriptionSucceeded(event);
-  }
+  PublicChannelState getStateWithNewSubscriptionCount(
+    int? subscriptionCount,
+  ) =>
+      state?.copyWith(
+        subscriptionCount: subscriptionCount,
+      ) ??
+      PublicChannelState(
+        status: ChannelStatus.idle,
+        subscriptionCount: subscriptionCount,
+      );
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
@@ -14,16 +16,13 @@ void main() {
             triggerEventDelegate: (event) {},
             socketIdGetter: () => null,
             sendEventDelegate: (event) {},
-            eventStreamGetter: Stream.empty,
           ),
         );
         final oldPublicChannel = manager.publicChannel(
           'hello',
-          whenChannelStateChanged: null,
         );
         final newPublicChannel = manager.publicChannel(
           'hello',
-          whenChannelStateChanged: null,
         );
         expect(oldPublicChannel == newPublicChannel, true);
       },
@@ -36,16 +35,14 @@ void main() {
             triggerEventDelegate: (event) {},
             socketIdGetter: () => null,
             sendEventDelegate: (event) {},
-            eventStreamGetter: Stream.empty,
           ),
         );
         final channel = manager.publicChannel(
           'hello',
-          whenChannelStateChanged: null,
         );
-        expect(channel.state?.status, null);
+        expect(channel.getStateTest()?.status, null);
         manager.dispose();
-        expect(channel.state?.status, ChannelStatus.unsubscribed);
+        expect(channel.getStateTest()?.status, ChannelStatus.unsubscribed);
       },
     );
 
@@ -53,7 +50,14 @@ void main() {
       'Sink will stop adding events when channel is unsubscribed',
       () async {
         int eventCount = 0;
-        final eventStream = Stream<PusherChannelsReadEvent>.periodic(
+        final manager = ChannelsManager(
+          channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            triggerEventDelegate: (event) {},
+            socketIdGetter: () => null,
+            sendEventDelegate: (event) {},
+          ),
+        );
+        final subs = Stream<PusherChannelsReadEvent>.periodic(
           const Duration(seconds: 1),
           (_) => PusherChannelsReadEvent(
             rootObject: {
@@ -61,18 +65,10 @@ void main() {
               'channel': 'hello',
             },
           ),
-        );
-        final manager = ChannelsManager(
-          channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
-            triggerEventDelegate: (event) {},
-            socketIdGetter: () => null,
-            sendEventDelegate: (event) {},
-            eventStreamGetter: () => eventStream,
-          ),
-        );
+        ).listen(manager.handleEvent);
+
         final channel = manager.publicChannel(
           'hello',
-          whenChannelStateChanged: null,
         );
         channel.bind('helloEvent').listen((event) {
           eventCount++;
@@ -81,6 +77,7 @@ void main() {
           const Duration(seconds: 3),
         );
         channel.unsubscribe();
+        print(channel.getStateTest()?.status);
         await Future.delayed(
           const Duration(
             seconds: 2,
@@ -89,6 +86,7 @@ void main() {
         await Future.microtask(
           () => expect(eventCount, 3),
         );
+        unawaited(subs.cancel());
       },
     );
   });

@@ -1,13 +1,28 @@
+import 'dart:async';
+
 import 'package:dart_pusher_channels/src/channels/channel.dart';
-import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:dart_pusher_channels/src/events/trigger_event.dart';
+import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:meta/meta.dart';
+
+class ChannelsManagerHasBeenDisposedException
+    implements PusherChannelsException {
+  @override
+  final String message = 'ChannelsManager has been disposed';
+
+  const ChannelsManagerHasBeenDisposedException();
+}
+
+typedef ChannelPublicEventEmitter = void Function(
+  ChannelReadEvent event,
+);
 
 typedef ChannelsManagerSendEventDelegate = void Function(
   PusherChannelsSentEventMixin event,
@@ -17,15 +32,11 @@ typedef ChannelsManagerTriggerEventDelegate = void Function(
   PusherChannelsTriggerEvent event,
 );
 
-typedef ChannelsManagerEventStreamGetter = Stream<PusherChannelsEvent>
-    Function();
 typedef ChannelsManagerSocketIdGetter = String? Function();
 
 typedef _ChannelConstructorDelegate<T extends Channel> = T Function();
 
 class ChannelsManagerConnectionDelegate {
-  @protected
-  final ChannelsManagerEventStreamGetter eventStreamGetter;
   @protected
   final ChannelsManagerSendEventDelegate sendEventDelegate;
   @protected
@@ -35,12 +46,9 @@ class ChannelsManagerConnectionDelegate {
 
   const ChannelsManagerConnectionDelegate({
     required this.sendEventDelegate,
-    required this.eventStreamGetter,
     required this.socketIdGetter,
     required this.triggerEventDelegate,
   });
-
-  Stream<PusherChannelsEvent> get eventStream => eventStreamGetter();
 
   String? get socketId => socketIdGetter();
 
@@ -52,6 +60,9 @@ class ChannelsManagerConnectionDelegate {
 }
 
 class ChannelsManager {
+  bool _isDisposed = false;
+  final StreamController<ChannelReadEvent> _publicStreamController =
+      StreamController.broadcast();
   final Map<String, Channel> _channelsMap = {};
   @protected
   final ChannelsManagerConnectionDelegate channelsConnectionDelegate;
@@ -61,6 +72,9 @@ class ChannelsManager {
   });
 
   void handleEvent(PusherChannelsEvent event) {
+    if (_isDisposed) {
+      return;
+    }
     if (event is! PusherChannelsReadEvent) {
       return;
     }
@@ -70,11 +84,16 @@ class ChannelsManager {
     }
     final foundChannel = _channelsMap[channelName];
     if (foundChannel != null) {
-      foundChannel.handleEvent(event);
+      foundChannel.handleEvent(
+        ChannelReadEvent.fromPusherChannelsReadEvent(foundChannel, event),
+      );
     }
   }
 
   void _tryRestoreChannelSubscription(Channel channel, ChannelStatus? status) {
+    if (_isDisposed) {
+      return;
+    }
     switch (status) {
       case ChannelStatus.subscribed:
         channel.subscribe();
@@ -86,57 +105,48 @@ class ChannelsManager {
     }
   }
 
-  PublicChannel publicChannel(
-    String channelName, {
-    required ChannelStateChangedCallback<PublicChannelState>?
-        whenChannelStateChanged,
-  }) =>
+  PublicChannel publicChannel(String channelName) =>
       _createChannelSafely<PublicChannel>(
         channelName: channelName,
         constructorDelegate: () => PublicChannel.internal(
           connectionDelegate: channelsConnectionDelegate,
+          publicStreamGetter: () => _publicStreamController.stream,
           name: channelName,
-          whenChannelStateChanged: whenChannelStateChanged,
+          publicEventEmitter: _exposedPublicEventsStreamEmit,
         ),
       );
 
   PrivateChannel privateChannel(
     String channelName, {
-    required ChannelStateChangedCallback<PrivateChannelState>?
-        whenChannelStateChanged,
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PrivateChannelAuthorizationData>
         authorizationDelegate,
-    required EndpointAuthorizationErrorCallback? onAuthFailed,
   }) =>
       _createChannelSafely<PrivateChannel>(
         channelName: channelName,
         constructorDelegate: () => PrivateChannel.internal(
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
+          publicStreamGetter: () => _publicStreamController.stream,
           name: channelName,
-          whenChannelStateChanged: whenChannelStateChanged,
-          onAuthFailed: onAuthFailed,
+          publicEventEmitter: _exposedPublicEventsStreamEmit,
         ),
       );
 
   PresenceChannel presenceChannel(
     String channelName, {
-    required ChannelStateChangedCallback<PresenceChannelState>?
-        whenChannelStateChanged,
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PresenceChannelAuthorizationData>
         authorizationDelegate,
-    required EndpointAuthorizationErrorCallback? onAuthFailed,
   }) =>
       _createChannelSafely<PresenceChannel>(
         channelName: channelName,
         constructorDelegate: () => PresenceChannel.internal(
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
+          publicStreamGetter: () => _publicStreamController.stream,
           name: channelName,
-          whenChannelStateChanged: whenChannelStateChanged,
-          onAuthFailed: onAuthFailed,
+          publicEventEmitter: _exposedPublicEventsStreamEmit,
         ),
       );
 
@@ -144,6 +154,9 @@ class ChannelsManager {
     required String channelName,
     required _ChannelConstructorDelegate<T> constructorDelegate,
   }) {
+    if (_isDisposed) {
+      throw const ChannelsManagerHasBeenDisposedException();
+    }
     final foundChannel = _channelsMap[channelName];
     if (foundChannel == null) {
       return _channelsMap[channelName] = constructorDelegate();
@@ -159,9 +172,22 @@ class ChannelsManager {
   }
 
   void dispose() {
+    if (_isDisposed) {
+      throw const ChannelsManagerHasBeenDisposedException();
+    }
+    _isDisposed = true;
     for (final channel in _channelsMap.values) {
       channel.unsubscribe();
     }
     _channelsMap.clear();
+    _publicStreamController.close();
+  }
+
+  void _exposedPublicEventsStreamEmit(ChannelReadEvent event) {
+    if (_isDisposed) {
+      return;
+    }
+
+    _publicStreamController.add(event);
   }
 }
