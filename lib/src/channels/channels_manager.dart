@@ -1,4 +1,7 @@
 import 'package:dart_pusher_channels/src/channels/channel.dart';
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
@@ -10,6 +13,7 @@ typedef ChannelsManagerSendEventDelegate = void Function(
 
 typedef ChannelsManagerEventStreamGetter = Stream<PusherChannelsEvent>
     Function();
+typedef ChannelsManagerSocketIdGetter = String? Function();
 
 typedef _ChannelConstructorDelegate<T extends Channel> = T Function();
 
@@ -18,13 +22,18 @@ class ChannelsManagerConnectionDelegate {
   final ChannelsManagerEventStreamGetter eventStreamGetter;
   @protected
   final ChannelsManagerSendEventDelegate sendEventDelegate;
+  @protected
+  final ChannelsManagerSocketIdGetter socketIdGetter;
 
   const ChannelsManagerConnectionDelegate({
     required this.sendEventDelegate,
     required this.eventStreamGetter,
+    required this.socketIdGetter,
   });
 
   Stream<PusherChannelsEvent> get eventStream => eventStreamGetter();
+
+  String? get socketId => socketIdGetter();
 
   void sendEvent(PusherChannelsSentEventMixin event) =>
       sendEventDelegate(event);
@@ -76,6 +85,26 @@ class ChannelsManager {
           connectionDelegate: channelsConnectionDelegate,
           name: channelName,
           whenChannelStateChanged: whenChannelStateChanged,
+        ),
+      );
+
+  PrivateChannel privateChannel(
+    String channelName, {
+    required ChannelStateChangedCallback<PrivateChannelState>?
+        whenChannelStateChanged,
+    required EndpointAuthorizableChannelAuthorizationDelegate<
+            PrivateChannelAuthorizationData>
+        authorizationDelegate,
+    required EndpointAuthorizationErrorCallback? onAuthFailed,
+  }) =>
+      _createChannelSafely<PrivateChannel>(
+        channelName: channelName,
+        constructorDelegate: () => PrivateChannel.internal(
+          authorizationDelegate: authorizationDelegate,
+          connectionDelegate: channelsConnectionDelegate,
+          name: channelName,
+          whenChannelStateChanged: whenChannelStateChanged,
+          onAuthFailed: onAuthFailed,
         ),
       );
 

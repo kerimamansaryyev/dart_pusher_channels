@@ -47,6 +47,7 @@ class PusherChannelsClient {
 
     final channelsManager = ChannelsManager(
       channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+        socketIdGetter: () => client.controller.socketId,
         sendEventDelegate: (event) => client.sendEvent(event),
         eventStreamGetter: () => client.eventStream,
       ),

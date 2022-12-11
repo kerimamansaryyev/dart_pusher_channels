@@ -11,6 +11,7 @@ void main() {
       () {
         final manager = ChannelsManager(
           channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            socketIdGetter: () => null,
             sendEventDelegate: (event) {},
             eventStreamGetter: Stream.empty,
           ),
@@ -31,6 +32,7 @@ void main() {
       () {
         final manager = ChannelsManager(
           channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            socketIdGetter: () => null,
             sendEventDelegate: (event) {},
             eventStreamGetter: Stream.empty,
           ),
@@ -60,6 +62,7 @@ void main() {
         );
         final manager = ChannelsManager(
           channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            socketIdGetter: () => null,
             sendEventDelegate: (event) {},
             eventStreamGetter: () => eventStream,
           ),

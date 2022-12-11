@@ -26,6 +26,7 @@ class PublicChannel extends Channel<PublicChannelState>
   @override
   final String name;
 
+  @internal
   PublicChannel.internal({
     required this.connectionDelegate,
     required this.name,
@@ -36,7 +37,7 @@ class PublicChannel extends Channel<PublicChannelState>
   void subscribe() {
     ensureStatusIdleBeforeSubscribe();
     connectionDelegate.sendEvent(
-      ChannelSubscribeEvent(
+      ChannelSubscribeEvent.forPublicChannel(
         channelName: name,
       ),
     );

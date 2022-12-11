@@ -11,16 +11,44 @@ class ChannelSubscribeEvent
 
   final String channelName;
 
+  final String? channelDataEncoded;
+
+  final String? authKey;
+
   const ChannelSubscribeEvent({
     required this.channelName,
+    required this.authKey,
+    required this.channelDataEncoded,
   });
+
+  const ChannelSubscribeEvent.forPublicChannel({
+    required String channelName,
+  }) : this(
+          channelName: channelName,
+          authKey: null,
+          channelDataEncoded: null,
+        );
+
+  const ChannelSubscribeEvent.forPrivateChannel({
+    required String channelName,
+    required String authKey,
+  }) : this(
+          channelName: channelName,
+          authKey: authKey,
+          channelDataEncoded: null,
+        );
 
   @override
   String getEncoded() {
+    final authorizationKey = authKey;
+    final channelData = channelDataEncoded;
+
     return jsonEncode({
       PusherChannelsEvent.eventNameKey: name,
-      PusherChannelsEvent.dataKey: {
+      PusherChannelsEvent.dataKey: <String, String>{
         PusherChannelsEvent.channelKey: channelName,
+        if (authorizationKey != null) 'auth': authorizationKey,
+        if (channelData != null) 'channel_data': channelData,
       }
     });
   }
