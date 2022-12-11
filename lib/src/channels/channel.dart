@@ -14,6 +14,7 @@ typedef ChannelStateChangedCallback<T extends ChannelState> = void Function(
 enum ChannelStatus {
   subscribed,
   unsubscribed,
+  pendingSubscription,
   idle,
 }
 
@@ -25,9 +26,9 @@ mixin ChannelHandledSubscriptionMixin<T extends ChannelState> on Channel<T> {
   T getStateWithNewStatus(ChannelStatus status);
 
   @mustCallSuper
-  void ensureStatusIdleBeforeSubscribe() {
-    if (_currentStatus != ChannelStatus.idle) {
-      _currentStatus = ChannelStatus.idle;
+  void ensureStatusPendingBeforeSubscribe() {
+    if (_currentStatus != ChannelStatus.pendingSubscription) {
+      _currentStatus = ChannelStatus.pendingSubscription;
       updateState(
         getStateWithNewStatus(
           _currentStatus,

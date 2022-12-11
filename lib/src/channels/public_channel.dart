@@ -35,7 +35,7 @@ class PublicChannel extends Channel<PublicChannelState>
 
   @override
   void subscribe() {
-    ensureStatusIdleBeforeSubscribe();
+    ensureStatusPendingBeforeSubscribe();
     connectionDelegate.sendEvent(
       ChannelSubscribeEvent.forPublicChannel(
         channelName: name,

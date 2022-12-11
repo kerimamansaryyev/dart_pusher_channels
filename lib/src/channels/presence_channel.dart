@@ -60,7 +60,7 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
 
   @override
   void subscribe() async {
-    ensureStatusIdleBeforeSubscribe();
+    ensureStatusPendingBeforeSubscribe();
     final fixatedLifeCycleCount = startNewAuthRequestCycle();
     await setAuthKeyFromDelegate();
     final currentAuthKey = authData?.authKey;
