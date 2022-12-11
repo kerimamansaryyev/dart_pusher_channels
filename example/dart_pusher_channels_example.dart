@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/channels/extensions/channel_extension.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
@@ -30,11 +31,16 @@ void main() async {
       authorizationDelegate:
           EndpointAuthorizableChannelTokenAuthorizationDelegate
               .forPresenceChannel(
-        authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
+        authorizationEndpoint:
+            Uri.parse('https://test.pusher.com/pusherr/auth'),
         headers: const {},
       ),
     );
     channel!.subscribeIfNotUnsubscribed();
+    channel?.whenSubscriptionSucceeded().listen(print);
+    channel?.onAuthenticationSubscriptionFailed().listen((event) {
+      print(event.rootObject);
+    });
   });
 
   unawaited(client.connect());

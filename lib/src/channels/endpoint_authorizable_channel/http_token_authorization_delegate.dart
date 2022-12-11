@@ -23,7 +23,7 @@ class EndpointAuthorizableChannelTokenAuthorizationException
 
   @override
   String get message =>
-      'Failed to get authorization data. Response to $authorizationEndpoint was:\n $response';
+      'Failed to get authorization data. Response to $authorizationEndpoint was:\n ${response.body}';
 }
 
 @immutable

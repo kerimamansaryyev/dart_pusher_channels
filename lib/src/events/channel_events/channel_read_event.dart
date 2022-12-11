@@ -31,8 +31,8 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
         PusherChannelsEvent.eventNameKey: Channel.subscriptionErrorEventName,
         PusherChannelsEvent.channelKey: channel.name,
         PusherChannelsEvent.dataKey: {
-          'type': type,
-          'error': errorMessage,
+          PusherChannelsEvent.errorTypeKey: type,
+          PusherChannelsEvent.errorKey: errorMessage,
         }
       },
       channel: channel,

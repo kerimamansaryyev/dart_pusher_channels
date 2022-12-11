@@ -25,13 +25,9 @@ abstract class Channel<T extends ChannelState> {
   @protected
   static const internalSubscriptionsCountEventName =
       'pusher_internal:subscription_count';
-  @protected
   static const subscriptionsCountEventName = 'pusher:subscription_count';
-  @protected
   static const subscriptionSucceededEventName = 'pusher:subscription_succeeded';
-  @protected
   static const pusherInternalPrefix = 'pusher_internal:';
-  @protected
   static const authErrorType = 'AuthError';
   static const subscriptionErrorEventName = 'pusher:subscription_error';
 
