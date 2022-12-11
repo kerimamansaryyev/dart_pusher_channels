@@ -136,9 +136,7 @@ void main() {
     test('Connection is pending until connection is established', () async {
       final client = PusherChannelsClient.custom(
         connectionDelegate: () => TestConnection(),
-        connectionErrorHandler: (exception, trace, refresh) {
-          print(exception);
-        },
+        connectionErrorHandler: (exception, trace, refresh) {},
       );
       final stream = client.lifecycleStream;
       final stopWatch = Stopwatch()..start();
