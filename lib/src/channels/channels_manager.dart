@@ -6,10 +6,15 @@ import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
+import 'package:dart_pusher_channels/src/events/trigger_event.dart';
 import 'package:meta/meta.dart';
 
 typedef ChannelsManagerSendEventDelegate = void Function(
   PusherChannelsSentEventMixin event,
+);
+
+typedef ChannelsManagerTriggerEventDelegate = void Function(
+  PusherChannelsTriggerEvent event,
 );
 
 typedef ChannelsManagerEventStreamGetter = Stream<PusherChannelsEvent>
@@ -25,11 +30,14 @@ class ChannelsManagerConnectionDelegate {
   final ChannelsManagerSendEventDelegate sendEventDelegate;
   @protected
   final ChannelsManagerSocketIdGetter socketIdGetter;
+  @protected
+  final ChannelsManagerTriggerEventDelegate triggerEventDelegate;
 
   const ChannelsManagerConnectionDelegate({
     required this.sendEventDelegate,
     required this.eventStreamGetter,
     required this.socketIdGetter,
+    required this.triggerEventDelegate,
   });
 
   Stream<PusherChannelsEvent> get eventStream => eventStreamGetter();
@@ -38,6 +46,9 @@ class ChannelsManagerConnectionDelegate {
 
   void sendEvent(PusherChannelsSentEventMixin event) =>
       sendEventDelegate(event);
+
+  void triggerEvent(PusherChannelsTriggerEvent event) =>
+      triggerEventDelegate(event);
 }
 
 class ChannelsManager {

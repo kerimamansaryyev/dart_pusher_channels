@@ -11,6 +11,6 @@ mixin TriggerableChannelMixin<T extends ChannelState> on Channel<T> {
       return;
     }
 
-    connectionDelegate.sendEvent(event);
+    connectionDelegate.triggerEvent(event);
   }
 }
