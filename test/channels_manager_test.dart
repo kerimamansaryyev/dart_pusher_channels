@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
+import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
+// Ignoring while testing
+// ignore: long-method
 void main() {
   group('Testing ChannelsManager |', () {
     test(
@@ -46,6 +50,7 @@ void main() {
         expect(oldPublicChannel != newPublicChannel, true);
       },
     );
+
     test(
       'Disposing the manager will unsubscribe the channel',
       () {
@@ -63,6 +68,92 @@ void main() {
         expect(channel.getStateTest()?.status, null);
         manager.dispose();
         expect(channel.getStateTest()?.status, ChannelStatus.unsubscribed);
+      },
+    );
+    test(
+      'ChannelsManager can\'t process the event if it\'not refferred to any channel ',
+      () async {
+        final manager = ChannelsManager(
+          channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            triggerEventDelegate: (event) {},
+            socketIdGetter: () => null,
+            sendEventDelegate: (event) {},
+          ),
+        );
+        final channel = manager.publicChannel(
+          'hello',
+          forceCreateNewInstance: false,
+        );
+        unawaited(
+          expectLater(
+            channel.bindToAll(),
+            emitsDone,
+          ),
+        );
+        await Future.microtask(() {
+          manager.handleEvent(
+            PusherChannelsReadEvent(
+              rootObject: {
+                PusherChannelsEvent.eventNameKey:
+                    Channel.subscriptionSucceededEventName,
+              },
+            ),
+          );
+        });
+        unawaited(
+          Future.microtask(() => manager.dispose()),
+        );
+      },
+    );
+
+    test(
+      'Channels receive events only with its respective name',
+      () async {
+        final manager = ChannelsManager(
+          channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            triggerEventDelegate: (event) {},
+            socketIdGetter: () => null,
+            sendEventDelegate: (event) {},
+          ),
+        );
+        final channel1 = manager.publicChannel(
+          'hello',
+          forceCreateNewInstance: false,
+        );
+        final channel2 = manager.publicChannel(
+          'hello2',
+          forceCreateNewInstance: false,
+        );
+        unawaited(
+          expectLater(
+            channel1.bindToAll(),
+            emitsDone,
+          ),
+        );
+        unawaited(
+          expectLater(
+            channel2.bindToAll(),
+            emitsInOrder([
+              isA<ChannelReadEvent>().having((event) => event.name, 'name',
+                  Channel.subscriptionSucceededEventName),
+              emitsDone,
+            ]),
+          ),
+        );
+        await Future.microtask(() {
+          manager.handleEvent(
+            PusherChannelsReadEvent(
+              rootObject: {
+                PusherChannelsEvent.eventNameKey:
+                    Channel.subscriptionSucceededEventName,
+                PusherChannelsEvent.channelKey: channel2.name,
+              },
+            ),
+          );
+        });
+        unawaited(
+          Future.microtask(() => manager.dispose()),
+        );
       },
     );
 

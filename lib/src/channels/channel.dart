@@ -109,8 +109,11 @@ abstract class Channel<T extends ChannelState> {
   @protected
   ChannelStatus? get currentStatus => state?.status;
 
-  Stream<ChannelReadEvent> bindToAll() =>
-      publicStreamGetter().transform<ChannelReadEvent>(
+  Stream<ChannelReadEvent> bindToAll() => publicStreamGetter()
+      .where(
+        (event) => event.channelName == name,
+      )
+      .transform<ChannelReadEvent>(
         StreamTransformer.fromHandlers(
           handleData: _bindStreamSinkFilter,
         ),
