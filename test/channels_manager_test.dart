@@ -134,8 +134,11 @@ void main() {
           expectLater(
             channel2.bindToAll(),
             emitsInOrder([
-              isA<ChannelReadEvent>().having((event) => event.name, 'name',
-                  Channel.subscriptionSucceededEventName),
+              isA<ChannelReadEvent>().having(
+                (event) => event.name,
+                'name',
+                Channel.subscriptionSucceededEventName,
+              ),
               emitsDone,
             ]),
           ),
@@ -169,7 +172,7 @@ void main() {
           ),
         );
         final subs = Stream<PusherChannelsReadEvent>.periodic(
-          const Duration(seconds: 1),
+          const Duration(milliseconds: 990),
           (_) => PusherChannelsReadEvent(
             rootObject: {
               'event': 'helloEvent',
@@ -189,7 +192,6 @@ void main() {
           const Duration(seconds: 3),
         );
         channel.unsubscribe();
-        print(channel.getStateTest()?.status);
         await Future.delayed(
           const Duration(
             seconds: 2,
