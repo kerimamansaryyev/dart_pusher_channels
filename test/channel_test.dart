@@ -297,6 +297,42 @@ void _testSubscriptionGroupWithMock() {
       );
     },
   );
+
+  test(
+    'Ignore events handled by Channel supertype if unsubscribed',
+    () async {
+      final manager = ChannelsManager(
+        channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+          sendEventDelegate: (event) {},
+          socketIdGetter: () => null,
+          triggerEventDelegate: (event) {},
+        ),
+      );
+      final channel = _channelMockDelegate(manager);
+      unawaited(
+        expectLater(
+          channel.bindToAll(),
+          emitsDone,
+        ),
+      );
+      channel.unsubscribe();
+      await Future.microtask(
+        () => manager.handleEvent(
+          _fakeSubscriptionEvent(channel),
+        ),
+      );
+      await Future.microtask(
+        () => manager.handleEvent(
+          _fakeCountEvent(channel),
+        ),
+      );
+      expect(
+        channel.state?.status,
+        ChannelStatus.unsubscribed,
+      );
+      unawaited(Future.microtask(() => manager.dispose()));
+    },
+  );
 }
 
 void main() {
