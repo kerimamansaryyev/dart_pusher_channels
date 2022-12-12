@@ -28,7 +28,7 @@ void main() {
       },
     );
     test(
-      'Disposing the manager will unsubscrive the channel',
+      'Disposing the manager will unsubscribe the channel',
       () {
         final manager = ChannelsManager(
           channelsConnectionDelegate: ChannelsManagerConnectionDelegate(

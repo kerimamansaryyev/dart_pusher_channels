@@ -19,12 +19,21 @@ abstract class ChannelState {
 }
 
 abstract class Channel<T extends ChannelState> {
+  @visibleForTesting
+  static String getInternalSubscriptionSucceededEventNameTest() =>
+      internalSubscriptionSucceededEventName;
+
+  @visibleForTesting
+  static String getInternalSubscriptionsCountEventName() =>
+      internalSubscriptionsCountEventName;
+
   @protected
   static const internalSubscriptionSucceededEventName =
       'pusher_internal:subscription_succeeded';
   @protected
   static const internalSubscriptionsCountEventName =
       'pusher_internal:subscription_count';
+  static const subscriptionsCountKey = 'subscription_count';
   static const subscriptionsCountEventName = 'pusher:subscription_count';
   static const subscriptionSucceededEventName = 'pusher:subscription_succeeded';
   static const pusherInternalPrefix = 'pusher_internal:';
@@ -46,6 +55,10 @@ abstract class Channel<T extends ChannelState> {
   @protected
   T getStateWithNewSubscriptionCount(int? subscriptionCount);
 
+  @protected
+  bool canHandleEvent(ChannelReadEvent event) =>
+      event.channelName == name && currentStatus != ChannelStatus.unsubscribed;
+
   @mustCallSuper
   @protected
   void updateState(T newState) {
@@ -65,6 +78,9 @@ abstract class Channel<T extends ChannelState> {
   @internal
   @mustCallSuper
   void handleEvent(ChannelReadEvent event) {
+    if (!canHandleEvent(event)) {
+      return;
+    }
     switch (event.name) {
       case internalSubscriptionSucceededEventName:
         _handleSubscription(event);
@@ -92,6 +108,13 @@ abstract class Channel<T extends ChannelState> {
 
   @protected
   ChannelStatus? get currentStatus => state?.status;
+
+  Stream<ChannelReadEvent> bindToAll() =>
+      publicStreamGetter().transform<ChannelReadEvent>(
+        StreamTransformer.fromHandlers(
+          handleData: _bindStreamSinkFilter,
+        ),
+      );
 
   Stream<ChannelReadEvent> bind(String eventName) => publicStreamGetter()
       .where(
@@ -158,7 +181,7 @@ abstract class Channel<T extends ChannelState> {
 
   void _handleSubscriptionCount(ChannelReadEvent readEvent) {
     final count = int.tryParse(
-      '${readEvent.tryGetDataAsMap()?[internalSubscriptionsCountEventName]}',
+      '${readEvent.tryGetDataAsMap()?[subscriptionsCountKey]}',
     );
     updateState(
       getStateWithNewSubscriptionCount(

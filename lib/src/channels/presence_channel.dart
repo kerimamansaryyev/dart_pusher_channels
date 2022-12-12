@@ -127,6 +127,9 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
   @override
   void handleEvent(ChannelReadEvent event) {
     super.handleEvent(event);
+    if (!canHandleEvent(event)) {
+      return;
+    }
     //TODO: hadnle presence there
   }
 }
