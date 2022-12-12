@@ -31,16 +31,13 @@ void main() async {
       authorizationDelegate:
           EndpointAuthorizableChannelTokenAuthorizationDelegate
               .forPresenceChannel(
-        authorizationEndpoint:
-            Uri.parse('https://test.pusher.com/pusherr/auth'),
+        authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
         headers: const {},
       ),
     );
     channel!.subscribeIfNotUnsubscribed();
     channel?.whenSubscriptionSucceeded().listen(print);
-    channel?.onAuthenticationSubscriptionFailed().listen((event) {
-      print(event.rootObject);
-    });
+    channel?.onAuthenticationSubscriptionFailed().listen((event) {});
   });
 
   unawaited(client.connect());

@@ -105,9 +105,13 @@ class ChannelsManager {
     }
   }
 
-  PublicChannel publicChannel(String channelName) =>
+  PublicChannel publicChannel(
+    String channelName, {
+    required bool forceCreateNewInstance,
+  }) =>
       _createChannelSafely<PublicChannel>(
         channelName: channelName,
+        forceCreateNewInstance: forceCreateNewInstance,
         constructorDelegate: () => PublicChannel.internal(
           connectionDelegate: channelsConnectionDelegate,
           publicStreamGetter: () => _publicStreamController.stream,
@@ -121,9 +125,11 @@ class ChannelsManager {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PrivateChannelAuthorizationData>
         authorizationDelegate,
+    required bool forceCreateNewInstance,
   }) =>
       _createChannelSafely<PrivateChannel>(
         channelName: channelName,
+        forceCreateNewInstance: forceCreateNewInstance,
         constructorDelegate: () => PrivateChannel.internal(
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
@@ -138,9 +144,11 @@ class ChannelsManager {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PresenceChannelAuthorizationData>
         authorizationDelegate,
+    required bool forceCreateNewInstance,
   }) =>
       _createChannelSafely<PresenceChannel>(
         channelName: channelName,
+        forceCreateNewInstance: forceCreateNewInstance,
         constructorDelegate: () => PresenceChannel.internal(
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
@@ -153,6 +161,7 @@ class ChannelsManager {
   T _createChannelSafely<T extends Channel>({
     required String channelName,
     required _ChannelConstructorDelegate<T> constructorDelegate,
+    required bool forceCreateNewInstance,
   }) {
     if (_isDisposed) {
       throw const ChannelsManagerHasBeenDisposedException();
@@ -161,7 +170,7 @@ class ChannelsManager {
     if (foundChannel == null) {
       return _channelsMap[channelName] = constructorDelegate();
     }
-    if (foundChannel.runtimeType != T) {
+    if (foundChannel.runtimeType != T || forceCreateNewInstance) {
       final previousStatus = foundChannel.state?.status;
       _tryRestoreChannelSubscription(
         _channelsMap[channelName] = constructorDelegate(),

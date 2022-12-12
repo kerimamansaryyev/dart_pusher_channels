@@ -99,9 +99,13 @@ class PusherChannelsClient {
         connectionErrorHandler: connectionErrorHandler,
       );
 
-  PublicChannel publicChannel(String channelName) =>
+  PublicChannel publicChannel(
+    String channelName, {
+    bool forceCreateNewInstance = false,
+  }) =>
       channelsManager.publicChannel(
         channelName,
+        forceCreateNewInstance: forceCreateNewInstance,
       );
 
   PrivateChannel privateChannel(
@@ -109,10 +113,12 @@ class PusherChannelsClient {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PrivateChannelAuthorizationData>
         authorizationDelegate,
+    bool forceCreateNewInstance = false,
   }) =>
       channelsManager.privateChannel(
         channelName,
         authorizationDelegate: authorizationDelegate,
+        forceCreateNewInstance: forceCreateNewInstance,
       );
 
   PresenceChannel presenceChannel(
@@ -120,10 +126,12 @@ class PusherChannelsClient {
     required EndpointAuthorizableChannelAuthorizationDelegate<
             PresenceChannelAuthorizationData>
         authorizationDelegate,
+    bool forceCreateNewInstance = false,
   }) =>
       channelsManager.presenceChannel(
         channelName,
         authorizationDelegate: authorizationDelegate,
+        forceCreateNewInstance: forceCreateNewInstance,
       );
 
   Stream<PusherChannelsEvent> get eventStream => controller.eventStream;

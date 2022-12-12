@@ -81,5 +81,11 @@ Trace: $trace,
         errorMessage: message,
       ),
     );
+    Future.microtask(
+      () => authorizationDelegate.onAuthFailed?.call(
+        exception,
+        trace,
+      ),
+    );
   }
 }

@@ -34,11 +34,14 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   final Map<String, String> headers;
   @protected
   final EndpointAuthorizableChannelTokenAuthorizationParser<T> parser;
+  @override
+  final EndpointAuthFailedCallback? onAuthFailed;
 
   const EndpointAuthorizableChannelTokenAuthorizationDelegate._({
     required this.authorizationEndpoint,
     required this.headers,
     required this.parser,
+    required this.onAuthFailed,
   });
 
   @override
@@ -71,9 +74,11 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PrivateChannelAuthorizationData>
         parser = defaultParserForPrivateChannel,
+    EndpointAuthFailedCallback? onAuthFailed,
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
         authorizationEndpoint: authorizationEndpoint,
+        onAuthFailed: onAuthFailed,
         headers: headers,
         parser: parser,
       );
@@ -85,11 +90,13 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PresenceChannelAuthorizationData>
         parser = defaultParserForPresenceChannel,
+    EndpointAuthFailedCallback? onAuthFailed,
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
         authorizationEndpoint: authorizationEndpoint,
         headers: headers,
         parser: parser,
+        onAuthFailed: onAuthFailed,
       );
 
   static PrivateChannelAuthorizationData defaultParserForPrivateChannel(

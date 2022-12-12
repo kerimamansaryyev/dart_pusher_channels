@@ -18,13 +18,32 @@ void main() {
             sendEventDelegate: (event) {},
           ),
         );
-        final oldPublicChannel = manager.publicChannel(
-          'hello',
-        );
+        final oldPublicChannel =
+            manager.publicChannel('hello', forceCreateNewInstance: false);
         final newPublicChannel = manager.publicChannel(
           'hello',
+          forceCreateNewInstance: false,
         );
         expect(oldPublicChannel == newPublicChannel, true);
+      },
+    );
+    test(
+      'Gives a new instance of channels if forceCreateNewInstance is set to true',
+      () {
+        final manager = ChannelsManager(
+          channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+            triggerEventDelegate: (event) {},
+            socketIdGetter: () => null,
+            sendEventDelegate: (event) {},
+          ),
+        );
+        final oldPublicChannel =
+            manager.publicChannel('hello', forceCreateNewInstance: false);
+        final newPublicChannel = manager.publicChannel(
+          'hello',
+          forceCreateNewInstance: true,
+        );
+        expect(oldPublicChannel != newPublicChannel, true);
       },
     );
     test(
@@ -39,6 +58,7 @@ void main() {
         );
         final channel = manager.publicChannel(
           'hello',
+          forceCreateNewInstance: false,
         );
         expect(channel.getStateTest()?.status, null);
         manager.dispose();
@@ -69,6 +89,7 @@ void main() {
 
         final channel = manager.publicChannel(
           'hello',
+          forceCreateNewInstance: false,
         );
         channel.bind('helloEvent').listen((event) {
           eventCount++;

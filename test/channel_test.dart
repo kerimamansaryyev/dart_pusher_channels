@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/extensions/channel_extension.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
@@ -9,6 +10,12 @@ import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:test/test.dart';
+
+typedef _AuthChannelBuilder<T extends EndpointAuthorizationData>
+    = EndpointAuthorizableChannel Function(
+  ChannelsManager manager,
+  _ShellAuthDelegate<T> delegate,
+);
 
 typedef _ChannelMockDelegate = Channel Function(
   ChannelsManager manager,
@@ -20,18 +27,22 @@ const _defaultChannelName = 'hi_channel';
 
 _ChannelMockDelegate _channelMockDelegate = (manager) => manager.publicChannel(
       _defaultChannelName,
+      forceCreateNewInstance: false,
     );
 
 class _ShellAuthDelegate<T extends EndpointAuthorizationData>
     implements EndpointAuthorizableChannelAuthorizationDelegate<T> {
   final _ShellAuthDelegateDataGenerator<T> generator;
+  @override
+  final EndpointAuthFailedCallback? onAuthFailed;
   _ShellAuthDelegate({
     required this.generator,
+    this.onAuthFailed,
   });
 
   @override
   FutureOr<T> authorizationData(String socketId, String channelName) {
-    throw UnimplementedError();
+    return generator();
   }
 }
 
@@ -335,16 +346,63 @@ void _testSubscriptionGroupWithMock() {
   );
 }
 
+void _testAuthGroupThrowingErrorOnSubscription<
+    T extends EndpointAuthorizationData>(
+  _AuthChannelBuilder<T> authChannelBuilder,
+) async {
+  final manager = ChannelsManager(
+    channelsConnectionDelegate: ChannelsManagerConnectionDelegate(
+      sendEventDelegate: (event) {},
+      socketIdGetter: () => '123',
+      triggerEventDelegate: (event) {},
+    ),
+  );
+  final delegate = _ShellAuthDelegate(
+    generator: () => throw UnimplementedError(),
+    onAuthFailed: (exception, trace) => expect(
+      exception,
+      isA<UnimplementedError>(),
+    ),
+  );
+  final channel = authChannelBuilder(
+    manager,
+    delegate,
+  );
+  unawaited(
+    expectLater(
+      channel.onAuthenticationSubscriptionFailed().map(
+            (event) => event.name,
+          ),
+      emitsInOrder(
+        [
+          Channel.subscriptionErrorEventName,
+          emitsDone,
+        ],
+      ),
+    ),
+  );
+  await Future.microtask(
+    () => channel.subscribe(),
+  );
+  unawaited(Future.microtask(() => manager.dispose()));
+}
+
 void main() {
-  group('PublicChannel general subscription/unsubscription/subscription_count',
+  group(
+      'PublicChannel general subscription/unsubscription/subscription_count |',
       () {
-    _channelMockDelegate = (manager) => manager.publicChannel('hello_channel');
+    _channelMockDelegate = (manager) => manager.publicChannel(
+          'hello_channel',
+          forceCreateNewInstance: false,
+        );
     _testSubscriptionGroupWithMock();
   });
-  group('PrivateChannel general subscription/unsubscription/subscription_count',
+  group(
+      'PrivateChannel general subscription/unsubscription/subscription_count |',
       () {
     _channelMockDelegate = (manager) => manager.privateChannel(
           'hello_channel',
+          forceCreateNewInstance: false,
           authorizationDelegate:
               _ShellAuthDelegate<PrivateChannelAuthorizationData>(
             generator: () => PrivateChannelAuthorizationData(
@@ -355,10 +413,11 @@ void main() {
     _testSubscriptionGroupWithMock();
   });
   group(
-      'PresenceChannel general subscription/unsubscription/subscription_count',
+      'PresenceChannel general subscription/unsubscription/subscription_coun |t',
       () {
     _channelMockDelegate = (manager) => manager.presenceChannel(
           'hello_channel',
+          forceCreateNewInstance: false,
           authorizationDelegate:
               _ShellAuthDelegate<PresenceChannelAuthorizationData>(
             generator: () => PresenceChannelAuthorizationData(
@@ -369,4 +428,36 @@ void main() {
         );
     _testSubscriptionGroupWithMock();
   });
+
+  group(
+    'Authorization channels test |',
+    () {
+      test(
+        'An error thrown when PrivateChannel fails to authenticate user',
+        () {
+          _testAuthGroupThrowingErrorOnSubscription<
+              PrivateChannelAuthorizationData>(
+            (manager, delegate) => manager.privateChannel(
+              'hi_channel',
+              authorizationDelegate: delegate,
+              forceCreateNewInstance: false,
+            ),
+          );
+        },
+      );
+      test(
+        'An error thrown when PresenceChannel fails to authenticate user',
+        () {
+          _testAuthGroupThrowingErrorOnSubscription<
+              PresenceChannelAuthorizationData>(
+            (manager, delegate) => manager.presenceChannel(
+              'hi_channel',
+              authorizationDelegate: delegate,
+              forceCreateNewInstance: false,
+            ),
+          );
+        },
+      );
+    },
+  );
 }
