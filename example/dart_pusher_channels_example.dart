@@ -36,8 +36,13 @@ void main() async {
       ),
     );
     channel!.subscribeIfNotUnsubscribed();
-    channel?.whenSubscriptionSucceeded().listen(print);
-    channel?.onAuthenticationSubscriptionFailed().listen((event) {});
+    channel!.whenMemberAdded().listen((event) {
+      print(channel?.state?.members?.membersCount);
+      print(channel?.state?.members?.getMap());
+    });
+    channel!.whenMemberRemoved().listen((event) {
+      print(channel?.state?.members?.membersCount);
+    });
   });
 
   unawaited(client.connect());

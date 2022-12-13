@@ -90,21 +90,6 @@ class ChannelsManager {
     }
   }
 
-  void _tryRestoreChannelSubscription(Channel channel, ChannelStatus? status) {
-    if (_isDisposed) {
-      return;
-    }
-    switch (status) {
-      case ChannelStatus.subscribed:
-        channel.subscribe();
-        break;
-      case ChannelStatus.unsubscribed:
-      case ChannelStatus.idle:
-      default:
-        return;
-    }
-  }
-
   PublicChannel publicChannel(
     String channelName, {
     required bool forceCreateNewInstance,
@@ -171,11 +156,7 @@ class ChannelsManager {
       return _channelsMap[channelName] = constructorDelegate();
     }
     if (foundChannel.runtimeType != T || forceCreateNewInstance) {
-      final previousStatus = foundChannel.state?.status;
-      _tryRestoreChannelSubscription(
-        _channelsMap[channelName] = constructorDelegate(),
-        previousStatus,
-      );
+      _channelsMap[channelName] = constructorDelegate();
     }
     return (_channelsMap[channelName] ??= constructorDelegate()) as T;
   }

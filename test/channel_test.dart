@@ -235,12 +235,17 @@ void _testSubscriptionGroupWithMock() {
         channel.state?.status,
         ChannelStatus.idle,
       );
-      await Future.microtask(
-        () => expect(channel.state?.subscriptionCount, 3),
-      );
+      expect(channel.state?.subscriptionCount, 3);
       channel.subscribe();
-      manager.handleEvent(
-        _fakeSubscriptionEvent(channel),
+      await Future.microtask(
+        () => manager.handleEvent(
+          _fakeSubscriptionEvent(channel),
+        ),
+      );
+      expect(
+        channel.state?.status == ChannelStatus.subscribed &&
+            channel.state?.subscriptionCount == 3,
+        true,
       );
       await Future.microtask(() => manager.dispose());
     },

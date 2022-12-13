@@ -10,6 +10,14 @@ extension ChannelExtension<T extends ChannelState> on Channel<T> {
         Channel.subscriptionsCountEventName,
       );
 
+  Stream<ChannelReadEvent> whenMemberAdded() => bind(
+        Channel.memberAddedEventName,
+      );
+
+  Stream<ChannelReadEvent> whenMemberRemoved() => bind(
+        Channel.memberRemovedEventName,
+      );
+
   Stream<ChannelReadEvent> onSubscriptionError({String? errorType}) =>
       bind(Channel.subscriptionErrorEventName).where(
         (event) => _filterSubscriptionErrorPredicate(errorType, event),
