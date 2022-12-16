@@ -262,9 +262,13 @@ void main() {
             'event': 'pusher:connection_established',
             'data': jsonEncode(<String, dynamic>{})
           };
-          final mapMessageWrong = {
+          final mapMessageWrongName = {
             'event': 'pusher:connection_established1',
             'data': jsonEncode(<String, String>{})
+          };
+          final mapMessageWrongData = {
+            'event': 'pusher:connection_established1',
+            'data': 3
           };
           final stringMessage = jsonEncode(
             mapMessage,
@@ -288,7 +292,12 @@ void main() {
 
           final withWrongName =
               PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
-            mapMessageWrong,
+            mapMessageWrongName,
+          );
+
+          final withWrongData =
+              PusherChannelsConnectionEstablishedEvent.tryParseFromDynamic(
+            mapMessageWrongData,
           );
 
           final withoudSocketId =
@@ -316,6 +325,10 @@ void main() {
           );
           expect(
             withoudSocketId,
+            null,
+          );
+          expect(
+            withWrongData,
             null,
           );
         },
