@@ -115,7 +115,6 @@ void main() {
         () {
           final connection = TestConnection();
           connection.close();
-          expect(connection.close(), throwsException);
           dynamic exception;
           try {
             connection.connect(
