@@ -78,9 +78,8 @@ class PusherChannelsClientLifeCycleController {
 
   String? get socketId => _socketId;
 
-  void reconnectSafely() {
-    _reconnect();
-  }
+  @internal
+  Future<void> getCompleterFuture() => _connectionCompleter.future;
 
   void sendEvent(PusherChannelsSentEventMixin event) {
     _sendEvent(event);
@@ -90,8 +89,14 @@ class PusherChannelsClientLifeCycleController {
     _triggerEvent(event);
   }
 
+  Future<void> reconnectSafely() {
+    return _reconnect();
+  }
+
   Future<void> connectSafely() {
-    return _connect();
+    return _connect(
+      shouldReInitCompleter: true,
+    );
   }
 
   Future<void> disconnectSafely() {
@@ -109,15 +114,21 @@ class PusherChannelsClientLifeCycleController {
     await _eventsController.close();
   }
 
-  Future<void> _connect() async {
-    _completeSafely();
-    final fixatedLifeCycleCount = ++_currentLifeCycleCount;
+  Future<void> _connect({required bool shouldReInitCompleter}) async {
+    final int fixatedLifeCycleCount;
+    if (shouldReInitCompleter) {
+      _completeSafely();
+      _connectionCompleter = Completer();
+      fixatedLifeCycleCount = ++_currentLifeCycleCount;
+    } else {
+      fixatedLifeCycleCount = _currentLifeCycleCount;
+    }
+
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.pendingConnection);
     await _disconnect();
     if (fixatedLifeCycleCount < _currentLifeCycleCount) {
       return;
     }
-    _connectionCompleter = Completer();
     runZonedGuarded(
       () {
         _connection = connectionDelegate();
@@ -176,8 +187,9 @@ class PusherChannelsClientLifeCycleController {
     }
   }
 
-  void _reconnect() async {
+  Future<void> _reconnect() async {
     _completeSafely();
+    _connectionCompleter = Completer();
     final fixatedLifeCycleCount = ++_currentLifeCycleCount;
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.reconnecting);
     await _disconnect();
@@ -188,8 +200,9 @@ class PusherChannelsClientLifeCycleController {
     if (fixatedLifeCycleCount < _currentLifeCycleCount) {
       return;
     }
-    unawaited(
-      _connect(),
+
+    return _connect(
+      shouldReInitCompleter: false,
     );
   }
 
@@ -241,7 +254,9 @@ class PusherChannelsClientLifeCycleController {
       connectionErrorHandler(
         exception,
         trace,
-        reconnectSafely,
+        () => unawaited(
+          reconnectSafely(),
+        ),
       );
       _completeSafely();
     }

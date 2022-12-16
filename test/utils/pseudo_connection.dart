@@ -5,6 +5,10 @@ import 'package:dart_pusher_channels/src/events/connection_established_event.dar
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
+class PseudoConnectionException implements Exception {
+  const PseudoConnectionException();
+}
+
 class _PseudoSentEvent extends PusherChannelsEvent
     with PusherChannelsSentEventMixin {
   @override
@@ -47,6 +51,10 @@ class PseudoConnection extends PusherChannelsConnection {
   bool _isClosed = false;
   final StreamController<String> _controller = StreamController.broadcast();
   StreamSubscription? _subscription;
+
+  void addError() => _controller.addError(
+        const PseudoConnectionException(),
+      );
 
   @override
   void close() {

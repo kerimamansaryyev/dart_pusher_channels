@@ -43,12 +43,12 @@ class PusherChannelsClient {
     required PusherChannelsConnectionDelegate connectionDelegate,
     required PusherChannelsClientLifeCycleConnectionErrorHandler
         connectionErrorHandler,
-    required Duration minimReconnectDelayDuration,
+    required Duration minimumReconnectDelayDuration,
   }) {
     late final PusherChannelsClient client;
 
     final controller = PusherChannelsClientLifeCycleController(
-      minimumReconnectDuration: minimReconnectDelayDuration,
+      minimumReconnectDuration: minimumReconnectDelayDuration,
       externalEventHandler: (event) => client._handleEvent(event),
       activityDurationOverride: activityDurationOverride,
       waitForPongDuration: waitForPongDuration,
@@ -75,13 +75,13 @@ class PusherChannelsClient {
     required PusherChannelsConnectionDelegate connectionDelegate,
     required PusherChannelsClientLifeCycleConnectionErrorHandler
         connectionErrorHandler,
-    Duration minimReconnectDelayDuration = const Duration(seconds: 1),
+    Duration minimumReconnectDelayDuration = const Duration(seconds: 1),
     Duration defaultActivityDuration = kPusherChannelsDefaultActivityDuration,
     Duration? activityDurationOverride,
     Duration waitForPongDuration = kPusherChannelsDefaultWaitForPongDuration,
   }) =>
       PusherChannelsClient._baseWithConnection(
-        minimReconnectDelayDuration: minimReconnectDelayDuration,
+        minimumReconnectDelayDuration: minimumReconnectDelayDuration,
         waitForPongDuration: waitForPongDuration,
         activityDurationOverride: activityDurationOverride,
         defaultActivityDuration: defaultActivityDuration,
@@ -93,13 +93,13 @@ class PusherChannelsClient {
     required PusherChannelsOptions options,
     required PusherChannelsClientLifeCycleConnectionErrorHandler
         connectionErrorHandler,
-    Duration minimReconnectDelayDuration = const Duration(seconds: 1),
+    Duration minimumReconnectDelayDuration = const Duration(seconds: 1),
     Duration defaultActivityDuration = kPusherChannelsDefaultActivityDuration,
     Duration? activityDurationOverride,
     Duration waitForPongDuration = kPusherChannelsDefaultWaitForPongDuration,
   }) =>
       PusherChannelsClient._baseWithConnection(
-        minimReconnectDelayDuration: minimReconnectDelayDuration,
+        minimumReconnectDelayDuration: minimumReconnectDelayDuration,
         waitForPongDuration: waitForPongDuration,
         activityDurationOverride: activityDurationOverride,
         defaultActivityDuration: defaultActivityDuration,
@@ -108,6 +108,10 @@ class PusherChannelsClient {
         ),
         connectionErrorHandler: connectionErrorHandler,
       );
+
+  @visibleForTesting
+  Future<void> getConnectionCompleterFuture() =>
+      controller.getCompleterFuture();
 
   PublicChannel publicChannel(
     String channelName, {
@@ -185,6 +189,13 @@ class PusherChannelsClient {
     return controller.disconnectSafely();
   }
 
+  Future<void> reconnect() {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return controller.reconnectSafely();
+  }
+
   @internal
   void trigger(PusherChannelsTriggerEvent event) {
     if (_isDisposed) {
@@ -201,13 +212,6 @@ class PusherChannelsClient {
       return;
     }
     controller.sendEvent(event);
-  }
-
-  void reconnect() {
-    if (_isDisposed) {
-      throw const PusherChannelsClientDisposedException();
-    }
-    controller.reconnectSafely();
   }
 
   void dispose() {

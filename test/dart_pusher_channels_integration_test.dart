@@ -1,28 +1,30 @@
+import 'dart:async';
+
 import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:test/test.dart';
 
 import 'utils/pseudo_connection.dart';
 
-class _Metrics {
-  int connections = 0;
+class _ConnectionMetrics {
+  int connectionsCount = 0;
   int connectionErrorsCount = 0;
   int disconnectsCount = 0;
   int connectionDisposionsCount = 0;
   int pushErrorsCount = 0;
   int connectionPendingsCount = 0;
-  int recconnectsCount = 0;
+  int reconnectsCount = 0;
   int connectionInactivesCount = 0;
 
   void expectMetricsAreDefault() {
     for (final parameter in [
-      connections = 0,
+      connectionsCount = 0,
       connectionErrorsCount = 0,
       disconnectsCount = 0,
       connectionDisposionsCount = 0,
       pushErrorsCount = 0,
       connectionPendingsCount = 0,
-      recconnectsCount = 0,
+      reconnectsCount = 0,
       connectionInactivesCount = 0,
     ]) {
       expect(
@@ -38,10 +40,10 @@ void main() {
     'dart_pusher_channels integration test',
     () {
       test(
-        'All results will be logged by metrics',
+        'Lifecycle states execution order',
         () async {
-          final metrics = _Metrics();
-          metrics.expectMetricsAreDefault();
+          final connectionMetrics = _ConnectionMetrics();
+          connectionMetrics.expectMetricsAreDefault();
           PseudoConnection pseudoConnection = PseudoConnection();
           final client = PusherChannelsClient.custom(
             connectionDelegate: () => pseudoConnection = PseudoConnection(),
@@ -50,47 +52,69 @@ void main() {
             },
           );
           client.lifecycleStream.listen((event) {
-            print(event);
             switch (event) {
               case PusherChannelsClientLifeCycleState.connectionError:
-                metrics.connectionErrorsCount++;
+                connectionMetrics.connectionErrorsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.disconnected:
-                metrics.disconnectsCount++;
+                connectionMetrics.disconnectsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.disposed:
-                metrics.connectionDisposionsCount++;
+                connectionMetrics.connectionDisposionsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.gotPusherError:
-                metrics.pushErrorsCount++;
+                connectionMetrics.pushErrorsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.establishedConnection:
-                print('asd');
-                metrics.connections++;
+                connectionMetrics.connectionsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.pendingConnection:
-                metrics.connectionPendingsCount++;
+                connectionMetrics.connectionPendingsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.reconnecting:
-                metrics.recconnectsCount++;
+                connectionMetrics.reconnectsCount++;
                 break;
               case PusherChannelsClientLifeCycleState.inactive:
-                metrics.connectionInactivesCount++;
+                connectionMetrics.connectionInactivesCount++;
                 break;
             }
           });
-          await client.connect();
+          unawaited(
+            client.connect(),
+          );
+          // waiting for PusherChannelsClientLifeCycleState.pendingConnection status to be registered
+          await _passEventInEventLoop();
+          await client.getConnectionCompleterFuture();
+          // waiting for PusherChannelsClientLifeCycleState.establishedConnection to be registered
+          await _passEventInEventLoop();
           expect(
-            metrics.connections,
+            connectionMetrics.connectionsCount,
             1,
           );
+          unawaited(client.reconnect());
+          // waiting for PusherChannelsClientLifeCycleState.reconnecting to be registered
+          await _passEventInEventLoop();
           expect(
-            metrics.connectionPendingsCount,
+            connectionMetrics.reconnectsCount,
             1,
           );
-          client.reconnect();
+          await client.getConnectionCompleterFuture();
+          // waiting for PusherChannelsClientLifeCycleState.pendingConnection to be registered
+          await _passEventInEventLoop();
+          expect(
+            connectionMetrics.connectionPendingsCount,
+            2,
+          );
+          // waiting for PusherChannelsClientLifeCycleState.establishedConnection to be registered
+          await _passEventInEventLoop();
+          expect(
+            connectionMetrics.connectionsCount,
+            2,
+          );
         },
       );
     },
   );
 }
+
+Future<void> _passEventInEventLoop() async {}
