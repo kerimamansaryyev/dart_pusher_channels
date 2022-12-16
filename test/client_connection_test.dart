@@ -296,5 +296,39 @@ void main() {
         await Future(() => client.dispose());
       },
     );
+    test(
+      'Disposing the client will result in PusherChannelsClientDisposedException',
+      () async {
+        final client = PusherChannelsClient.custom(
+          connectionDelegate: () {
+            return TestConnection();
+          },
+          connectionErrorHandler: (exception, trace, refresh) {},
+        );
+        final stream = client.lifecycleStream;
+        unawaited(
+          expectLater(
+            stream,
+            emitsInOrder(
+              [
+                PusherChannelsClientLifeCycleState.pendingConnection,
+                PusherChannelsClientLifeCycleState.disposed,
+                emitsDone,
+              ],
+            ),
+          ),
+        );
+        for (int i = 0; i < 3; i++) {
+          unawaited(client.connect());
+        }
+        client.dispose();
+        try {
+          await client.connect();
+        } catch (e) {
+          expect(e, isA<PusherChannelsClientDisposedException>());
+        }
+        await Future(() {});
+      },
+    );
   });
 }
