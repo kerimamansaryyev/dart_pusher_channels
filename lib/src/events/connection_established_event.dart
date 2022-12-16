@@ -24,7 +24,7 @@ class PusherChannelsConnectionEstablishedEvent
     required this.deserializedMapData,
   });
 
-  String get socketId => deserializedMapData[_socketIdKey] as String;
+  String get socketId => deserializedMapData[_socketIdKey].toString();
   @protected
   int? get activityTimeoutInSeconds => int.tryParse(
         deserializedMapData[_activityTimeoutKey]?.toString() ?? '',
