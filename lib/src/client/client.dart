@@ -9,13 +9,23 @@ import 'package:dart_pusher_channels/src/connection/websocket_connection.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/trigger_event.dart';
+import 'package:dart_pusher_channels/src/exceptions/exception.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
+class PusherChannelsClientDisposedException implements PusherChannelsException {
+  @override
+  String get message =>
+      'The instance of PusherChannelsClient is disposed and can\'t be reused. Please, try to create a new instance.';
+
+  const PusherChannelsClientDisposedException();
+}
+
 class PusherChannelsClient {
+  bool _isDisposed = false;
   @protected
   final PusherChannelsClientLifeCycleController controller;
   @protected
@@ -102,11 +112,15 @@ class PusherChannelsClient {
   PublicChannel publicChannel(
     String channelName, {
     bool forceCreateNewInstance = false,
-  }) =>
-      channelsManager.publicChannel(
-        channelName,
-        forceCreateNewInstance: forceCreateNewInstance,
-      );
+  }) {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return channelsManager.publicChannel(
+      channelName,
+      forceCreateNewInstance: forceCreateNewInstance,
+    );
+  }
 
   PrivateChannel privateChannel(
     String channelName, {
@@ -114,12 +128,16 @@ class PusherChannelsClient {
             PrivateChannelAuthorizationData>
         authorizationDelegate,
     bool forceCreateNewInstance = false,
-  }) =>
-      channelsManager.privateChannel(
-        channelName,
-        authorizationDelegate: authorizationDelegate,
-        forceCreateNewInstance: forceCreateNewInstance,
-      );
+  }) {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return channelsManager.privateChannel(
+      channelName,
+      authorizationDelegate: authorizationDelegate,
+      forceCreateNewInstance: forceCreateNewInstance,
+    );
+  }
 
   PresenceChannel presenceChannel(
     String channelName, {
@@ -127,12 +145,16 @@ class PusherChannelsClient {
             PresenceChannelAuthorizationData>
         authorizationDelegate,
     bool forceCreateNewInstance = false,
-  }) =>
-      channelsManager.presenceChannel(
-        channelName,
-        authorizationDelegate: authorizationDelegate,
-        forceCreateNewInstance: forceCreateNewInstance,
-      );
+  }) {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return channelsManager.presenceChannel(
+      channelName,
+      authorizationDelegate: authorizationDelegate,
+      forceCreateNewInstance: forceCreateNewInstance,
+    );
+  }
 
   Stream<PusherChannelsEvent> get eventStream => controller.eventStream;
 
@@ -149,25 +171,58 @@ class PusherChannelsClient {
       )
       .map(voidStreamMapper);
 
-  Future<void> connect() => controller.connectSafely();
+  Future<void> connect() {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return controller.connectSafely();
+  }
 
-  Future<void> disconnect() => controller.disconnectSafely();
+  Future<void> disconnect() {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    return controller.disconnectSafely();
+  }
 
-  void trigger(PusherChannelsTriggerEvent event) => controller.triggerEvent(
-        event,
-      );
+  @internal
+  void trigger(PusherChannelsTriggerEvent event) {
+    if (_isDisposed) {
+      return;
+    }
+    controller.triggerEvent(
+      event,
+    );
+  }
 
-  void sendEvent(PusherChannelsSentEventMixin event) =>
-      controller.sendEvent(event);
+  @internal
+  void sendEvent(PusherChannelsSentEventMixin event) {
+    if (_isDisposed) {
+      return;
+    }
+    controller.sendEvent(event);
+  }
 
-  void reconnect() => controller.reconnectSafely();
+  void reconnect() {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    controller.reconnectSafely();
+  }
 
   void dispose() {
+    if (_isDisposed) {
+      throw const PusherChannelsClientDisposedException();
+    }
+    _isDisposed = true;
     controller.dispose();
     channelsManager.dispose();
   }
 
   void _handleEvent(PusherChannelsEvent event) {
+    if (_isDisposed) {
+      return;
+    }
     channelsManager.handleEvent(event);
   }
 }
