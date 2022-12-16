@@ -31,18 +31,25 @@ class PresenceChannelState implements ChannelState {
 
   final ChannelMembers? members;
 
-  const PresenceChannelState({
+  const PresenceChannelState._({
     required this.status,
     required this.subscriptionCount,
     required this.members,
   });
+
+  const PresenceChannelState.initial()
+      : this._(
+          status: ChannelStatus.idle,
+          members: null,
+          subscriptionCount: null,
+        );
 
   PresenceChannelState copyWith({
     ChannelStatus? status,
     int? subscriptionCount,
     ChannelMembers? members,
   }) =>
-      PresenceChannelState(
+      PresenceChannelState._(
         members: members ?? this.members,
         status: status ?? this.status,
         subscriptionCount: subscriptionCount ?? this.subscriptionCount,
@@ -110,26 +117,16 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
 
   @override
   PresenceChannelState getStateWithNewStatus(ChannelStatus status) =>
-      state?.copyWith(
+      _stateIfNull().copyWith(
         status: status,
-      ) ??
-      PresenceChannelState(
-        status: status,
-        subscriptionCount: null,
-        members: null,
       );
 
   @override
   PresenceChannelState getStateWithNewSubscriptionCount(
     int? subscriptionCount,
   ) =>
-      state?.copyWith(
+      _stateIfNull().copyWith(
         subscriptionCount: subscriptionCount,
-      ) ??
-      PresenceChannelState(
-        status: ChannelStatus.idle,
-        subscriptionCount: subscriptionCount,
-        members: null,
       );
 
   @override
@@ -153,12 +150,7 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
 
   @protected
   PresenceChannelState getStateWithNewMembers(ChannelMembers? members) =>
-      state?.copyWith(
-        members: members,
-      ) ??
-      PresenceChannelState(
-        status: ChannelStatus.idle,
-        subscriptionCount: null,
+      _stateIfNull().copyWith(
         members: members,
       );
 
@@ -288,4 +280,7 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
       );
     }
   }
+
+  PresenceChannelState _stateIfNull() =>
+      state ?? PresenceChannelState.initial();
 }

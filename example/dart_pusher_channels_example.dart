@@ -37,8 +37,10 @@ void main() async {
     );
     channel!.subscribeIfNotUnsubscribed();
     channel!.whenMemberAdded().listen((event) {
-      print(channel?.state?.members?.membersCount);
-      print(channel?.state?.members?.getMap());
+      print(event.data);
+      // print(event.tryGetDataAsMap());
+      // print(channel?.state?.members?.membersCount);
+      // print(channel?.state?.members?.getMap());
     });
     channel!.whenMemberRemoved().listen((event) {
       print(channel?.state?.members?.membersCount);

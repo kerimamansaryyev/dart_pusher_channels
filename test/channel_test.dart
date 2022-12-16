@@ -8,7 +8,6 @@ import 'package:dart_pusher_channels/src/channels/extensions/channel_extension.d
 import 'package:dart_pusher_channels/src/channels/presence_channel/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
-import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:test/test.dart';
 
 typedef _AuthChannelBuilder<T extends EndpointAuthorizationData>
@@ -46,24 +45,18 @@ class _ShellAuthDelegate<T extends EndpointAuthorizationData>
   }
 }
 
-ChannelReadEvent _fakeSubscriptionEvent(Channel channel) => ChannelReadEvent(
-      rootObject: {
-        PusherChannelsEvent.eventNameKey:
-            Channel.getInternalSubscriptionSucceededEventNameTest(),
-        PusherChannelsEvent.channelKey: channel.name,
-      },
+ChannelReadEvent _fakeSubscriptionEvent(Channel channel) =>
+    ChannelReadEvent.internal(
+      name: Channel.getInternalSubscriptionSucceededEventNameTest(),
       channel: channel,
+      data: {},
     );
 
-ChannelReadEvent _fakeCountEvent(Channel channel) => ChannelReadEvent(
-      rootObject: {
-        PusherChannelsEvent.eventNameKey:
-            Channel.getInternalSubscriptionsCountEventName(),
-        PusherChannelsEvent.channelKey: channel.name,
-        PusherChannelsEvent.dataKey: {
-          Channel.subscriptionsCountKey: 3,
-        }
+ChannelReadEvent _fakeCountEvent(Channel channel) => ChannelReadEvent.internal(
+      data: {
+        Channel.subscriptionsCountKey: 3,
       },
+      name: Channel.getInternalSubscriptionsCountEventName(),
       channel: channel,
     );
 
@@ -125,6 +118,10 @@ void _testSubscriptionGroupWithMock() {
       );
       channel.subscribe();
       expect(channel.state?.status, ChannelStatus.pendingSubscription);
+      expect(
+        channel.state?.subscriptionCount,
+        null,
+      );
       manager.handleEvent(
         _fakeSubscriptionEvent(channel),
       );
@@ -296,12 +293,9 @@ void _testSubscriptionGroupWithMock() {
       );
       await Future.microtask(
         () => manager.handleEvent(
-          ChannelReadEvent(
-            rootObject: {
-              PusherChannelsEvent.eventNameKey: fakeEventName,
-              PusherChannelsEvent.channelKey: channel.name,
-              PusherChannelsEvent.dataKey: const <String, String>{}
-            },
+          ChannelReadEvent.internal(
+            name: fakeEventName,
+            data: const <String, String>{},
             channel: channel,
           ),
         ),

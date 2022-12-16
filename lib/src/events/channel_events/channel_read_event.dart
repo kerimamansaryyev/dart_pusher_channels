@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
@@ -7,16 +9,30 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
   @protected
   final Channel channel;
 
-  ChannelReadEvent({
+  ChannelReadEvent._({
     required Map<String, dynamic> rootObject,
     required this.channel,
   }) : super(rootObject: rootObject);
+
+  factory ChannelReadEvent.internal({
+    required String name,
+    required Channel channel,
+    required Map<String, dynamic> data,
+  }) =>
+      ChannelReadEvent._(
+        rootObject: {
+          PusherChannelsEvent.eventNameKey: name,
+          PusherChannelsEvent.channelKey: channel.name,
+          PusherChannelsEvent.dataKey: _tryEncodeData(data),
+        },
+        channel: channel,
+      );
 
   factory ChannelReadEvent.fromPusherChannelsReadEvent(
     Channel channel,
     PusherChannelsReadEvent readEvent,
   ) =>
-      ChannelReadEvent(
+      ChannelReadEvent._(
         rootObject: readEvent.rootObject,
         channel: channel,
       );
@@ -26,21 +42,18 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
     required String type,
     required String errorMessage,
   }) {
-    return ChannelReadEvent(
-      rootObject: {
-        PusherChannelsEvent.eventNameKey: Channel.subscriptionErrorEventName,
-        PusherChannelsEvent.channelKey: channel.name,
-        PusherChannelsEvent.dataKey: {
-          PusherChannelsEvent.errorTypeKey: type,
-          PusherChannelsEvent.errorKey: errorMessage,
-        }
+    return ChannelReadEvent.internal(
+      name: Channel.subscriptionErrorEventName,
+      data: {
+        PusherChannelsEvent.errorTypeKey: type,
+        PusherChannelsEvent.errorKey: errorMessage,
       },
       channel: channel,
     );
   }
 
   ChannelReadEvent copyWithName(String name) {
-    return ChannelReadEvent(
+    return ChannelReadEvent._(
       rootObject: {
         ...rootObject,
         PusherChannelsEvent.eventNameKey: name,
@@ -51,4 +64,12 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
 
   @override
   String get channelName => channel.name;
+
+  static String _tryEncodeData(Map<String, dynamic> data) {
+    try {
+      return jsonEncode(data);
+    } catch (_) {
+      return jsonEncode(<String, String>{});
+    }
+  }
 }
