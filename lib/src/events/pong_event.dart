@@ -8,7 +8,7 @@ class PusherChannelsPongEvent
     with
         PusherChannelsEvent,
         PusherChannelsSentEventMixin,
-        PusherChannelsPredefinedEventMixin {
+        PusherChannelsReadEventMixin {
   static const eventName = 'pusher:pong';
 
   @override
@@ -31,4 +31,10 @@ class PusherChannelsPongEvent
         PusherChannelsEvent.eventNameKey: name,
         PusherChannelsEvent.dataKey: const <String, String>{},
       });
+
+  @override
+  Map<String, dynamic> get rootObject => {
+        PusherChannelsEvent.eventNameKey: name,
+        PusherChannelsEvent.dataKey: jsonEncode(<String, String>{}),
+      };
 }

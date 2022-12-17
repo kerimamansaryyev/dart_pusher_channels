@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/ping_event.dart';
-import 'package:dart_pusher_channels/src/exceptions/exception.dart';
+import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PusherChannelsWebSocketConnectionWasClosedException

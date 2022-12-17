@@ -7,8 +7,7 @@ class PusherChannelsConnectionEstablishedEvent
     with
         PusherChannelsEvent,
         PusherChannelsReadEventMixin,
-        PusherChannelsMapDataEventMixin,
-        PusherChannelsPredefinedEventMixin {
+        PusherChannelsMapDataEventMixin {
   static const eventName = 'pusher:connection_established';
   static const _activityTimeoutKey = 'activity_timeout';
   static const _socketIdKey = 'socket_id';

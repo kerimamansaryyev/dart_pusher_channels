@@ -2,7 +2,7 @@ import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
-import 'package:dart_pusher_channels/src/exceptions/exception.dart';
+import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 
@@ -77,7 +77,7 @@ Trace: $trace,
     publicEventEmitter(
       ChannelReadEvent.forSubscriptionError(
         this,
-        type: Channel.authErrorType,
+        type: Channel.authErrorTypeString,
         errorMessage: message,
       ),
     );

@@ -1,8 +1,6 @@
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
-mixin PusherChannelsPredefinedEventMixin on PusherChannelsEvent {}
-
 mixin PusherChannelsSentEventMixin on PusherChannelsEvent {
   String getEncoded();
 }

@@ -7,8 +7,7 @@ class PusherChannelsErrorEvent
     with
         PusherChannelsEvent,
         PusherChannelsReadEventMixin,
-        PusherChannelsMapDataEventMixin,
-        PusherChannelsPredefinedEventMixin {
+        PusherChannelsMapDataEventMixin {
   static const eventName = 'pusher:error';
   static const _codeKey = 'code';
   static const _messageKey = 'message';

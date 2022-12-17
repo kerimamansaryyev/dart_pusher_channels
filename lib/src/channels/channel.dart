@@ -38,15 +38,16 @@ abstract class Channel<T extends ChannelState> {
   @protected
   static const internalMemberRemovedEventName =
       'pusher_internal:member_removed';
+  @protected
+  static const pusherInternalPrefix = 'pusher_internal:';
 
   static const subscriptionsCountKey = 'subscription_count';
   static const memberAddedEventName = 'pusher:member_added';
   static const memberRemovedEventName = 'pusher:member_removed';
   static const subscriptionsCountEventName = 'pusher:subscription_count';
   static const subscriptionSucceededEventName = 'pusher:subscription_succeeded';
-  static const pusherInternalPrefix = 'pusher_internal:';
-  static const authErrorType = 'AuthError';
   static const subscriptionErrorEventName = 'pusher:subscription_error';
+  static const authErrorTypeString = 'AuthError';
 
   T? _currentState;
   abstract final String name;

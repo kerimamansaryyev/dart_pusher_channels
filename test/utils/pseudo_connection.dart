@@ -94,11 +94,7 @@ class PseudoConnection extends PusherChannelsConnection {
   void ping() {}
 
   @override
-  void sendEvent(String eventEncoded) {
-    final map = safeMessageToMapDeserializer(
-      eventEncoded,
-    );
-  }
+  void sendEvent(String eventEncoded) {}
 
   void _onEvent(
     String event,

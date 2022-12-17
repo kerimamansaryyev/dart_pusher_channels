@@ -10,6 +10,13 @@ class PusherChannelsReadEvent
     required this.rootObject,
   });
 
+  factory PusherChannelsReadEvent.fromReadable(
+    PusherChannelsReadEventMixin event,
+  ) =>
+      PusherChannelsReadEvent(
+        rootObject: {...event.rootObject},
+      );
+
   String? get channelName =>
       rootObject[PusherChannelsEvent.channelKey]?.toString();
 

@@ -8,8 +8,9 @@ import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:dart_pusher_channels/src/connection/websocket_connection.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
+import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:dart_pusher_channels/src/events/trigger_event.dart';
-import 'package:dart_pusher_channels/src/exceptions/exception.dart';
+import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
@@ -160,10 +161,13 @@ class PusherChannelsClient {
     );
   }
 
-  Stream<PusherChannelsEvent> get eventStream => controller.eventStream;
+  Stream<PusherChannelsReadEvent> get eventStream => controller.eventStream
+      .whereType<PusherChannelsReadEventMixin>()
+      .map(PusherChannelsReadEvent.fromReadable);
 
-  Stream<PusherChannelsErrorEvent> get pusherErrorEventStream =>
-      eventStream.whereType<PusherChannelsErrorEvent>();
+  Stream<PusherChannelsReadEvent> get pusherErrorEventStream => eventStream
+      .whereType<PusherChannelsErrorEvent>()
+      .map(PusherChannelsReadEvent.fromReadable);
 
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       controller.lifecycleStream;

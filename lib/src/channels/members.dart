@@ -74,6 +74,7 @@ class ChannelMembers {
 
   MemberInfo? getMyMemberInfo() => myId == null ? null : getMemberInfo(myId!);
 
+  @internal
   void updateMember({
     required String id,
     required MemberInfo? info,
@@ -81,6 +82,7 @@ class ChannelMembers {
     membersMap[id] = info;
   }
 
+  @internal
   void removeMember({
     required String userId,
   }) =>
@@ -88,6 +90,7 @@ class ChannelMembers {
         userId,
       );
 
+  @internal
   void updateMe({
     required String id,
     required MemberInfo? memberInfo,
@@ -96,6 +99,7 @@ class ChannelMembers {
     membersMap[myId!] = memberInfo;
   }
 
+  @internal
   void merge(Map<String, MemberInfo?> otherMap) {
     membersMap = {
       ...membersMap,

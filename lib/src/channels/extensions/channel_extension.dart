@@ -25,7 +25,7 @@ extension ChannelExtension<T extends ChannelState> on Channel<T> {
 
   Stream<ChannelReadEvent> onAuthenticationSubscriptionFailed() =>
       onSubscriptionError(
-        errorType: Channel.authErrorType,
+        errorType: Channel.authErrorTypeString,
       );
 
   bool _filterSubscriptionErrorPredicate(
