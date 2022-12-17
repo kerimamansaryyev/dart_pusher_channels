@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
-import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
 class PseudoConnectionException implements Exception {
   const PseudoConnectionException();

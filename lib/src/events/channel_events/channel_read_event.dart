@@ -14,6 +14,7 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
     required this.channel,
   }) : super(rootObject: rootObject);
 
+  @internal
   factory ChannelReadEvent.internal({
     required String name,
     required Channel channel,
@@ -28,6 +29,7 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
         channel: channel,
       );
 
+  @internal
   factory ChannelReadEvent.fromPusherChannelsReadEvent(
     Channel channel,
     PusherChannelsReadEvent readEvent,
@@ -37,6 +39,7 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
         channel: channel,
       );
 
+  @internal
   factory ChannelReadEvent.forSubscriptionError(
     Channel channel, {
     required String type,

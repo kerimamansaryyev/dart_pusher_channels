@@ -129,6 +129,7 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
         subscriptionCount: subscriptionCount,
       );
 
+  @internal
   @override
   void handleEvent(ChannelReadEvent event) {
     super.handleEvent(event);

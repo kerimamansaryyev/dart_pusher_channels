@@ -2,12 +2,18 @@ library dart_pusher_channels_exports;
 
 // options
 export 'options/options.dart';
+// constants
+export 'utils/constants.dart';
+// logger
+export 'utils/logger.dart';
 // exception
 export 'exception/exception.dart';
 // events
 export 'events/trigger_event.dart';
 export 'events/read_event.dart';
 export 'events/event.dart' show PusherChannelsEvent;
+export 'events/channel_events/channel_read_event.dart';
+export 'events/channel_events/channel_trigger_event.dart';
 
 // client and connection
 export 'connection/connection.dart';

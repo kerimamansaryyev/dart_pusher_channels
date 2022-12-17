@@ -1,5 +1,4 @@
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
-import 'package:dart_pusher_channels/src/options/options.dart';
 import 'package:test/test.dart';
 
 // Ignoring for test purposes

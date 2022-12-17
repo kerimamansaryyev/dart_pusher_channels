@@ -1,4 +1,3 @@
-import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
@@ -12,6 +11,7 @@ import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:dart_pusher_channels/src/events/trigger_event.dart';
 import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
+import 'package:dart_pusher_channels/src/utils/constants.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
 import 'package:meta/meta.dart';

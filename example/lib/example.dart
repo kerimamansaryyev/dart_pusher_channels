@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
-import 'package:dart_pusher_channels/src/channels/extensions/channel_extension.dart';
-import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
-import 'package:dart_pusher_channels/src/client/client.dart';
-import 'package:dart_pusher_channels/src/options/options.dart';
-import 'package:dart_pusher_channels/src/utils/logger.dart';
 
-void main() async {
-  Stream.periodic(const Duration(seconds: 5)).listen((event) {});
+import 'package:dart_pusher_channels/dart_pusher_channels.dart';
+
+void connectToPusher() async {
   PusherChannelsPackageLogger.enableLogs();
   const testOptions = PusherChannelsOptions.fromCluster(
     scheme: 'wss',
