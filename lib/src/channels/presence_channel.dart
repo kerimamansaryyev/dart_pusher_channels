@@ -2,7 +2,7 @@ import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
-import 'package:dart_pusher_channels/src/channels/presence_channel/members.dart';
+import 'package:dart_pusher_channels/src/channels/members.dart';
 import 'package:dart_pusher_channels/src/channels/triggerable_channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe_event.dart';
