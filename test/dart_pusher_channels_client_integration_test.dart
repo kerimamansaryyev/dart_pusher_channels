@@ -37,7 +37,7 @@ class _ConnectionMetrics {
 
 void main() {
   group(
-    'dart_pusher_channels integration test',
+    'dart_pusher_channels client integration test',
     () {
       test(
         'Lifecycle states execution order',
@@ -52,6 +52,7 @@ void main() {
             },
           );
           client.lifecycleStream.listen((event) {
+            print(event);
             switch (event) {
               case PusherChannelsClientLifeCycleState.connectionError:
                 connectionMetrics.connectionErrorsCount++;
@@ -110,6 +111,48 @@ void main() {
           expect(
             connectionMetrics.connectionsCount,
             2,
+          );
+          pseudoConnection.addError();
+          // waiting for error added to the stream
+          await _passEventInEventLoop();
+          // waiting for PusherChannelsClientLifeCycleState.onConnectionError to be registered
+          await _passEventInEventLoop();
+          expect(
+            connectionMetrics.connectionErrorsCount,
+            1,
+          );
+          client.dispose();
+          // waiting for PusherChannelsClientLifeCycleState.reconnect to be registered
+          await _passEventInEventLoop();
+          // waiting for PusherChannelsClientLifeCycleState.disposed to be registered
+          await _passEventInEventLoop();
+          expect(
+            connectionMetrics.connectionDisposionsCount,
+            1,
+          );
+          await expectLater(
+            client.connect,
+            throwsA(
+              isA<PusherChannelsClientDisposedException>(),
+            ),
+          );
+          await expectLater(
+            client.disconnect,
+            throwsA(
+              isA<PusherChannelsClientDisposedException>(),
+            ),
+          );
+          await expectLater(
+            client.reconnect,
+            throwsA(
+              isA<PusherChannelsClientDisposedException>(),
+            ),
+          );
+          expect(
+            client.dispose,
+            throwsA(
+              isA<PusherChannelsClientDisposedException>(),
+            ),
           );
         },
       );
