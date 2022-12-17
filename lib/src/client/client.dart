@@ -179,6 +179,8 @@ class PusherChannelsClient {
       )
       .map(voidStreamMapper);
 
+  bool get isDisposed => _isDisposed;
+
   Future<void> connect() {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
