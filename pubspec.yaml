@@ -5,7 +5,7 @@ version: 0.3.1+1
 environment:
   sdk: '>=2.17.1 <3.0.0'
 
-repository: https://github.com/mcfugger/dart_pusher_channels
+repository: https://github.com/kerimamansaryyev/dart_pusher_channels
 
 platforms:
   android:
