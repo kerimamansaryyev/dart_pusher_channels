@@ -2,6 +2,11 @@ import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
+/// A data class representing the events with name `pusher:connection_established`.
+///
+/// See docs:
+/// - [Connection events](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#connection-events)
+/// - [System events](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#system-events)
 @immutable
 class PusherChannelsConnectionEstablishedEvent
     with

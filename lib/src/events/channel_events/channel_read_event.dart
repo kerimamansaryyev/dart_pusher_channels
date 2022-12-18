@@ -5,6 +5,8 @@ import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
 import 'package:meta/meta.dart';
 
+/// An implementation of [PusherChannelsReadEvent] that can be
+/// received from [Channel.bind].
 class ChannelReadEvent extends PusherChannelsReadEvent {
   @protected
   final Channel channel;

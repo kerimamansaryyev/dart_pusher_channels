@@ -1,6 +1,15 @@
+import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 
+/// A data class represents readable Pusher Channels events.
+///
+/// Usually, they are received from [PusherChannelsClient.eventStream].
+///
+/// See also:
+/// - [PusherChannelsEvent]
+/// - [PusherChannelsReadEventMixin]
+///
 class PusherChannelsReadEvent
     with PusherChannelsEvent, PusherChannelsReadEventMixin {
   @override
@@ -10,6 +19,7 @@ class PusherChannelsReadEvent
     required this.rootObject,
   });
 
+  /// An adapter to create an instance from other readables.
   factory PusherChannelsReadEvent.fromReadable(
     PusherChannelsReadEventMixin event,
   ) =>

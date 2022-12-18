@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:meta/meta.dart';
 
+/// A data class representing events that are triggered by [PusherChannelsClient]
 @immutable
 class PusherChannelsTriggerEvent
     with PusherChannelsEvent, PusherChannelsSentEventMixin {

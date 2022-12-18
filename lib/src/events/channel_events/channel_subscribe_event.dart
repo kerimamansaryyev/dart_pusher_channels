@@ -1,7 +1,26 @@
 import 'dart:convert';
 
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
+import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 
+/// A data class that represents events with name
+/// `pusher:subscribe`.
+///
+/// Instances of this class are used to be sent to a server
+/// to subscribe to a channel with name [channelName].
+///
+/// Some of the channels require users to be authorized.
+/// When subscribing to these kind of channels, following properties are provided as well: [authKey], [channelDataEncoded],
+///
+/// See also:
+/// - [EndpointAuthorizableChannel]
+/// - [PrivateChannel]
+/// - [PresenceChannel].
+///
+/// See docs: [Subscription events](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
+///
 class ChannelSubscribeEvent
     with PusherChannelsEvent, PusherChannelsSentEventMixin {
   static const eventName = 'pusher:subscribe';

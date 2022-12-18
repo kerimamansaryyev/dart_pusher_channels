@@ -3,6 +3,9 @@ import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
+/// The event class that implements the `pong` events.
+///
+/// Can be either sent or received. That's why implements both: [PusherChannelsSentEventMixin], [PusherChannelsReadEventMixin].
 @immutable
 class PusherChannelsPongEvent
     with
