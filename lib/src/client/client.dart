@@ -1,9 +1,11 @@
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/client/controller.dart';
+import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/connection/websocket_connection.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
@@ -25,6 +27,22 @@ class PusherChannelsClientDisposedException implements PusherChannelsException {
   const PusherChannelsClientDisposedException();
 }
 
+/// A centralized manager of connection and channel bindings.
+///
+/// `Note`: If an instance of this class has been disposed -
+/// it can't be reused. So if you want to use the instance after disposal -
+/// you will have to create a new instance.
+///
+/// - Use [PusherChannelsClient.websocket] to create a client with [PusherChannelsWebSocketConnection].
+/// - Use [PusherChannelsClient.custom] to create a client with your own
+/// implementation of [PusherChannelsConnection].
+///
+/// Enables:
+/// - Creating channels: [publicChannel], [privateChannel], [presenceChannel].
+/// - Listening for all events through [eventStream].
+/// - Listening for `pusher:error` events through [pusherErrorEventStream].
+/// - Listening for the lifecycle state changes through [lifecycleStream].
+/// - Listening for connection/reconnection establishment [onConnectionEstablished].
 class PusherChannelsClient {
   bool _isDisposed = false;
   @protected
@@ -72,6 +90,19 @@ class PusherChannelsClient {
     );
   }
 
+  /// Providing a client with a delegate returning custom implementation of [PusherChannelsConnection].
+  /// Parameters:
+  /// - [connectionDelegate] : A delegate function that is used by [controller] to create instances [PusherChannelsConnection]
+  /// with each connection try.
+  /// `Note`: `DON'T` provide a factory that returns a singleton or a same variable beacause [controller] closes it's connection
+  /// after each lifecycle.
+  /// See the implementation of [PusherChannelsWebSocketConnection] and [PusherChannelsClient.websocket] constructor.
+  /// - [connectionErrorHandler] : This handler will be called by [controller] when a connection error is thrown.
+  /// - [minimumReconnectDelayDuration] : A minimum delay between connection tries used by [controller] when reconnecting.
+  /// - [defaultActivityDuration] : A default timeout duration of activity that is used by [controller] to check
+  /// if connection is alive. The value will be used if neither the server activity timeout nor [activityDurationOverride] are provided.
+  /// - [activityDurationOverride] : Overrides both the server activity timeout and [defaultActivityDuration].
+  /// - [waitForPongDuration] : A timeout duration that is used to wait for the `pong` event right after [controller] sends the `ping` message.
   factory PusherChannelsClient.custom({
     required PusherChannelsConnectionDelegate connectionDelegate,
     required PusherChannelsClientLifeCycleConnectionErrorHandler
@@ -90,6 +121,15 @@ class PusherChannelsClient {
         connectionErrorHandler: connectionErrorHandler,
       );
 
+  /// Providing a client with a delegate returning [PusherChannelsWebSocketConnection].
+  /// Parameters:
+  /// - [options] : Options to connect to a server. See [PusherChannelsOptions] for more details.
+  /// - [connectionErrorHandler] : This handler will be called by [controller] when a connection error is thrown.
+  /// - [minimumReconnectDelayDuration] : A minimum delay between connection tries used by [controller] when reconnecting.
+  /// - [defaultActivityDuration] : A default timeout duration of activity that is used by [controller] to check
+  /// if connection is alive. The value will be used if neither the server activity timeout nor [activityDurationOverride] are provided.
+  /// - [activityDurationOverride] : Overrides both the server activity timeout and [defaultActivityDuration].
+  /// - [waitForPongDuration] : A timeout duration that is used to wait for the `pong` event right after [controller] sends the `ping` message.
   factory PusherChannelsClient.websocket({
     required PusherChannelsOptions options,
     required PusherChannelsClientLifeCycleConnectionErrorHandler
@@ -114,6 +154,7 @@ class PusherChannelsClient {
   Future<void> getConnectionCompleterFuture() =>
       controller.getCompleterFuture();
 
+  /// Creates a public channel.
   PublicChannel publicChannel(
     String channelName, {
     bool forceCreateNewInstance = false,
@@ -127,6 +168,22 @@ class PusherChannelsClient {
     );
   }
 
+  /// Creates a private channel.
+  ///
+  /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
+  /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel]
+  ///
+  /// Example:
+  /// ```dart
+  /// PrivateChannel myPrivateChannel = client.privateChannel(
+  ///   'private-channel',
+  ///   authorizationDelegate:
+  ///       EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel(
+  ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
+  ///     headers: const {},
+  ///   ),
+  /// );
+  /// ```
   PrivateChannel privateChannel(
     String channelName, {
     required EndpointAuthorizableChannelAuthorizationDelegate<
@@ -144,6 +201,22 @@ class PusherChannelsClient {
     );
   }
 
+  /// Creates a private channel.
+  ///
+  /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
+  /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPresenceChannel]
+  ///
+  /// Example:
+  /// ```dart
+  /// PresenceChannel myPresenceChannel = client.presenceChannel(
+  ///   'presence-channel',
+  ///   authorizationDelegate: EndpointAuthorizableChannelTokenAuthorizationDelegate
+  ///       .forPresenceChannel(
+  ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
+  ///     headers: const {},
+  ///   ),
+  ///  );
+  /// ```
   PresenceChannel presenceChannel(
     String channelName, {
     required EndpointAuthorizableChannelAuthorizationDelegate<
@@ -161,17 +234,24 @@ class PusherChannelsClient {
     );
   }
 
+  /// Used to listen for all the events received from a server.
   Stream<PusherChannelsReadEvent> get eventStream => controller.eventStream
       .whereType<PusherChannelsReadEventMixin>()
       .map(PusherChannelsReadEvent.fromReadable);
 
+  /// Used to listen for events with name `pusher:error`.
   Stream<PusherChannelsReadEvent> get pusherErrorEventStream => eventStream
       .whereType<PusherChannelsErrorEvent>()
       .map(PusherChannelsReadEvent.fromReadable);
 
+  /// Used to listen for the lifecycle changes of the [controller].
+  /// For exmaple, when this client connects, reconnects, disconnects, pending connection an e.t.c.
+  /// See [PusherChannelsClientLifeCycleState] for more details.
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       controller.lifecycleStream;
 
+  /// Used to listen on whenever the client manages to establish connection
+  /// receiving the event with name `pusher:connection_established`
   Stream<void> get onConnectionEstablished => lifecycleStream
       .where(
         (event) =>
@@ -181,6 +261,7 @@ class PusherChannelsClient {
 
   bool get isDisposed => _isDisposed;
 
+  /// Connects to a server via [controller].
   Future<void> connect() {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
@@ -188,6 +269,7 @@ class PusherChannelsClient {
     return controller.connectSafely();
   }
 
+  /// Disconnects from a server via [controller].
   Future<void> disconnect() {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
@@ -195,6 +277,7 @@ class PusherChannelsClient {
     return controller.disconnectSafely();
   }
 
+  /// Reconnects to a server via [controller].
   Future<void> reconnect() {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
@@ -202,6 +285,7 @@ class PusherChannelsClient {
     return controller.reconnectSafely();
   }
 
+  /// Triggers the [event] to a server.
   @internal
   void trigger(PusherChannelsTriggerEvent event) {
     if (_isDisposed) {
@@ -212,6 +296,7 @@ class PusherChannelsClient {
     );
   }
 
+  /// Sends the [event] to a server.
   @internal
   void sendEvent(PusherChannelsSentEventMixin event) {
     if (_isDisposed) {
@@ -220,6 +305,8 @@ class PusherChannelsClient {
     controller.sendEvent(event);
   }
 
+  /// Destroys [controller] and [channelsManager] making this instance
+  /// unusable.
   void dispose() {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
@@ -229,6 +316,7 @@ class PusherChannelsClient {
     channelsManager.dispose();
   }
 
+  /// Allows handling events for the [channelsManager] from the [controller].
   void _handleEvent(PusherChannelsEvent event) {
     if (_isDisposed) {
       return;
