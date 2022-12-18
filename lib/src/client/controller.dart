@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
 import 'package:dart_pusher_channels/src/events/connection_established_event.dart';
 import 'package:dart_pusher_channels/src/events/error_event.dart';
@@ -22,17 +23,46 @@ typedef PusherChannelsClientLifeCycleEventHandler = void Function(
 
 typedef _TimeoutHandler = void Function();
 
+/// Represents a state of a lifecycle of [PusherChannelsClientLifeCycleController]'s instances.
 enum PusherChannelsClientLifeCycleState {
+  /// Indicates that an error was thrown during a connection.
   connectionError,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] is disconnected.
   disconnected,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] is disposed and
+  /// can't be reused.
   disposed,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] has received
+  /// an event with name `pusher:error`
   gotPusherError,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] has managed to
+  /// successfully establish connection receiving an event with name `pusher:connection_established`.
+  ///
+  /// Also the controller may set an activity duration accordingly with the received event's properties.
+  ///
+  /// See docs: [Recommendations for client libraries](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#recommendations-for-client-libraries)
   establishedConnection,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] is trying to
+  /// establish connection.
   pendingConnection,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] is reconnecting.
   reconnecting,
+
+  /// Indicates that an instance of [PusherChannelsClientLifeCycleController] is inactive and
+  /// has not started the connection lifecycle yet.
   inactive,
 }
 
+/// Controls a lifecycle of [PusherChannelsClient] and delegates connection proccess.
+///
+/// Designed to handle connection and transport in a concurrent, safe way to avoid
+/// unexpected connection duplications.
 class PusherChannelsClientLifeCycleController {
   int _currentLifeCycleCount = 0;
   bool _isDisposed = false;
@@ -48,17 +78,31 @@ class PusherChannelsClientLifeCycleController {
   final StreamController<PusherChannelsClientLifeCycleState>
       _lifeCycleStateController = StreamController.broadcast();
 
+  /// Called when a connection error is thrown.
   @protected
   final PusherChannelsClientLifeCycleConnectionErrorHandler
       connectionErrorHandler;
+
+  /// Called to inject an instance of [PusherChannelsConnection] into a controller while
+  /// performing connection.
   @protected
   final PusherChannelsConnectionDelegate connectionDelegate;
+
+  /// Called to expose handling received events after the internal ones.
   @protected
   final PusherChannelsClientLifeCycleEventHandler externalEventHandler;
 
+  /// If not null - used as priority above the activity timeout duration sent from a server.
   final Duration? activityDurationOverride;
+
+  /// If [activityDurationOverride] was not provided and a server didn't send an activity timoeout
+  /// duration - this value will be used as the activity timeout duration.
   final Duration defaultActivityDuration;
+
+  /// Used to delay an interval between reconnections.
   final Duration minimumReconnectDuration;
+
+  /// Indicates a timeout duration of waiting for the pong message.
   final Duration waitForPongDuration;
 
   PusherChannelsClientLifeCycleController({
@@ -71,9 +115,12 @@ class PusherChannelsClientLifeCycleController {
     required this.waitForPongDuration,
   });
 
+  /// Fires an instance of [PusherChannelsClientLifeCycleState] when
+  /// the lifecycle state will have been changed.
   Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
       _lifeCycleStateController.stream;
 
+  /// Fires events received from a server.
   Stream<PusherChannelsEvent> get eventStream => _eventsController.stream;
 
   String? get socketId => _socketId;
@@ -81,40 +128,65 @@ class PusherChannelsClientLifeCycleController {
   @internal
   Future<void> getCompleterFuture() => _connectionCompleter.future;
 
+  /// Sends the [event] to a server.
   void sendEvent(PusherChannelsSentEventMixin event) {
     _sendEvent(event);
   }
 
+  /// Sends the [event] to a server.
   void triggerEvent(PusherChannelsTriggerEvent event) {
     _triggerEvent(event);
   }
 
+  /// Continues the lifecycle of this controller.
+  /// 1. Completes the [_connectionCompleter].
+  /// 2. Increases and records [_currentLifeCycleCount].
+  /// 3. Sets the lifecycle state to [PusherChannelsClientLifeCycleState.reconnecting].
+  /// 4. Closes current connection.
+  /// 5. Re-establishes connection calling [_connect].
+  ///
+  /// See also: [connectSafely]
   Future<void> reconnectSafely() {
     return _reconnect();
   }
 
+  /// Continues the lifecycle of this controller.
+  /// 1. (If shouldReInitCompleter is `true`) Completes the [_connectionCompleter].
+  /// 2. Increases (if shouldReInitCompleter is `true`) and records [_currentLifeCycleCount].
+  /// 3. Sets the lifecycle state to [PusherChannelsClientLifeCycleState.pendingConnection].
+  /// 4. Closes current connection.
+  /// 5. Re-establishes connection.
   Future<void> connectSafely() {
     return _connect(
       shouldReInitCompleter: true,
     );
   }
 
+  /// Disconnects from the current connection.
   Future<void> disconnectSafely() {
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.disconnected);
     return _disconnect();
   }
 
-  Future<void> dispose() async {
-    _isDisposed = true;
+  /// Closes connection and makes the current instance of this class
+  /// unusable.
+  void dispose() {
+    if (_isDisposed) {
+      return;
+    }
+    _disconnect();
+    _lifeCycleStateController.close();
+    _eventsController.close();
     _currentLifeCycleCount++;
     _completeSafely();
-    await _disconnect();
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.disposed);
-    await _lifeCycleStateController.close();
-    await _eventsController.close();
+    _isDisposed = true;
   }
 
   Future<void> _connect({required bool shouldReInitCompleter}) async {
+    if (_isDisposed) {
+      _isDisposed = true;
+    }
     final int fixatedLifeCycleCount;
     if (shouldReInitCompleter) {
       _completeSafely();
@@ -126,7 +198,7 @@ class PusherChannelsClientLifeCycleController {
 
     _changeLifeCycleState(PusherChannelsClientLifeCycleState.pendingConnection);
     await _disconnect();
-    if (fixatedLifeCycleCount < _currentLifeCycleCount) {
+    if (fixatedLifeCycleCount < _currentLifeCycleCount || _isDisposed) {
       return;
     }
     runZonedGuarded(
@@ -158,6 +230,9 @@ class PusherChannelsClientLifeCycleController {
   }
 
   Future<void> _disconnect() async {
+    if (_isDisposed) {
+      return;
+    }
     final fixatedLifeCycleCount = _currentLifeCycleCount;
     try {
       await _connection?.close();
@@ -176,6 +251,9 @@ class PusherChannelsClientLifeCycleController {
   }
 
   void _sendEvent(PusherChannelsSentEventMixin event) {
+    if (_isDisposed) {
+      return;
+    }
     try {
       _connection?.sendEvent(
         event.getEncoded(),
@@ -188,6 +266,9 @@ class PusherChannelsClientLifeCycleController {
   }
 
   Future<void> _reconnect() async {
+    if (_isDisposed) {
+      return;
+    }
     _completeSafely();
     _connectionCompleter = Completer();
     final fixatedLifeCycleCount = ++_currentLifeCycleCount;
@@ -197,7 +278,7 @@ class PusherChannelsClientLifeCycleController {
       return;
     }
     await Future.delayed(minimumReconnectDuration);
-    if (fixatedLifeCycleCount < _currentLifeCycleCount) {
+    if (fixatedLifeCycleCount < _currentLifeCycleCount || _isDisposed) {
       return;
     }
 
@@ -207,6 +288,9 @@ class PusherChannelsClientLifeCycleController {
   }
 
   void _changeLifeCycleState(PusherChannelsClientLifeCycleState newState) {
+    if (_isDisposed) {
+      return;
+    }
     if (newState == _currentLifeCycleState) {
       return;
     }
@@ -262,6 +346,7 @@ class PusherChannelsClientLifeCycleController {
     }
   }
 
+  /// Called after successful connection establishment.
   void _establishConnectionParameters(
     String sockId,
     Duration? serverActivityDuration,
@@ -270,12 +355,16 @@ class PusherChannelsClientLifeCycleController {
     _serverActivityDuration = serverActivityDuration;
   }
 
+  /// Replies with the pong message if received the
+  /// ping message from a server
   void _replyWithPong() {
     _sendEvent(
       const PusherChannelsPongEvent(),
     );
   }
 
+  /// Sends the ping messages and resets the timeout duration
+  /// accordingly with [waitForPongDuration].
   void _performPing() {
     PusherChannelsPackageLogger.log(
       'Performing ping, waiting for pong for $waitForPongDuration',
@@ -302,6 +391,7 @@ class PusherChannelsClientLifeCycleController {
     PusherChannelsPackageLogger.log('Timer was canceled');
   }
 
+  /// Handles messages received from a server.
   void _handleEvent({
     required String event,
     required int fixatedLifeCycleCount,
