@@ -73,9 +73,37 @@ class PusherChannelsOptionsMetadata {
 ///
 /// - Use [PusherChannelsOptions.fromCluster] if your url has a pattern like:
 ///   `{scheme}://ws-{cluster_name}.{host}:{port}/app/{key}`.
+///
+///   Example:
+///   ```dart
+///   const testOptions = PusherChannelsOptions.fromCluster(
+///      scheme: 'wss',
+///      cluster: 'mt1',
+///      key: 'a0173cd5499b34d93109',
+///      port: 443,
+///    );
+///   ```
+///
 /// - Use [PusherChannelsOptions.fromHost] if you have the Pusher Channels installed to your server under
 ///   your own domain host.
+///
+///   Example:
+///   ```dart
+///   const testOptions = PusherChannelsOptions.fromHost(
+///     scheme: 'wss',
+///     host: 'my.domain.com',
+///     key: 'my_key',
+///   );
+///   ```
 /// - Use [PusherChannelsOptions.custom], if the all above use-cases don't suit yours, providing [PusherChannelsOptionsCustomUriResolver].
+///
+///   Example:
+///   ```dart
+///   final testOptions = PusherChannelsOptions.custom(
+///     uriResolver: (_) => Uri.parse('https://my.domain.com/my/path')
+///   );
+///   ```
+///
 @immutable
 abstract class PusherChannelsOptions {
   /// A resultant url used to connect by [PusherChannelsClient]
