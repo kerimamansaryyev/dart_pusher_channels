@@ -1,3 +1,4 @@
+/// Internal exports of the Public API
 library dart_pusher_channels_exports;
 
 // options
