@@ -14,6 +14,7 @@ class PusherChannelsWebSocketConnectionWasClosedException
   const PusherChannelsWebSocketConnectionWasClosedException();
 }
 
+/// An implementation of [PusherChannelsConnection] through [WebSocketChannel].
 class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
   bool _isClosed = false;
   WebSocketChannel? _webSocketChannel;
