@@ -128,4 +128,5 @@ void connectToPusher() async {
   for (final subscription in allEventSubs) {
     subscription?.cancel();
   }
+  client.dispose();
 }
