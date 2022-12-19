@@ -11,6 +11,9 @@ typedef EndpointAuthorizableChannelTokenAuthorizationParser<
         T extends EndpointAuthorizationData>
     = FutureOr<T> Function(http.Response response);
 
+/// [EndpointAuthorizableChannelTokenAuthorizationDelegate] will
+/// throw this exception if it gets irrelevant response from
+/// the [authorizationEndpoint].
 class EndpointAuthorizableChannelTokenAuthorizationException
     implements PusherChannelsException {
   final http.Response response;
@@ -26,6 +29,9 @@ class EndpointAuthorizableChannelTokenAuthorizationException
       'Failed to get authorization data. Response to $authorizationEndpoint was:\n ${response.body}';
 }
 
+/// Implements [EndpointAuthorizableChannelAuthorizationDelegate]
+/// to grab the authorization data from the [authorizationEndpoint]
+/// using the POST request powered by the [http](https://pub.dev/packages/http) package.
 @immutable
 class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         T extends EndpointAuthorizationData>
@@ -44,6 +50,26 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     required this.onAuthFailed,
   });
 
+  /// Sends the POST request to the [authorizationEndpoint].
+  ///
+  /// Applies the [headers] as following:
+  /// ```
+  /// ...
+  /// headers: {
+  ///   ...headers,
+  ///   'content-type': 'application/x-www-form-urlencoded'
+  /// },
+  /// ...
+  /// ```
+  ///
+  /// Applies the `body` as following:
+  /// ```
+  ///   body: {
+  ///   'socket_id': socketId,
+  ///   'channel_name': channelName,
+  /// },
+  /// ```
+  ///
   @override
   Future<T> authorizationData(String socketId, String channelName) async {
     final response = await http.post(
@@ -67,13 +93,31 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     return parser(response);
   }
 
+  /// Providing an instance of this class to authorize
+  /// to [PrivateChannel]s with [PrivateChannelAuthorizationData].
+  ///
+  /// If the custom [parser] is not provided the default one will
+  /// be used:
+  ///
+  /// ```dart
+  ///  static PrivateChannelAuthorizationData _defaultParserForPrivateChannel(
+  ///   http.Response response,
+  ///  ) {
+  ///   final decoded = jsonDecode(response.body) as Map;
+  ///   final auth = decoded['auth'] as String;
+
+  ///   return PrivateChannelAuthorizationData(
+  ///     authKey: auth,
+  ///   );
+  /// }
+  /// ```
   static EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PrivateChannelAuthorizationData> forPrivateChannel({
     required Uri authorizationEndpoint,
     required Map<String, String> headers,
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PrivateChannelAuthorizationData>
-        parser = defaultParserForPrivateChannel,
+        parser = _defaultParserForPrivateChannel,
     EndpointAuthFailedCallback? onAuthFailed,
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
@@ -83,13 +127,34 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         parser: parser,
       );
 
+  /// Providing an instance of this class to authorize
+  /// to [PresenceChannel]s with [PresenceChannelAuthorizationData].
+  ///
+  /// If the custom [parser] is not provided the default one will
+  /// be used:
+  ///
+  /// ```dart
+  /// static PresenceChannelAuthorizationData _defaultParserForPresenceChannel(
+  ///   http.Response response,
+  /// ) {
+  ///   final decoded = jsonDecode(response.body) as Map;
+  ///   final auth = decoded['auth'] as String;
+  ///   final channelData = decoded['channel_data'] as String;
+
+  ///   return PresenceChannelAuthorizationData(
+  ///     authKey: auth,
+  ///     channelDataEncoded: channelData,
+  ///   );
+  /// }
+
+  /// ```
   static EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PresenceChannelAuthorizationData> forPresenceChannel({
     required Uri authorizationEndpoint,
     required Map<String, String> headers,
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PresenceChannelAuthorizationData>
-        parser = defaultParserForPresenceChannel,
+        parser = _defaultParserForPresenceChannel,
     EndpointAuthFailedCallback? onAuthFailed,
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
@@ -99,7 +164,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         onAuthFailed: onAuthFailed,
       );
 
-  static PrivateChannelAuthorizationData defaultParserForPrivateChannel(
+  static PrivateChannelAuthorizationData _defaultParserForPrivateChannel(
     http.Response response,
   ) {
     final decoded = jsonDecode(response.body) as Map;
@@ -110,7 +175,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     );
   }
 
-  static PresenceChannelAuthorizationData defaultParserForPresenceChannel(
+  static PresenceChannelAuthorizationData _defaultParserForPresenceChannel(
     http.Response response,
   ) {
     final decoded = jsonDecode(response.body) as Map;

@@ -1,6 +1,9 @@
+import 'package:dart_pusher_channels/src/channels/channel.dart';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 
+/// A data class with the info about members of an instance of [Channel]
 class MemberInfo {
   final String id;
   final Map<String, dynamic> info;
@@ -11,6 +14,9 @@ class MemberInfo {
   });
 }
 
+/// Delagetes the members changes in an instance of [Channel].
+///
+/// Usually, used by [PresenceChannel].
 class ChannelMembers {
   static const _presenceKey = 'presence';
   static const _hashKey = 'hash';
@@ -26,6 +32,7 @@ class ChannelMembers {
     required this.myId,
   });
 
+  /// Returns the instace containing data of the local user (client) only.
   factory ChannelMembers.onlyMe({
     required String myId,
     required Map<String, dynamic> myData,
@@ -64,14 +71,19 @@ class ChannelMembers {
     );
   }
 
+  /// Gives a length of [membersMap].
   int get membersCount => membersMap.length;
 
+  /// Gives an id of the local user (client).
   String? getMyId() => myId;
 
-  Map<String, MemberInfo?> getMap() => {...membersMap};
+  /// Gives this members as `Map`.
+  Map<String, MemberInfo?> getAsMap() => {...membersMap};
 
+  /// Gives an instance of [MemberInfo] if any is in the [membersMap].
   MemberInfo? getMemberInfo(String id) => membersMap[id];
 
+  /// Gives an instance of [MemberInfo] if any is in the [membersMap] for the local user (client).
   MemberInfo? getMyMemberInfo() => myId == null ? null : getMemberInfo(myId!);
 
   @internal
@@ -99,6 +111,7 @@ class ChannelMembers {
     membersMap[myId!] = memberInfo;
   }
 
+  /// Merges the old [membersMap] with the new one ([otherMap]).
   @internal
   void merge(Map<String, MemberInfo?> otherMap) {
     membersMap = {

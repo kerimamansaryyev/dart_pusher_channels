@@ -1,4 +1,3 @@
-import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel_mixin.dart';
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
@@ -11,20 +10,36 @@ typedef EndpointAuthorizationErrorCallback = void Function(
   StackTrace trace,
 );
 
+/// A base class for channels that require authorization before subscription.
+///
+/// Exposes internal members for setting an auth data of type [A].
 abstract class EndpointAuthorizableChannel<T extends ChannelState,
-        A extends EndpointAuthorizationData> extends Channel<T>
-    with EndpointAuthorizableChannelMixin<T, A> {
+    A extends EndpointAuthorizationData> extends Channel<T> {
+  @protected
+  abstract final EndpointAuthorizableChannelAuthorizationDelegate<A>
+      authorizationDelegate;
+
   A? _authData;
   int _authRequestLifeCycle = 0;
 
+  /// Current authorization data of this channel.
   @protected
   A? get authData => _authData;
+
+  /// Gives a current lifecycle of a request made to an endpoint.
   @protected
   int get authRequestCycle => _authRequestLifeCycle;
 
+  /// Increases the lifecycle count before making request to
+  /// block changes made from the old request.
   @protected
   int startNewAuthRequestCycle() => ++_authRequestLifeCycle;
 
+  /// Sets a new lifecycle, tries to make request to get
+  /// the auth data of type [A].
+  ///
+  /// Auth fails are handled by [_handleAuthFailed] which in its order
+  /// emits the channel subscription error with [publicEventEmitter].
   @protected
   Future<void> setAuthKeyFromDelegate() async {
     final socketId = connectionDelegate.socketId;

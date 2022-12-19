@@ -174,12 +174,12 @@ class PusherChannelsClientLifeCycleController {
     if (_isDisposed) {
       return;
     }
+    _changeLifeCycleState(PusherChannelsClientLifeCycleState.disposed);
     _disconnect();
     _lifeCycleStateController.close();
     _eventsController.close();
     _currentLifeCycleCount++;
     _completeSafely();
-    _changeLifeCycleState(PusherChannelsClientLifeCycleState.disposed);
     _isDisposed = true;
   }
 

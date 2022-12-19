@@ -4,6 +4,8 @@ import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscri
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:meta/meta.dart';
 
+/// A data class implementing [ChannelState] and representing
+/// a state of an instance of [PublicChannel].
 @immutable
 class PublicChannelState implements ChannelState {
   @override
@@ -26,6 +28,11 @@ class PublicChannelState implements ChannelState {
       );
 }
 
+/// Public channels should be used for publicly accessible data as they do not require any form of authorization in order to be subscribed to.
+///
+/// You can subscribe and unsubscribe from channels at any time. There’s no need to wait for the Channels to finish connecting first.
+///
+/// See for more details: [Public Channels docs](https://pusher.com/docs/channels/using_channels/public-channels/).
 class PublicChannel extends Channel<PublicChannelState> {
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
@@ -46,6 +53,7 @@ class PublicChannel extends Channel<PublicChannelState> {
     required this.publicEventEmitter,
   });
 
+  /// Sends the subscription event through the [connectionDelegate].
   @override
   void subscribe() {
     super.subscribe();
@@ -56,6 +64,7 @@ class PublicChannel extends Channel<PublicChannelState> {
     );
   }
 
+  /// Sends the unsubscription event through the [connectionDelegate].
   @override
   void unsubscribe() {
     connectionDelegate.sendEvent(

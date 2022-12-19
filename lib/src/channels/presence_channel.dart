@@ -263,7 +263,7 @@ class PresenceChannel extends EndpointAuthorizableChannel<PresenceChannelState,
     } else {
       final currentMembers = state?.members;
       final dataToMerge = {
-        ...newMembers.getMap(),
+        ...newMembers.getAsMap(),
       };
       final myId = currentMembers?.getMyId();
       if (myId != null) {
