@@ -5,6 +5,9 @@ import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
+import 'package:dart_pusher_channels/src/channels/triggerable_channel.dart';
+import 'package:dart_pusher_channels/src/client/client.dart';
+import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 import 'package:dart_pusher_channels/src/events/read_event.dart';
@@ -36,11 +39,18 @@ typedef ChannelsManagerSocketIdGetter = String? Function();
 
 typedef _ChannelConstructorDelegate<T extends Channel> = T Function();
 
+/// Appears to be a delegate between an instance
+/// of [PusherChannelsClient] and [ChannelsManager].
 class ChannelsManagerConnectionDelegate {
+  /// Called by an instance of [TriggerableChannelMixin] to send an event.
   @protected
   final ChannelsManagerSendEventDelegate sendEventDelegate;
+
+  /// Called by an instance of [Channel] to send the subscription event.
   @protected
   final ChannelsManagerSocketIdGetter socketIdGetter;
+
+  /// Called by an instance of [TriggerableChannelMixin] to trigger an event.
   @protected
   final ChannelsManagerTriggerEventDelegate triggerEventDelegate;
 
@@ -50,15 +60,22 @@ class ChannelsManagerConnectionDelegate {
     required this.triggerEventDelegate,
   });
 
+  /// Calling [socketIdGetter]
   String? get socketId => socketIdGetter();
 
+  /// Calling [sendEventDelegate]
   void sendEvent(PusherChannelsSentEventMixin event) =>
       sendEventDelegate(event);
 
+  /// Calling [triggerEventDelegate]
   void triggerEvent(PusherChannelsTriggerEvent event) =>
       triggerEventDelegate(event);
 }
 
+/// Delegates creation of instances of [Channel].
+///
+/// Takes events from [PusherChannelsClientLifeCycleController] through an instance
+/// of [PusherChannelsClient] and handles the events by respective channels.
 class ChannelsManager {
   bool _isDisposed = false;
   final StreamController<ChannelReadEvent> _publicStreamController =
@@ -90,6 +107,9 @@ class ChannelsManager {
     }
   }
 
+  /// Creates and saves public channel under the key respective to [channelName].
+  ///
+  /// Returns an existing instance if any.
   PublicChannel publicChannel(
     String channelName, {
     required bool forceCreateNewInstance,
@@ -105,6 +125,9 @@ class ChannelsManager {
         ),
       );
 
+  /// Creates and saves private channel under the key respective to [channelName].
+  ///
+  /// Returns an existing instance if any.
   PrivateChannel privateChannel(
     String channelName, {
     required EndpointAuthorizableChannelAuthorizationDelegate<
@@ -124,6 +147,9 @@ class ChannelsManager {
         ),
       );
 
+  /// Creates and saves presence channel under the key respective to [channelName].
+  ///
+  /// Returns an existing instance if any.
   PresenceChannel presenceChannel(
     String channelName, {
     required EndpointAuthorizableChannelAuthorizationDelegate<
@@ -143,6 +169,14 @@ class ChannelsManager {
         ),
       );
 
+  /// Creates a channel of type [T] using [constructorDelegate].
+  ///
+  /// If the last recorded channel with [channelName] still matches [T
+  /// type bounds - then it will be returned.
+  ///
+  /// If requested [T] is different from the last recorded channel in
+  /// [_channelsMap] or [forceCreateNewInstance] is `true`
+  /// - then a new instance of [T] will be created.
   T _createChannelSafely<T extends Channel>({
     required String channelName,
     required _ChannelConstructorDelegate<T> constructorDelegate,
@@ -161,6 +195,9 @@ class ChannelsManager {
     return (_channelsMap[channelName] ??= constructorDelegate()) as T;
   }
 
+  /// Destroys this instance, clears [_channelsMap] and closes [_publicStreamController]
+  /// making this instance
+  /// unusable.
   void dispose() {
     if (_isDisposed) {
       throw const ChannelsManagerHasBeenDisposedException();

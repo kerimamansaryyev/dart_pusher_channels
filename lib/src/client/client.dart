@@ -155,6 +155,25 @@ class PusherChannelsClient {
       controller.getCompleterFuture();
 
   /// Creates a public channel.
+  ///
+  /// `Note`: if [forceCreateNewInstance] is `true` then this client will return a new instance each time
+  /// this method is called instead of giving an internally linked one.
+  ///
+  /// Example:
+  /// ```dart
+  /// var oldVariable = client.publicChannel('hello');
+  /// var newVariable = client.publicChannel('hello');
+  /// // prints true
+  /// print(oldVariable == newVariable);
+
+  /// var newestVariable = client.publicChannel(
+  ///   'hello',
+  ///   forceCreateNewInstance: true,
+  // );
+
+  /// // prints false
+  /// print(newestVariable == oldVariable || newestVariable == newVariable);
+  /// ```
   PublicChannel publicChannel(
     String channelName, {
     bool forceCreateNewInstance = false,
@@ -183,6 +202,25 @@ class PusherChannelsClient {
   ///     headers: const {},
   ///   ),
   /// );
+  /// ```
+  ///
+  /// `Note`: if [forceCreateNewInstance] is `true` then this client will return a new instance each time
+  /// this method is called instead of giving an internally linked one.
+  ///
+  /// Example:
+  /// ```dart
+  /// var oldVariable = client.publicChannel('hello');
+  /// var newVariable = client.publicChannel('hello');
+  /// // prints true
+  /// print(oldVariable == newVariable);
+
+  /// var newestVariable = client.publicChannel(
+  ///   'hello',
+  ///   forceCreateNewInstance: true,
+  // );
+
+  /// // prints false
+  /// print(newestVariable == oldVariable || newestVariable == newVariable);
   /// ```
   PrivateChannel privateChannel(
     String channelName, {
@@ -216,6 +254,24 @@ class PusherChannelsClient {
   ///     headers: const {},
   ///   ),
   ///  );
+  /// ```
+  /// `Note`: if [forceCreateNewInstance] is `true` then this client will return a new instance each time
+  /// this method is called instead of giving an internally linked one.
+  ///
+  /// Example:
+  /// ```dart
+  /// var oldVariable = client.publicChannel('hello');
+  /// var newVariable = client.publicChannel('hello');
+  /// // prints true
+  /// print(oldVariable == newVariable);
+
+  /// var newestVariable = client.publicChannel(
+  ///   'hello',
+  ///   forceCreateNewInstance: true,
+  // );
+
+  /// // prints false
+  /// print(newestVariable == oldVariable || newestVariable == newVariable);
   /// ```
   PresenceChannel presenceChannel(
     String channelName, {
