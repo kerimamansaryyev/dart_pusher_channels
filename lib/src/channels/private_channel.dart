@@ -7,6 +7,12 @@ import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe
 import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscribe_event.dart';
 import 'package:meta/meta.dart';
 
+/// Authorization data that is expected to subscribe to the private channels.
+///
+/// See also:
+/// - [EndpointAuthorizableChannelAuthorizationDelegate]
+/// - [EndpointAuthorizationData]
+/// - [EndpointAuthorizableChannel]
 @immutable
 class PrivateChannelAuthorizationData implements EndpointAuthorizationData {
   final String authKey;
@@ -16,6 +22,8 @@ class PrivateChannelAuthorizationData implements EndpointAuthorizationData {
   });
 }
 
+/// A data class representing a state
+/// of [PrivateChannel]'s instances.
 @immutable
 class PrivateChannelState implements ChannelState {
   @override
@@ -38,6 +46,20 @@ class PrivateChannelState implements ChannelState {
       );
 }
 
+/// Private channels require users to authorized to subscribe it.
+/// So that's why it extends [EndpointAuthorizableChannel] with
+/// [PrivateChannelAuthorizationData] and requires [authorizationDelegate].
+///
+/// Private channels should be used when access to the channel needs to be restricted in some way. In order for a user to subscribe to a private channel permission must be authorized.
+/// The authorization occurs via a HTTP Request to a configurable authorization url when the subscribe method is called with a private- channel name. In the JavaScript client library the HTTP Request is executed via AJAX (see Authorizing Users).
+///
+/// It also allows users to trigger the client events using [trigger] method.
+///
+/// See also:
+/// - [EndpointAuthorizableChannel]
+/// - [EndpointAuthorizableChannelAuthorizationDelegate]
+/// - [Private Channel docs](https://pusher.com/docs/channels/using_channels/private-channels/)
+///
 class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
         PrivateChannelAuthorizationData>
     with TriggerableChannelMixin<PrivateChannelState> {
@@ -66,6 +88,13 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
     required this.authorizationDelegate,
   });
 
+  /// Unlike the public channels, this channel:
+  /// 1. Grabs the authorization data of type [PrivateChannelAuthorizationData].
+  /// 2. Sends the subscription event with the derived data.
+  ///
+  /// See also:
+  /// - [EndpointAuthorizableChannelAuthorizationDelegate]
+  /// - [EndpointAuthorizableChannel]
   @override
   void subscribe() async {
     super.subscribe();
@@ -85,6 +114,7 @@ class PrivateChannel extends EndpointAuthorizableChannel<PrivateChannelState,
     );
   }
 
+  /// Sends the unsubscription event through the [connectionDelegate].
   @override
   void unsubscribe() {
     connectionDelegate.sendEvent(

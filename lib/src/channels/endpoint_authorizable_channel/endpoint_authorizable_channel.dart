@@ -13,6 +13,9 @@ typedef EndpointAuthorizationErrorCallback = void Function(
 /// A base class for channels that require authorization before subscription.
 ///
 /// Exposes internal members for setting an auth data of type [A].
+///
+/// See also:
+/// - [Authorizing docs](https://pusher.com/docs/channels/server_api/authorizing-users/).
 abstract class EndpointAuthorizableChannel<T extends ChannelState,
     A extends EndpointAuthorizationData> extends Channel<T> {
   @protected
@@ -38,8 +41,8 @@ abstract class EndpointAuthorizableChannel<T extends ChannelState,
   /// Sets a new lifecycle, tries to make request to get
   /// the auth data of type [A].
   ///
-  /// Auth fails are handled by [_handleAuthFailed] which in its order
-  /// emits the channel subscription error with [publicEventEmitter].
+  /// The fails are handled by [_handleAuthFailed] which in its order
+  /// emits the channel subscription error using the [publicEventEmitter].
   @protected
   Future<void> setAuthKeyFromDelegate() async {
     final socketId = connectionDelegate.socketId;

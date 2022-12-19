@@ -84,7 +84,7 @@ abstract class Channel<T extends ChannelState> {
   T? _currentState;
 
   /// Name of this channel
-  abstract final String name;
+  String get name;
 
   /// A delegate that is passed by [ChannelsManager].
   /// Exposes necessary API of [PusherChannelsClientLifeCycleController].
