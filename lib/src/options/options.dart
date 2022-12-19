@@ -130,7 +130,9 @@ abstract class PusherChannelsOptions {
   }) = _ClusteredOptions;
 
   /// Use this if you have the Pusher Channels installed to your server under
-  /// your own domain host.
+  /// your own domain host and the url pattern looks like:
+  ///
+  /// `{scheme}://{host}:{port}/app/{key}`
   ///
   /// The [scheme] is usually `ws` or `wss`.
   ///
