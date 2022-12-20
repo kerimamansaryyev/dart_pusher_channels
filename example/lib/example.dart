@@ -53,10 +53,9 @@ void connectToPusher() async {
 
   // Keep in mind: those StreamSubscription instances will contintue receiving events
   // unless it gets canceled or channel gets unsubscribed.
-  // Following statement means: if you cancel an instance of StreamSubscription - it stops
-  // receiving events unless you bind to it to an event (with .listen method of the .bind stream) again,
-  // if you will unsubscribe from channel and if then you will subscribe to it again -
-  // an instance of StreamSubscription will continue receiving events.
+  // The statement means: if you cancel an instance of StreamSubscription - events won't be received,
+  // if you unsubscribe from a channel  -
+  // the stream won't be closed but prevented from receiving events unless you subscribe to the channel again.
 
   // Listen for events of the channel with .bind method
   StreamSubscription<ChannelReadEvent> somePrivateChannelEventSubs =
@@ -94,7 +93,8 @@ void connectToPusher() async {
   // .onConnectionEstablished Stream fires an event because it enables
   // to resubscribe, for example, when the client reconnects due to
   // a connection error
-  final connectionSubs = client.onConnectionEstablished.listen((_) async {
+  final StreamSubscription connectionSubs =
+      client.onConnectionEstablished.listen((_) {
     for (final channel in allChannels) {
       // Subscribes to the channel if didn't unsubscribe from it intentionally
       channel.subscribeIfNotUnsubscribed();
