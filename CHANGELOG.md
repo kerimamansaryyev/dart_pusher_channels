@@ -1,3 +1,7 @@
+## 1.0.0+3
+
+- Updated the platforms metadata.
+
 ## 1.0.0+2
 
 - Updated the metadata of this package.
