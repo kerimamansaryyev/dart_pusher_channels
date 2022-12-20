@@ -51,7 +51,7 @@ class PrivateChannelState implements ChannelState {
 /// [PrivateChannelAuthorizationData] and requires [authorizationDelegate].
 ///
 /// Private channels should be used when access to the channel needs to be restricted in some way. In order for a user to subscribe to a private channel permission must be authorized.
-/// The authorization occurs via a HTTP Request to a configurable authorization url when the subscribe method is called with a private- channel name. In the JavaScript client library the HTTP Request is executed via AJAX (see Authorizing Users).
+/// The authorization occurs via a HTTP Request to a configurable authorization url when the subscribe method is called with a private- channel name.
 ///
 /// It also allows users to trigger the client events using [trigger] method.
 ///
