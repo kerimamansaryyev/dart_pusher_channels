@@ -2,7 +2,7 @@ import 'package:dart_pusher_channels/src/client/client.dart';
 import 'package:dart_pusher_channels/src/options/options.dart';
 
 /// Used to be passed as the `version` metadata by instances of [PusherChannelsOptionsMetadata]
-const kDartPusherChannelsLibraryVersion = '0.8.0';
+const kDartPusherChannelsLibraryVersion = '1.0.0';
 
 /// Used to be passed as the `protocol` metadata by instances of [PusherChannelsOptionsMetadata]
 const kLatestAvailablePusherProtocol = 7;
