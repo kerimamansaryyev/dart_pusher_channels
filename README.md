@@ -18,10 +18,10 @@ dart_pusher_channels: 0.3.1+1
 
 # Contributors 
 
-### Maintainer: [Kerim Amansaryyev](https://github.com/mcfugger)
+### Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)
 
 ### Contributors: [](https://pub.dev/packages/dart_pusher_channels#contributors)
-### [Nicolas Britos](https://github.com/nicobritos) - Pull requests [#5](https://github.com/mcfugger/dart_pusher_channels/pull/5), [#6](https://github.com/mcfugger/dart_pusher_channels/pull/6), [#8](https://github.com/mcfugger/dart_pusher_channels/pull/8)
+### [Nicolas Britos](https://github.com/nicobritos) - Pull requests [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6), [#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8)
 
 # Usage
 

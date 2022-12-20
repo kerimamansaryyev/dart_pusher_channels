@@ -108,9 +108,9 @@ Internal changes:
 
 ## 0.2.5
 
-Merging pull requests [#6](https://github.com/mcfugger/dart_pusher_channels/pull/6),
+Merging pull requests [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6),
 
-[#8](https://github.com/mcfugger/dart_pusher_channels/pull/8), [#10](https://github.com/mcfugger/dart_pusher_channels/pull/10), [#12](https://github.com/mcfugger/dart_pusher_channels/pull/12). Thanks to [Nicolas Britos](https://github.com/nicobritos) for contributions.
+[#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8), [#10](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/10), [#12](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/12). Thanks to [Nicolas Britos](https://github.com/nicobritos) for contributions.
 
 - Added an additional member `pingWaitPongDuration` to the `ConnectionDelegate` and the parameter with the same name
 
@@ -134,7 +134,7 @@ Featuring contributors in README
 
   
 
-Merging pull request [#5](https://github.com/mcfugger/dart_pusher_channels/pull/5), many thanks to [Nicolas Britos](https://github.com/nicobritos)
+Merging pull request [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), many thanks to [Nicolas Britos](https://github.com/nicobritos)
 
 - Add custom logger handler to use a custom Logger instead of printing to console.
 
