@@ -1,6 +1,4 @@
+/// Public API library of this package
 library dart_pusher_channels;
 
-export 'base.dart';
-export 'api.dart';
-
-const kDartPusherChannelsLibraryVersion = '0.3.1';
+export 'src/dart_pusher_channels_exports.dart';
