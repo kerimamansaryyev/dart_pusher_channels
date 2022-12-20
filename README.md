@@ -144,7 +144,7 @@ seconds: 30,
 ## Custom connection implementation
 As it was mentioned above, the package supports connection through the web sockets using `## PusherChannelsClient.websocket`. You may implemet your custom `PusherChannelsConnection`. See the implementation of [`PusherChannelsWebSocketConnection`][PusherChannelsWebSocketConnection] as an example.
 
-[PusherChannelsWebSocketConnection]: https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels_exports/PusherChannelsWebSocketConnection-class.html
+[PusherChannelsWebSocketConnection]: https://pub.dev/documentation/dart_pusher_channels/latest/dart_pusher_channels/PusherChannelsWebSocketConnection-class.html
 
 And use it with `PusherChannelsClient.custom`:
 ```dart

@@ -1,3 +1,7 @@
+## 1.0.0+1
+
+- Fixed linking in the README.
+
 ## 1.0.0
 
 Whole the project has been rethinked and redesigned in this update. The structure is more convenient and canonical according to the [official documentation](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#recommendations-for-client-libraries)
@@ -5,6 +9,7 @@ Whole the project has been rethinked and redesigned in this update. The structur
 `NEW FEATURES`:
 - Support for Presence Channels
 - Triggering events
+- Tested on all the platforms
 
 `BREAKING CHANGES`:
 
