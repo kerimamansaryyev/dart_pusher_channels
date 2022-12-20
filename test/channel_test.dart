@@ -46,13 +46,14 @@ class _ShellAuthDelegate<T extends EndpointAuthorizationData>
 }
 
 ChannelReadEvent _fakeSubscriptionEvent(Channel channel) =>
-    ChannelReadEvent.internal(
+    ChannelReadEvent.internalCreate(
       name: Channel.getInternalSubscriptionSucceededEventNameTest(),
       channel: channel,
       data: {},
     );
 
-ChannelReadEvent _fakeCountEvent(Channel channel) => ChannelReadEvent.internal(
+ChannelReadEvent _fakeCountEvent(Channel channel) =>
+    ChannelReadEvent.internalCreate(
       data: {
         Channel.subscriptionsCountKey: 3,
       },
@@ -293,7 +294,7 @@ void _testSubscriptionGroupWithMock() {
       );
       await Future.microtask(
         () => manager.handleEvent(
-          ChannelReadEvent.internal(
+          ChannelReadEvent.internalCreate(
             name: fakeEventName,
             data: const <String, String>{},
             channel: channel,

@@ -104,6 +104,18 @@ void connectToPusher() async {
   // Connect with the client
   unawaited(client.connect());
 
+  // You can trigger events from Private and Presence Channels
+
+  // Somewhere in future
+  await Future.delayed(
+    const Duration(seconds: 5),
+  );
+
+  myPresenceChannel.trigger(
+    eventName: 'client-event',
+    data: {'hello': 'Hello'},
+  );
+
   // If you no longer need a channel - unsubscribe from it. Channel instances are reusable
   // so it is possible to subscribe to it later, if needed, using .subscribe method.
 

@@ -17,7 +17,7 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
   }) : super(rootObject: rootObject);
 
   @internal
-  factory ChannelReadEvent.internal({
+  factory ChannelReadEvent.internalCreate({
     required String name,
     required Channel channel,
     required Map<String, dynamic> data,
@@ -47,7 +47,7 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
     required String type,
     required String errorMessage,
   }) {
-    return ChannelReadEvent.internal(
+    return ChannelReadEvent.internalCreate(
       name: Channel.subscriptionErrorEventName,
       data: {
         PusherChannelsEvent.errorTypeKey: type,
