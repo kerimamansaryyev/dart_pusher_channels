@@ -262,7 +262,7 @@ Binding to `pusher:member_removed`
 ### .onSubscriptionError({String? errorType})
 Binding to `pusher:subscription_error` filtered with `errorType`.
 
-### .onAuthenticationSubscriptionFailed
+### .onAuthenticationSubscriptionFailed()
 Binding to `pusher:subscription_error` with `errorType` of `AuthError`.
 
 ## Listening for all events of a channel
