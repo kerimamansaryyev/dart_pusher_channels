@@ -35,13 +35,13 @@ What will be implemented in future releases:
 # Usage
 
 - [Options](#options)
--  [Client](#client)
--  [Public channels](#public-channels)
--  [Private channels](#private-channels)
--  [Presence channels](#presence-channels)
--  [Subscribing, unsubscribing and connecting](#subscribing-unsubscribing-and-connecting)
--  [Binding to events](#binding-to-events)
--  [Triggering events ](#triggering-events)
+- [Client](#client)
+- [Public channels](#public-channels)
+- [Private channels](#private-channels)
+- [Presence channels](#presence-channels)
+- [Subscribing, unsubscribing and connecting](#subscribing-unsubscribing-and-connecting)
+- [Binding to events](#binding-to-events)
+- [Triggering events ](#triggering-events)
 
 # Options
 In order to connect to a server with Pusher Channels protocol, a client must provide some metadata as a url. Use one of the constructors of  **PusherChannelsOptions** according to your use-case.
@@ -159,7 +159,7 @@ And use it with `PusherChannelsClient.custom`:
 ```dart
 final myClient = PusherChannelsClient.custom(
     // It's important to return a new instance in 
-    // the delegate function becase the client
+    // the delegate function because the client
     // closes (disposes) its internal instance each time
     // it connects/reconnects/disconnects.
 	connectionDelegate: () => MyConnection(),
@@ -253,7 +253,7 @@ StreamSubscription<ChannelReadEvent> somePrivateChannelEventSubs = myPrivateChan
 // If you want to unbind it - simply cancel the subscription
 somePrivateChannelEventSubs.cancel();
 ```
-## Using extension shortcuts to bind
+## Using the extension shortcuts to bind
 You can bind to the predefined events (especially with presence channels) by using the extension shortcut methods on instances of `Channel`:
 
 ### .whenSubscriptionSucceeded()

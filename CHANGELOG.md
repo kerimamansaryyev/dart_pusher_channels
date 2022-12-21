@@ -1,3 +1,7 @@
+## 1.0.0+6
+
+- Fixed the detected typos in README.
+
 ## 1.0.0+5
 
 - Added the **Milestones** section in README.
