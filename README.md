@@ -16,6 +16,15 @@ Starting from the version `1.0.0` the package offers more canonical client API o
 dart_pusher_channels: 0.3.1+1
 ```
 
+# Milestones
+Starting from the version `1.0.0` 3 of the main milestones were implemented:
+- Presence channels ✓
+- Triggering the client events ✓
+- Tested on all the 6 platforms. ✓
+
+What will be implemented in future releases:
+- Encrypted channels
+
 # Contributors 
 
 ### Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)

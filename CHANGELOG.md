@@ -1,3 +1,7 @@
+## 1.0.0+5
+
+- Added the **Milestones** section in README.
+
 ## 1.0.0+4
 
 - Fixed mistakes in the docs.
