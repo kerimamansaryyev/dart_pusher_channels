@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
@@ -16,7 +18,7 @@ import 'package:meta/meta.dart';
 class PrivateEncryptedChannelAuthorizationData
     implements EndpointAuthorizationData {
   final String authKey;
-  final String sharedSecret;
+  final Uint8List sharedSecret;
 
   const PrivateEncryptedChannelAuthorizationData({
     required this.authKey,
@@ -131,11 +133,6 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
       _stateIfNull().copyWith(
         subscriptionCount: subscriptionCount,
       );
-
-  @override
-  Future<void> setAuthKeyFromDelegate() async {
-    await super.setAuthKeyFromDelegate();
-  }
 
   PrivateEncryptedChannelState _stateIfNull() =>
       state ?? PrivateEncryptedChannelState.initial();
