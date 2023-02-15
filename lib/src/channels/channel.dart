@@ -80,6 +80,7 @@ abstract class Channel<T extends ChannelState> {
   static const subscriptionSucceededEventName = 'pusher:subscription_succeeded';
   static const subscriptionErrorEventName = 'pusher:subscription_error';
   static const authErrorTypeString = 'AuthError';
+  static const decryptionErrorTypeString = 'DecryptionError';
 
   T? _currentState;
 
@@ -146,7 +147,7 @@ abstract class Channel<T extends ChannelState> {
         _handleSubscriptionCount(event);
         break;
       default:
-        _handleOtherExternalEvents(event);
+        handleOtherExternalEvents(event);
         break;
     }
   }
@@ -270,7 +271,9 @@ abstract class Channel<T extends ChannelState> {
   }
 
   /// Passes all other events to [ChannelsManager]'s instances' sink i.e. - [publicEventEmitter]
-  void _handleOtherExternalEvents(ChannelReadEvent readEvent) {
+  @protected
+  @internal
+  void handleOtherExternalEvents(ChannelReadEvent readEvent) {
     if (readEvent.name.contains(pusherInternalPrefix)) {
       return;
     }

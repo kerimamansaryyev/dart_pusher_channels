@@ -1,12 +1,67 @@
-import 'dart:typed_data';
-
+import 'dart:convert';
 import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/channels_manager.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorizable_channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_subscribe_event.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_unsubscribe_event.dart';
+import 'package:dart_pusher_channels/src/events/event.dart';
+import 'package:dart_pusher_channels/src/events/read_event.dart';
+import 'package:dart_pusher_channels/src/exception/exception.dart';
+import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
+import 'package:pinenacl/x25519.dart';
+
+typedef PrivateEncryptedChannelEventDataEncodeDelegate = String Function(
+  Uint8List bytes,
+);
+
+class _PusherChannelsDecryptionException implements PusherChannelsException {
+  @override
+  final String message;
+
+  const _PusherChannelsDecryptionException.nonceOrCiphertextNull()
+      : message = 'Received nonce or ciphertext is null';
+
+  const _PusherChannelsDecryptionException.decryptionFailed()
+      : message = 'Failed to decrypt the event';
+}
+
+extension _ChannelReadEventExtension on PusherChannelsReadEvent {
+  PusherChannelsReadEvent copyWithDecryptedData({
+    required Uint8List key,
+    required PrivateEncryptedChannelEventDataEncodeDelegate encodeDelegate,
+  }) {
+    final data = tryGetDataAsMap() ?? <String, dynamic>{};
+    final nonceString = data['nonce'];
+    final ciphertextString = data['ciphertext'];
+
+    if (nonceString is! String || ciphertextString is! String) {
+      throw const _PusherChannelsDecryptionException.nonceOrCiphertextNull();
+    }
+
+    try {
+      final nonce = base64Decode(nonceString);
+      final ciphertext = base64Decode(ciphertextString);
+      final secretBox = SecretBox(key);
+      final decrypted = secretBox.decrypt(
+        ByteList(ciphertext),
+        nonce: nonce,
+      );
+      final plaintext = encodeDelegate(decrypted);
+
+      return PusherChannelsReadEvent(
+        rootObject: {
+          ...rootObject,
+          PusherChannelsEvent.dataKey: plaintext,
+        },
+      );
+    } catch (exception) {
+      throw const _PusherChannelsDecryptionException.decryptionFailed();
+    }
+  }
+}
 
 /// Authorization data that is expected to subscribe to the private channels.
 ///
@@ -58,6 +113,8 @@ class PrivateEncryptedChannelState implements ChannelState {
 
 class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
     PrivateEncryptedChannelState, PrivateEncryptedChannelAuthorizationData> {
+  final PrivateEncryptedChannelEventDataEncodeDelegate eventDataEncodeDelegate;
+
   @override
   final ChannelsManagerConnectionDelegate connectionDelegate;
 
@@ -81,6 +138,7 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
     required this.connectionDelegate,
     required this.name,
     required this.authorizationDelegate,
+    required this.eventDataEncodeDelegate,
   });
 
   /// Unlike the public channels, this channel:
@@ -133,6 +191,45 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
       _stateIfNull().copyWith(
         subscriptionCount: subscriptionCount,
       );
+
+  @override
+  void handleOtherExternalEvents(ChannelReadEvent readEvent) {
+    final sharedSecret = authData?.sharedSecret;
+    if (readEvent.name.contains(Channel.pusherInternalPrefix) ||
+        sharedSecret == null) {
+      return;
+    }
+
+    String? errorMessage;
+    dynamic arosedException;
+    StackTrace? stackTrace;
+
+    try {
+      publicEventEmitter(
+        ChannelReadEvent.fromPusherChannelsReadEvent(
+          this,
+          readEvent.copyWithDecryptedData(
+            key: sharedSecret,
+            encodeDelegate: eventDataEncodeDelegate,
+          ),
+        ),
+      );
+      return;
+    } on PusherChannelsException catch (exception, trace) {
+      stackTrace = trace;
+      arosedException = exception;
+      errorMessage = exception.message;
+    } catch (exception, trace) {
+      stackTrace = trace;
+      arosedException = exception;
+      errorMessage = 'Failed to process the encrypted event';
+    }
+
+    errorMessage =
+        '$errorMessage\nChannel:$name\nException:$arosedException\nTrace:$stackTrace';
+
+    PusherChannelsPackageLogger.log(errorMessage);
+  }
 
   PrivateEncryptedChannelState _stateIfNull() =>
       state ?? PrivateEncryptedChannelState.initial();
