@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
+import 'package:dart_pusher_channels/src/channels/private_encrypted_channel.dart';
 import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
@@ -127,6 +128,22 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         parser: parser,
       );
 
+  static EndpointAuthorizableChannelTokenAuthorizationDelegate<
+      PrivateEncryptedChannelAuthorizationData> forPrivateEncryptedChannel({
+    required Uri authorizationEndpoint,
+    required Map<String, String> headers,
+    EndpointAuthorizableChannelTokenAuthorizationParser<
+            PrivateEncryptedChannelAuthorizationData>
+        parser = _defaultParserForPrivateEncryptedChannel,
+    EndpointAuthFailedCallback? onAuthFailed,
+  }) =>
+      EndpointAuthorizableChannelTokenAuthorizationDelegate._(
+        authorizationEndpoint: authorizationEndpoint,
+        headers: headers,
+        parser: parser,
+        onAuthFailed: onAuthFailed,
+      );
+
   /// Providing an instance of this class to authorize
   /// to [PresenceChannel]s with [PresenceChannelAuthorizationData].
   ///
@@ -163,6 +180,19 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         parser: parser,
         onAuthFailed: onAuthFailed,
       );
+
+  static PrivateEncryptedChannelAuthorizationData
+      _defaultParserForPrivateEncryptedChannel(http.Response response) {
+    final decoded = jsonDecode(response.body) as Map;
+    final auth = decoded['auth'] as String;
+    final sharedSecret = decoded['shared_secret'] as String;
+    final key = base64Decode(sharedSecret);
+
+    return PrivateEncryptedChannelAuthorizationData(
+      authKey: auth,
+      sharedSecret: key,
+    );
+  }
 
   static PrivateChannelAuthorizationData _defaultParserForPrivateChannel(
     http.Response response,

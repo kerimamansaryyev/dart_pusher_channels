@@ -3,6 +3,7 @@ import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
+import 'package:dart_pusher_channels/src/channels/private_encrypted_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/client/controller.dart';
 import 'package:dart_pusher_channels/src/connection/connection.dart';
@@ -153,6 +154,22 @@ class PusherChannelsClient {
   @visibleForTesting
   Future<void> getConnectionCompleterFuture() =>
       controller.getCompleterFuture();
+
+  PrivateEncryptedChannel privateEncryptedChannel(
+    String channelName, {
+    required EndpointAuthorizableChannelAuthorizationDelegate<
+            PrivateEncryptedChannelAuthorizationData>
+        authorizationDelegate,
+    bool forceCreateNewInstance = false,
+    PrivateEncryptedChannelEventDataEncodeDelegate eventDataEncodeDelegate =
+        PrivateEncryptedChannel.defaultEventDataEncoder,
+  }) =>
+      channelsManager.privateEncryptedChannel(
+        channelName,
+        authorizationDelegate: authorizationDelegate,
+        forceCreateNewInstance: forceCreateNewInstance,
+        eventDataEncodeDelegate: eventDataEncodeDelegate,
+      );
 
   /// Creates a public channel.
   ///

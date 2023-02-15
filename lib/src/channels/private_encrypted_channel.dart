@@ -233,4 +233,7 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
 
   PrivateEncryptedChannelState _stateIfNull() =>
       state ?? PrivateEncryptedChannelState.initial();
+
+  @internal
+  static String defaultEventDataEncoder(Uint8List bytes) => utf8.decode(bytes);
 }
