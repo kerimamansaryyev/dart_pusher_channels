@@ -155,6 +155,53 @@ class PusherChannelsClient {
   Future<void> getConnectionCompleterFuture() =>
       controller.getCompleterFuture();
 
+  /// Creates a private encrypted channel.
+  ///
+  /// Usage is the same as with the private channels but note that your
+  /// server side has to support the encrypted channels feature.
+  ///
+  /// Example:
+  /// ```dart
+  ///   PrivateEncryptedChannel myEncryptedChannel = client.privateEncryptedChannel(
+  ///   'private-encrypted-channel',
+  ///   authorizationDelegate:
+  ///       EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateEncryptedChannel(
+  ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
+  ///     headers: const {},
+  ///   ),
+  /// );
+  /// ```
+  ///
+  /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
+  /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateEncryptedChannel]
+  ///
+  /// You may provide your own delegate function to encode the decrypted message into the plain text
+  /// by providing [eventDataEncodeDelegate]. Otherwise the default one will be used.
+  /// Example:
+  /// ```dart
+  /// ...
+  /// eventDataEncodeDelegate: (Uint8List bytes) => utf8.decode(bytes),
+  /// ...
+  /// ```
+  ///
+  /// `Note`: if [forceCreateNewInstance] is `true` then this client will return a new instance each time
+  /// this method is called instead of giving an internally linked one.
+  ///
+  /// Example:
+  /// ```dart
+  /// var oldVariable = client.publicChannel('hello');
+  /// var newVariable = client.publicChannel('hello');
+  /// // prints true
+  /// print(oldVariable == newVariable);
+
+  /// var newestVariable = client.publicChannel(
+  ///   'hello',
+  ///   forceCreateNewInstance: true,
+  // );
+
+  /// // prints false
+  /// print(newestVariable == oldVariable || newestVariable == newVariable);
+  /// ```
   PrivateEncryptedChannel privateEncryptedChannel(
     String channelName, {
     required EndpointAuthorizableChannelAuthorizationDelegate<

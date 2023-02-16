@@ -25,6 +25,7 @@ export 'client/controller.dart' show PusherChannelsClientLifeCycleState;
 // channels
 export 'channels/public_channel.dart';
 export 'channels/private_channel.dart';
+export 'channels/private_encrypted_channel.dart';
 export 'channels/presence_channel.dart';
 export 'channels/members.dart';
 export 'channels/channel.dart';

@@ -13,6 +13,7 @@ import 'package:dart_pusher_channels/src/utils/logger.dart';
 import 'package:meta/meta.dart';
 import 'package:pinenacl/x25519.dart';
 
+/// A delegate function used for encoding the decrypted message received from the server.
 typedef PrivateEncryptedChannelEventDataEncodeDelegate = String Function(
   Uint8List bytes,
 );
@@ -63,12 +64,15 @@ extension _ChannelReadEventExtension on PusherChannelsReadEvent {
   }
 }
 
-/// Authorization data that is expected to subscribe to the private channels.
+/// The encrypted channels behave as the private channels
+/// when it comes to the authorization process. So they use [authKey]
+/// to subscribe, [sharedSecret] is used to decrypt the data of each incoming.
 ///
 /// See also:
 /// - [EndpointAuthorizableChannelAuthorizationDelegate]
 /// - [EndpointAuthorizationData]
 /// - [EndpointAuthorizableChannel]
+/// - [Encrypted channels docs](https://pusher.com/docs/channels/using_channels/encrypted-channels/)
 @immutable
 class PrivateEncryptedChannelAuthorizationData
     implements EndpointAuthorizationData {
@@ -111,8 +115,23 @@ class PrivateEncryptedChannelState implements ChannelState {
       );
 }
 
+/// **IMPORTANT!** Your server library has to support the encrypted channels
+/// feature in order to use this kind of channel.
+///
+/// Encrypted channels do not support triggering the client events by the protocol.
+///
+/// End-to-end encrypted channels provide the same subscription restrictions as private channels.
+/// In addition, the data field of events published to end-to-end encrypted channels is encrypted using an implementation of the Secretbox encryption standard defined in NaCl before it leaves your server.
+/// Only authorized subscribers have access to the channel specific decryption key.
+///
+/// See also:
+/// - [EndpointAuthorizableChannel]
+/// - [EndpointAuthorizableChannelAuthorizationDelegate]
+/// - [PrivateEncryptedChannelAuthorizationData]
+///
 class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
     PrivateEncryptedChannelState, PrivateEncryptedChannelAuthorizationData> {
+  /// Used to encode the decrypted message.
   final PrivateEncryptedChannelEventDataEncodeDelegate eventDataEncodeDelegate;
 
   @override
@@ -144,6 +163,7 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
   /// Unlike the public channels, this channel:
   /// 1. Grabs the authorization data of type [PrivateEncryptedChannelAuthorizationData].
   /// 2. Sends the subscription event with the derived data.
+  /// 3. Shared secret is accessible from [authData] for further internal decryption of the event data.
   ///
   /// See also:
   /// - [EndpointAuthorizableChannelAuthorizationDelegate]
@@ -192,6 +212,7 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
         subscriptionCount: subscriptionCount,
       );
 
+  /// Emits the event using [publicEventEmitter] if it managed to decrypt the event data successfully.
   @override
   void handleOtherExternalEvents(ChannelReadEvent readEvent) {
     final sharedSecret = authData?.sharedSecret;

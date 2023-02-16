@@ -128,6 +128,26 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
         parser: parser,
       );
 
+  /// Providing an instance of this class to authorize
+  /// to [PrivateEncryptedChannel]s with [PrivateEncryptedChannelAuthorizationData].
+  ///
+  /// If the custom [parser] is not provided the default one will
+  /// be used:
+  ///
+  /// ```dart
+  /// static PrivateEncryptedChannelAuthorizationData
+  ///     _defaultParserForPrivateEncryptedChannel(http.Response response) {
+  ///   final decoded = jsonDecode(response.body) as Map;
+  ///   final auth = decoded['auth'] as String;
+  ///   final sharedSecret = decoded['shared_secret'] as String;
+  ///   final key = base64Decode(sharedSecret);
+
+  ///   return PrivateEncryptedChannelAuthorizationData(
+  ///     authKey: auth,
+  ///     sharedSecret: key,
+  ///   );
+  /// }
+  /// ```
   static EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PrivateEncryptedChannelAuthorizationData> forPrivateEncryptedChannel({
     required Uri authorizationEndpoint,

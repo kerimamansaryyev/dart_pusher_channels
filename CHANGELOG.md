@@ -1,3 +1,10 @@
+## 1.1.0
+
+`NEW FEATURES`:
+- Support for Private Encrypted Channels
+
+Expressing the deepest gratitude to [Sameh Doush](https://github.com/samehdoush) for developing and providing a test environment that boosted a release of the feature.
+
 ## 1.0.0+6
 
 - Fixed the detected typos in README.

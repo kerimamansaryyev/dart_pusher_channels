@@ -17,20 +17,23 @@ dart_pusher_channels: 0.3.1+1
 ```
 
 # Milestones
-Starting from the version `1.0.0` 3 of the main milestones were implemented:
+Starting from the version `1.1.0` the main milestones were implemented:
 - Presence channels ✓
+- Private encrypted channels ✓
 - Triggering the client events ✓
 - Tested on all the 6 platforms. ✓
 
-What will be implemented in future releases:
-- Encrypted channels
+Issues on this package are monitored and processed.
 
 # Contributors 
 
-### Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)
+#### Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)
 
-### Contributors: [](https://pub.dev/packages/dart_pusher_channels#contributors)
-### [Nicolas Britos](https://github.com/nicobritos) - Pull requests [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6), [#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8)
+#### Contributors: [](https://pub.dev/packages/dart_pusher_channels#contributors)
+#### [Sameh Doush](https://github.com/samehdoush) - Developed a test environment that boosted a release of [Private encrypted channels feature](https://github.com/kerimamansaryyev/dart_pusher_channels/issues/22).
+
+#### [Nicolas Britos](https://github.com/nicobritos) - Contributed the pull requests [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6), [#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8).
+
 
 # Usage
 
@@ -38,6 +41,7 @@ What will be implemented in future releases:
 - [Client](#client)
 - [Public channels](#public-channels)
 - [Private channels](#private-channels)
+- [Private encrypted channels](#private-encrypted-channels)
 - [Presence channels](#presence-channels)
 - [Subscribing, unsubscribing and connecting](#subscribing-unsubscribing-and-connecting)
 - [Binding to events](#binding-to-events)
@@ -189,6 +193,27 @@ authorizationDelegate:
 	),
 );
 ```
+# Private encrypted channels
+End-to-end encrypted channels provide the same subscription restrictions as private channels.
+In addition, the data field of events published to end-to-end encrypted channels is encrypted using an implementation of the Secretbox encryption standard defined in NaCl before it leaves your server.
+Only authorized subscribers have access to the channel specific decryption key.
+**Note**: These channels do not support triggering the client events. Ensure that a server library that you use in the back end supports the encrypted channels.
+Usage example:
+```dart
+PrivateEncryptedChannel myEncryptedChannel = client.privateEncryptedChannel(
+'private-encrypted-channel',
+		// [OPTIONAL] you may want to provide your own way to
+		// encode the decrypted bytes of the event's data into the plain text type of `String`
+		eventDataEncodeDelegate: (bytes) => utf8.decode(bytes),
+		authorizationDelegate: EndpointAuthorizableChannelTokenAuthorizationDelegate
+	.forPrivateEncryptedChannel(
+		authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
+		headers: const {},
+	),
+
+);
+```
+
 # Presence channels
 Presence channels build on the security of Private channels and expose the additional feature of an awareness of who is subscribed to that channel.This makes it extremely easy to build chat room and “who’s online” type functionality to your application.Think chat rooms, collaborators on a document, people viewing the same web page, competitors in a game, that kind of thing.
 
