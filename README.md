@@ -25,14 +25,15 @@ Starting from the version `1.1.0` the main milestones were implemented:
 
 Issues on this package are monitored and processed.
 
-# Contributors 
+# Contributions
 
-#### Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)
+Maintainer: [Kerim Amansaryyev](https://github.com/kerimamansaryyev)
 
-#### Contributors: [](https://pub.dev/packages/dart_pusher_channels#contributors)
-#### [Sameh Doush](https://github.com/samehdoush) - Developed a test environment that boosted a release of [Private encrypted channels feature](https://github.com/kerimamansaryyev/dart_pusher_channels/issues/22).
+Contributors: [](https://pub.dev/packages/dart_pusher_channels#contributors)
 
-#### [Nicolas Britos](https://github.com/nicobritos) - Contributed the pull requests [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6), [#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8).
+[Sameh Doush](https://github.com/samehdoush) - Developed a test environment that boosted a release of the [Private encrypted channels feature](https://github.com/kerimamansaryyev/dart_pusher_channels/issues/22).
+
+[Nicolas Britos](https://github.com/nicobritos) - Contributed the pull requests [#5](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/5), [#6](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/6), [#8](https://github.com/kerimamansaryyev/dart_pusher_channels/pull/8).
 
 
 # Usage
