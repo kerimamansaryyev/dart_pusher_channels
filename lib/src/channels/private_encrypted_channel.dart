@@ -35,6 +35,11 @@ extension _ChannelReadEventExtension on PusherChannelsReadEvent {
     required PrivateEncryptedChannelEventDataEncodeDelegate encodeDelegate,
   }) {
     final data = tryGetDataAsMap() ?? <String, dynamic>{};
+
+    if (data.isEmpty) {
+      return this;
+    }
+
     final nonceString = data['nonce'];
     final ciphertextString = data['ciphertext'];
 
