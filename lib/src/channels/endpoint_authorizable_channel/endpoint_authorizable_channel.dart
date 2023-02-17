@@ -83,7 +83,7 @@ Trace: $trace,
         ''';
 
     if (exception is PusherChannelsException) {
-      message = exception.message;
+      message = 'Channel: $name\nException:${exception.message}\nTrace:$trace';
     } else {
       message = defaultMessage;
     }

@@ -12,6 +12,43 @@ typedef EndpointAuthorizableChannelTokenAuthorizationParser<
         T extends EndpointAuthorizationData>
     = FutureOr<T> Function(http.Response response);
 
+class _ParsingException implements PusherChannelsException {
+  @override
+  final String message;
+
+  const _ParsingException._({
+    required this.message,
+  });
+
+  const _ParsingException.failedToGetAuthKey()
+      : this._(
+          message:
+              'Failed to retrieve auth key from the authorization endpoint',
+        );
+
+  const _ParsingException.failedToGetSharedSecret()
+      : this._(
+          message:
+              'Failed to retrieve shared_secret from the authorization endpoint',
+        );
+
+  const _ParsingException.failedToGetChannelData()
+      : this._(
+          message:
+              'Failed to retrieve channel_data from the authorization endpoint',
+        );
+
+  const _ParsingException.failedToDecodeSharedSecret()
+      : this._(
+          message: 'Failed to decode the shared_secret',
+        );
+
+  const _ParsingException.invalidResponse()
+      : this._(
+          message: 'Invalid response. Expected a response of type JSON',
+        );
+}
+
 /// [EndpointAuthorizableChannelTokenAuthorizationDelegate] will
 /// throw this exception if it gets irrelevant response from
 /// the [authorizationEndpoint].
@@ -203,22 +240,48 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
 
   static PrivateEncryptedChannelAuthorizationData
       _defaultParserForPrivateEncryptedChannel(http.Response response) {
-    final decoded = jsonDecode(response.body) as Map;
-    final auth = decoded['auth'] as String;
-    final sharedSecret = decoded['shared_secret'] as String;
-    final key = base64Decode(sharedSecret);
+    final decoded = jsonDecode(response.body);
 
-    return PrivateEncryptedChannelAuthorizationData(
-      authKey: auth,
-      sharedSecret: key,
-    );
+    if (decoded is! Map) {
+      throw const _ParsingException.invalidResponse();
+    }
+
+    final auth = decoded['auth'];
+    final sharedSecret = decoded['shared_secret'];
+
+    if (auth is! String) {
+      throw const _ParsingException.failedToGetAuthKey();
+    }
+    if (sharedSecret is! String) {
+      throw const _ParsingException.failedToGetSharedSecret();
+    }
+
+    try {
+      final key = base64Decode(sharedSecret);
+
+      return PrivateEncryptedChannelAuthorizationData(
+        authKey: auth,
+        sharedSecret: key,
+      );
+    } catch (_) {
+      throw const _ParsingException.failedToDecodeSharedSecret();
+    }
   }
 
   static PrivateChannelAuthorizationData _defaultParserForPrivateChannel(
     http.Response response,
   ) {
-    final decoded = jsonDecode(response.body) as Map;
-    final auth = decoded['auth'] as String;
+    final decoded = jsonDecode(response.body);
+
+    if (decoded is! Map) {
+      throw const _ParsingException.invalidResponse();
+    }
+
+    final auth = decoded['auth'];
+
+    if (auth is! String) {
+      throw const _ParsingException.failedToGetAuthKey();
+    }
 
     return PrivateChannelAuthorizationData(
       authKey: auth,
@@ -228,9 +291,21 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   static PresenceChannelAuthorizationData _defaultParserForPresenceChannel(
     http.Response response,
   ) {
-    final decoded = jsonDecode(response.body) as Map;
-    final auth = decoded['auth'] as String;
-    final channelData = decoded['channel_data'] as String;
+    final decoded = jsonDecode(response.body);
+
+    if (decoded is! Map) {
+      throw const _ParsingException.invalidResponse();
+    }
+
+    final auth = decoded['auth'];
+    final channelData = decoded['channel_data'];
+
+    if (auth is! String) {
+      throw const _ParsingException.failedToGetAuthKey();
+    }
+    if (channelData is! String) {
+      throw const _ParsingException.failedToGetChannelData();
+    }
 
     return PresenceChannelAuthorizationData(
       authKey: auth,
