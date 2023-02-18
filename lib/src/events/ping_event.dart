@@ -19,6 +19,12 @@ class PusherChannelsPingEvent
 
   const PusherChannelsPingEvent();
 
+  @override
+  Map<String, dynamic> get rootObject => {
+        PusherChannelsEvent.eventNameKey: name,
+        PusherChannelsEvent.dataKey: jsonEncode(<String, String>{}),
+      };
+
   static PusherChannelsPingEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);
     final name = root?[PusherChannelsEvent.eventNameKey]?.toString();
@@ -34,10 +40,4 @@ class PusherChannelsPingEvent
         PusherChannelsEvent.eventNameKey: name,
         PusherChannelsEvent.dataKey: const <String, String>{},
       });
-
-  @override
-  Map<String, dynamic> get rootObject => {
-        PusherChannelsEvent.eventNameKey: name,
-        PusherChannelsEvent.dataKey: jsonEncode(<String, String>{}),
-      };
 }

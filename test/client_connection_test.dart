@@ -69,6 +69,9 @@ class TestConnection implements PusherChannelsConnection {
   @override
   void sendEvent(String eventEncoded) {}
 
+  @override
+  void ping() {}
+
   void _onEvent(
     String event,
     PusherChannelsConnectionOnEventCallback callback,
@@ -99,9 +102,6 @@ class TestConnection implements PusherChannelsConnection {
       trace,
     );
   }
-
-  @override
-  void ping() {}
 }
 
 // Ignoring while testing

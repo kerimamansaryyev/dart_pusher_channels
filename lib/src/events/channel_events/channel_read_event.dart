@@ -57,6 +57,9 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
     );
   }
 
+  @override
+  String get channelName => channel.name;
+
   ChannelReadEvent copyWithName(String name) {
     return ChannelReadEvent._(
       rootObject: {
@@ -66,9 +69,6 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
       channel: channel,
     );
   }
-
-  @override
-  String get channelName => channel.name;
 
   static String _tryEncodeData(Map<String, dynamic> data) {
     try {

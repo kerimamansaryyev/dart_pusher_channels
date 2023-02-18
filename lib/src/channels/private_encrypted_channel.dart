@@ -257,9 +257,9 @@ class PrivateEncryptedChannel extends EndpointAuthorizableChannel<
     PusherChannelsPackageLogger.log(errorMessage);
   }
 
-  PrivateEncryptedChannelState _stateIfNull() =>
-      state ?? PrivateEncryptedChannelState.initial();
-
   @internal
   static String defaultEventDataEncoder(Uint8List bytes) => utf8.decode(bytes);
+
+  PrivateEncryptedChannelState _stateIfNull() =>
+      state ?? PrivateEncryptedChannelState.initial();
 }

@@ -17,11 +17,6 @@ class PusherChannelsErrorEvent
   static const _codeKey = 'code';
   static const _messageKey = 'message';
 
-  int? get code => int.tryParse(
-        deserializedMapData[_codeKey]?.toString() ?? '',
-      );
-  String? get message => deserializedMapData[_messageKey]?.toString();
-
   @override
   final Map<String, dynamic> rootObject;
 
@@ -32,6 +27,11 @@ class PusherChannelsErrorEvent
     required this.deserializedMapData,
     required this.rootObject,
   });
+
+  int? get code => int.tryParse(
+        deserializedMapData[_codeKey]?.toString() ?? '',
+      );
+  String? get message => deserializedMapData[_messageKey]?.toString();
 
   static PusherChannelsErrorEvent? tryParseFromDynamic(dynamic message) {
     final root = safeMessageToMapDeserializer(message);

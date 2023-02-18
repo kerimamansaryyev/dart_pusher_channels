@@ -51,14 +51,6 @@ abstract class ChannelState {
 ///
 /// See for more details: [Channels docs](https://pusher.com/docs/channels/using_channels/channels/)
 abstract class Channel<T extends ChannelState> {
-  @visibleForTesting
-  static String getInternalSubscriptionSucceededEventNameTest() =>
-      internalSubscriptionSucceededEventName;
-
-  @visibleForTesting
-  static String getInternalSubscriptionsCountEventName() =>
-      internalSubscriptionsCountEventName;
-
   @protected
   static const internalSubscriptionSucceededEventName =
       'pusher_internal:subscription_succeeded';
@@ -82,7 +74,12 @@ abstract class Channel<T extends ChannelState> {
   static const authErrorTypeString = 'AuthError';
   static const decryptionErrorTypeString = 'DecryptionError';
 
-  T? _currentState;
+  /// Gives the current status of the [state].
+  @protected
+  ChannelStatus? get currentStatus => state?.status;
+
+  /// A current state of this channel
+  T? get state => _currentState;
 
   /// Name of this channel
   String get name;
@@ -103,6 +100,16 @@ abstract class Channel<T extends ChannelState> {
   /// A atream injection applied by an instance of [ChannelsManager]
   @protected
   ChannelsManagerStreamGetter get publicStreamGetter;
+
+  @visibleForTesting
+  static String getInternalSubscriptionSucceededEventNameTest() =>
+      internalSubscriptionSucceededEventName;
+
+  @visibleForTesting
+  static String getInternalSubscriptionsCountEventName() =>
+      internalSubscriptionsCountEventName;
+
+  T? _currentState;
 
   @protected
   T getStateWithNewStatus(ChannelStatus status);
@@ -162,15 +169,8 @@ abstract class Channel<T extends ChannelState> {
     subscribe();
   }
 
-  /// A current state of this channel
-  T? get state => _currentState;
-
   @visibleForTesting
   T? getStateTest() => state;
-
-  /// Gives the current status of the [state].
-  @protected
-  ChannelStatus? get currentStatus => state?.status;
 
   /// Returns a stream with all the events captured
   /// by this channel.
@@ -197,6 +197,18 @@ abstract class Channel<T extends ChannelState> {
           handleData: _bindStreamSinkFilter,
         ),
       );
+
+  /// Passes all other events to [ChannelsManager]'s instances' sink i.e. - [publicEventEmitter]
+  @protected
+  @internal
+  void handleOtherExternalEvents(ChannelReadEvent readEvent) {
+    if (readEvent.name.contains(pusherInternalPrefix)) {
+      return;
+    }
+    publicEventEmitter(
+      readEvent,
+    );
+  }
 
   bool _bindStreamFilterPredicate({
     required String targetEventName,
@@ -267,18 +279,6 @@ abstract class Channel<T extends ChannelState> {
       readEvent.copyWithName(
         subscriptionsCountEventName,
       ),
-    );
-  }
-
-  /// Passes all other events to [ChannelsManager]'s instances' sink i.e. - [publicEventEmitter]
-  @protected
-  @internal
-  void handleOtherExternalEvents(ChannelReadEvent readEvent) {
-    if (readEvent.name.contains(pusherInternalPrefix)) {
-      return;
-    }
-    publicEventEmitter(
-      readEvent,
     );
   }
 }
