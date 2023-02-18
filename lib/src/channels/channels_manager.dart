@@ -195,6 +195,21 @@ class ChannelsManager {
         ),
       );
 
+  /// Destroys this instance, clears [_channelsMap] and closes [_publicStreamController]
+  /// making this instance
+  /// unusable.
+  void dispose() {
+    if (_isDisposed) {
+      throw const ChannelsManagerHasBeenDisposedException();
+    }
+    _isDisposed = true;
+    for (final channel in _channelsMap.values) {
+      channel.unsubscribe();
+    }
+    _channelsMap.clear();
+    _publicStreamController.close();
+  }
+
   /// Creates a channel of type [T] using [constructorDelegate].
   ///
   /// If the last recorded channel with [channelName] still matches [T
@@ -219,21 +234,6 @@ class ChannelsManager {
       _channelsMap[channelName] = constructorDelegate();
     }
     return (_channelsMap[channelName] ??= constructorDelegate()) as T;
-  }
-
-  /// Destroys this instance, clears [_channelsMap] and closes [_publicStreamController]
-  /// making this instance
-  /// unusable.
-  void dispose() {
-    if (_isDisposed) {
-      throw const ChannelsManagerHasBeenDisposedException();
-    }
-    _isDisposed = true;
-    for (final channel in _channelsMap.values) {
-      channel.unsubscribe();
-    }
-    _channelsMap.clear();
-    _publicStreamController.close();
   }
 
   void _exposedPublicEventsStreamEmit(ChannelReadEvent event) {

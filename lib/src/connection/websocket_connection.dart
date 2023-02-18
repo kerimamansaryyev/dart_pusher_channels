@@ -66,6 +66,11 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
     _webSocketChannel?.sink.add(eventEncoded);
   }
 
+  @override
+  void ping() {
+    sendEvent(const PusherChannelsPingEvent().getEncoded());
+  }
+
   void _onEvent(
     String event,
     PusherChannelsConnectionOnEventCallback callback,
@@ -96,10 +101,5 @@ class PusherChannelsWebSocketConnection implements PusherChannelsConnection {
       exception,
       trace,
     );
-  }
-
-  @override
-  void ping() {
-    sendEvent(const PusherChannelsPingEvent().getEncoded());
   }
 }

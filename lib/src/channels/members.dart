@@ -49,6 +49,9 @@ class ChannelMembers {
         myId: myId,
       );
 
+  /// Gives a length of [membersMap].
+  int get membersCount => membersMap.length;
+
   static ChannelMembers? tryParseFromMap({
     required Map<String, dynamic> data,
   }) {
@@ -70,9 +73,6 @@ class ChannelMembers {
       myId: null,
     );
   }
-
-  /// Gives a length of [membersMap].
-  int get membersCount => membersMap.length;
 
   /// Gives an id of the local user (client).
   String? getMyId() => myId;

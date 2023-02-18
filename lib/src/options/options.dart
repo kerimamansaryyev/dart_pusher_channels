@@ -106,9 +106,6 @@ class PusherChannelsOptionsMetadata {
 ///
 @immutable
 abstract class PusherChannelsOptions {
-  /// A resultant url used to connect by [PusherChannelsClient]
-  Uri get uri;
-
   /// Use this if your url has a pattern like:
   ///   `{scheme}://ws-{cluster_name}.{host}:{port}/app/{key}`.
   ///
@@ -155,4 +152,7 @@ abstract class PusherChannelsOptions {
     required PusherChannelsOptionsCustomUriResolver uriResolver,
     PusherChannelsOptionsMetadata metadata,
   }) = _CustomOptions;
+
+  /// A resultant url used to connect by [PusherChannelsClient]
+  Uri get uri;
 }

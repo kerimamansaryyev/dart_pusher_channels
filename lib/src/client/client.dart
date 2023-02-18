@@ -21,11 +21,10 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 class PusherChannelsClientDisposedException implements PusherChannelsException {
+  const PusherChannelsClientDisposedException();
   @override
   String get message =>
       'The instance of PusherChannelsClient is disposed and can\'t be reused. Please, try to create a new instance.';
-
-  const PusherChannelsClientDisposedException();
 }
 
 /// A centralized manager of connection and channel bindings.
@@ -150,6 +149,33 @@ class PusherChannelsClient {
         ),
         connectionErrorHandler: connectionErrorHandler,
       );
+
+  /// Used to listen for all the events received from a server.
+  Stream<PusherChannelsReadEvent> get eventStream => controller.eventStream
+      .whereType<PusherChannelsReadEventMixin>()
+      .map(PusherChannelsReadEvent.fromReadable);
+
+  /// Used to listen for events with name `pusher:error`.
+  Stream<PusherChannelsReadEvent> get pusherErrorEventStream => eventStream
+      .whereType<PusherChannelsErrorEvent>()
+      .map(PusherChannelsReadEvent.fromReadable);
+
+  /// Used to listen for the lifecycle changes of the [controller].
+  /// For exmaple, when this client connects, reconnects, disconnects, pending connection an e.t.c.
+  /// See [PusherChannelsClientLifeCycleState] for more details.
+  Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
+      controller.lifecycleStream;
+
+  /// Used to listen on whenever the client manages to establish connection
+  /// receiving the event with name `pusher:connection_established`
+  Stream<void> get onConnectionEstablished => lifecycleStream
+      .where(
+        (event) =>
+            event == PusherChannelsClientLifeCycleState.establishedConnection,
+      )
+      .map(voidStreamMapper);
+
+  bool get isDisposed => _isDisposed;
 
   @visibleForTesting
   Future<void> getConnectionCompleterFuture() =>
@@ -353,33 +379,6 @@ class PusherChannelsClient {
       forceCreateNewInstance: forceCreateNewInstance,
     );
   }
-
-  /// Used to listen for all the events received from a server.
-  Stream<PusherChannelsReadEvent> get eventStream => controller.eventStream
-      .whereType<PusherChannelsReadEventMixin>()
-      .map(PusherChannelsReadEvent.fromReadable);
-
-  /// Used to listen for events with name `pusher:error`.
-  Stream<PusherChannelsReadEvent> get pusherErrorEventStream => eventStream
-      .whereType<PusherChannelsErrorEvent>()
-      .map(PusherChannelsReadEvent.fromReadable);
-
-  /// Used to listen for the lifecycle changes of the [controller].
-  /// For exmaple, when this client connects, reconnects, disconnects, pending connection an e.t.c.
-  /// See [PusherChannelsClientLifeCycleState] for more details.
-  Stream<PusherChannelsClientLifeCycleState> get lifecycleStream =>
-      controller.lifecycleStream;
-
-  /// Used to listen on whenever the client manages to establish connection
-  /// receiving the event with name `pusher:connection_established`
-  Stream<void> get onConnectionEstablished => lifecycleStream
-      .where(
-        (event) =>
-            event == PusherChannelsClientLifeCycleState.establishedConnection,
-      )
-      .map(voidStreamMapper);
-
-  bool get isDisposed => _isDisposed;
 
   /// Connects to a server via [controller].
   Future<void> connect() {
