@@ -49,7 +49,7 @@ dart_code_metrics:
     - avoid-unrelated-type-assertions
     - avoid-unused-parameters
     - binary-expression-operand-order
-    - member-ordering-extended:
+    - member-ordering:
         alphabetize: false
         alphabetize-by-type: false
         order:

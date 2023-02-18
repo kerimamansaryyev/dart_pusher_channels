@@ -4,6 +4,7 @@ import 'package:dart_pusher_channels/src/channels/channel.dart';
 import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
+import 'package:dart_pusher_channels/src/channels/private_encrypted_channel.dart';
 import 'package:dart_pusher_channels/src/channels/public_channel.dart';
 import 'package:dart_pusher_channels/src/channels/triggerable_channel.dart';
 import 'package:dart_pusher_channels/src/client/client.dart';
@@ -139,6 +140,31 @@ class ChannelsManager {
         channelName: channelName,
         forceCreateNewInstance: forceCreateNewInstance,
         constructorDelegate: () => PrivateChannel.internal(
+          authorizationDelegate: authorizationDelegate,
+          connectionDelegate: channelsConnectionDelegate,
+          publicStreamGetter: () => _publicStreamController.stream,
+          name: channelName,
+          publicEventEmitter: _exposedPublicEventsStreamEmit,
+        ),
+      );
+
+  /// Creates and saves private encrypted channel under the key respective to [channelName].
+  ///
+  /// Returns an existing instance if any.
+  PrivateEncryptedChannel privateEncryptedChannel(
+    String channelName, {
+    required EndpointAuthorizableChannelAuthorizationDelegate<
+            PrivateEncryptedChannelAuthorizationData>
+        authorizationDelegate,
+    required bool forceCreateNewInstance,
+    required PrivateEncryptedChannelEventDataEncodeDelegate
+        eventDataEncodeDelegate,
+  }) =>
+      _createChannelSafely<PrivateEncryptedChannel>(
+        channelName: channelName,
+        forceCreateNewInstance: forceCreateNewInstance,
+        constructorDelegate: () => PrivateEncryptedChannel.internal(
+          eventDataEncodeDelegate: eventDataEncodeDelegate,
           authorizationDelegate: authorizationDelegate,
           connectionDelegate: channelsConnectionDelegate,
           publicStreamGetter: () => _publicStreamController.stream,
