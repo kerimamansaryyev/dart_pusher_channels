@@ -158,20 +158,22 @@ void _testSubscriptionGroupWithMock() {
           ),
         ),
       );
-      unawaited(
-        expectLater(
-          channel.whenSubscriptionCount().map(
-                (event) =>
-                    event.tryGetDataAsMap()![Channel.subscriptionsCountKey],
-              ),
-          emitsInOrder(
-            [
-              3,
-              emitsDone,
-            ],
+      if (channel is PresenceChannel) {
+        unawaited(
+          expectLater(
+            channel.whenSubscriptionCount().map(
+                  (event) =>
+                      event.tryGetDataAsMap()![Channel.subscriptionsCountKey],
+                ),
+            emitsInOrder(
+              [
+                3,
+                emitsDone,
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
       channel.subscribe();
       manager.handleEvent(
         _fakeSubscriptionEvent(channel),
@@ -209,20 +211,23 @@ void _testSubscriptionGroupWithMock() {
           ),
         ),
       );
-      unawaited(
-        expectLater(
-          channel.whenSubscriptionCount().map(
-                (event) =>
-                    event.tryGetDataAsMap()![Channel.subscriptionsCountKey],
-              ),
-          emitsInOrder(
-            [
-              3,
-              emitsDone,
-            ],
+
+      if (channel is PresenceChannel) {
+        unawaited(
+          expectLater(
+            channel.whenSubscriptionCount().map(
+                  (event) =>
+                      event.tryGetDataAsMap()![Channel.subscriptionsCountKey],
+                ),
+            emitsInOrder(
+              [
+                3,
+                emitsDone,
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
 
       await Future.microtask(
         () => manager.handleEvent(

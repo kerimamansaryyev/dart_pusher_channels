@@ -1,11 +1,9 @@
 import 'package:dart_pusher_channels/src/channels/channel.dart';
+import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/events/channel_events/channel_read_event.dart';
 import 'package:dart_pusher_channels/src/events/event.dart';
 
-extension ChannelExtension<T extends ChannelState> on Channel<T> {
-  Stream<ChannelReadEvent> whenSubscriptionSucceeded() =>
-      bind(Channel.subscriptionSucceededEventName);
-
+extension PresenceChannelExtension on PresenceChannel {
   Stream<ChannelReadEvent> whenSubscriptionCount() => bind(
         Channel.subscriptionsCountEventName,
       );
@@ -17,6 +15,11 @@ extension ChannelExtension<T extends ChannelState> on Channel<T> {
   Stream<ChannelReadEvent> whenMemberRemoved() => bind(
         Channel.memberRemovedEventName,
       );
+}
+
+extension ChannelExtension<T extends ChannelState> on Channel<T> {
+  Stream<ChannelReadEvent> whenSubscriptionSucceeded() =>
+      bind(Channel.subscriptionSucceededEventName);
 
   Stream<ChannelReadEvent> onSubscriptionError({String? errorType}) =>
       bind(Channel.subscriptionErrorEventName).where(
