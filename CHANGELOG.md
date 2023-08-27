@@ -1,3 +1,8 @@
+## 1.1.1
+
+- Encapsulated the helper extension methods
+- Added `publish.yml` workflow to automatically publish releases
+
 ## 1.1.0
 
 `NEW FEATURES`:
