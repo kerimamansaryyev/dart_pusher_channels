@@ -105,7 +105,7 @@ class PusherChannelsOptionsMetadata {
 ///   ```
 ///
 @immutable
-abstract class PusherChannelsOptions {
+abstract mixin class PusherChannelsOptions {
   /// Use this if your url has a pattern like:
   ///   `{scheme}://ws-{cluster_name}.{host}:{port}/app/{key}`.
   ///
