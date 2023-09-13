@@ -45,7 +45,7 @@ mixin PusherChannelsReadEventMixin on PusherChannelsEvent {
 
 /// A base data interface of events.
 @immutable
-abstract class PusherChannelsEvent {
+abstract mixin class PusherChannelsEvent {
   String get name;
 
   static const eventNameKey = 'event';

@@ -1,3 +1,8 @@
+## 1.2.1
+
+- Minimum Dart SDK version: `^3.0.0`
+- Upgraded http package to version `^1.0.0`
+- Converted abstract classes that are used as mixins to abstract mixin classes
 ## 1.1.1
 
 - Encapsulated the helper extension methods
