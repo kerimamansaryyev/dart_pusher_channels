@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:dart_pusher_channels/src/channels/presence_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_channel.dart';
 import 'package:dart_pusher_channels/src/channels/private_encrypted_channel.dart';
 import 'package:dart_pusher_channels/src/exception/exception.dart';
 import 'package:http/http.dart' as http;
-import 'package:dart_pusher_channels/src/channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
 import 'package:meta/meta.dart';
 
 typedef EndpointAuthorizableChannelTokenAuthorizationParser<
@@ -97,6 +98,8 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   ///   ...headers,
   ///   'content-type': 'application/x-www-form-urlencoded'
   /// },
+  ///
+  /// EXAMPLE: IF YOUR ENDPOINT ACCEPT ONLY application/json, YOU SHOULD SET THE CONTENT-TYPE HEADER TO application/json
   /// ...
   /// ```
   ///
@@ -110,12 +113,13 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   ///
   @override
   Future<T> authorizationData(String socketId, String channelName) async {
+    if (!headers.containsKey('content-type')) {
+      headers['content-type'] = 'application/x-www-form-urlencoded';
+    }
+
     final response = await http.post(
       authorizationEndpoint,
-      headers: {
-        ...headers,
-        'content-type': 'application/x-www-form-urlencoded'
-      },
+      headers: headers,
       body: {
         'socket_id': socketId,
         'channel_name': channelName,
