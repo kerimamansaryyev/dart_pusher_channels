@@ -76,12 +76,15 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
     implements EndpointAuthorizableChannelAuthorizationDelegate<T> {
   final Uri authorizationEndpoint;
   final Map<String, String> headers;
+  final bool overrideContentTypeHeader;
+
   @protected
   final EndpointAuthorizableChannelTokenAuthorizationParser<T> parser;
   @override
   final EndpointAuthFailedCallback? onAuthFailed;
 
   const EndpointAuthorizableChannelTokenAuthorizationDelegate._({
+    required this.overrideContentTypeHeader,
     required this.authorizationEndpoint,
     required this.headers,
     required this.parser,
@@ -114,7 +117,8 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
       authorizationEndpoint,
       headers: {
         ...headers,
-        'content-type': 'application/x-www-form-urlencoded'
+        if (overrideContentTypeHeader)
+          'content-type': 'application/x-www-form-urlencoded'
       },
       body: {
         'socket_id': socketId,
@@ -133,6 +137,9 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
 
   /// Providing an instance of this class to authorize
   /// to [PrivateChannel]s with [PrivateChannelAuthorizationData].
+  ///
+  /// Set `overrideContentTypeHeader` to `false` in order to prevent
+  /// `'content-type': 'application/x-www-form-urlencoded'` from being added into provided `headers`.
   ///
   /// If the custom [parser] is not provided the default one will
   /// be used:
@@ -153,12 +160,14 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PrivateChannelAuthorizationData> forPrivateChannel({
     required Uri authorizationEndpoint,
     required Map<String, String> headers,
+    bool overrideContentTypeHeader = true,
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PrivateChannelAuthorizationData>
         parser = _defaultParserForPrivateChannel,
     EndpointAuthFailedCallback? onAuthFailed,
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
+        overrideContentTypeHeader: overrideContentTypeHeader,
         authorizationEndpoint: authorizationEndpoint,
         onAuthFailed: onAuthFailed,
         headers: headers,
@@ -167,6 +176,9 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
 
   /// Providing an instance of this class to authorize
   /// to [PrivateEncryptedChannel]s with [PrivateEncryptedChannelAuthorizationData].
+  ///
+  /// Set `overrideContentTypeHeader` to `false` in order to prevent
+  /// `'content-type': 'application/x-www-form-urlencoded'` from being added into provided `headers`.
   ///
   /// If the custom [parser] is not provided the default one will
   /// be used:
@@ -189,6 +201,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PrivateEncryptedChannelAuthorizationData> forPrivateEncryptedChannel({
     required Uri authorizationEndpoint,
     required Map<String, String> headers,
+    bool overrideContentTypeHeader = true,
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PrivateEncryptedChannelAuthorizationData>
         parser = _defaultParserForPrivateEncryptedChannel,
@@ -196,6 +209,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
         authorizationEndpoint: authorizationEndpoint,
+        overrideContentTypeHeader: overrideContentTypeHeader,
         headers: headers,
         parser: parser,
         onAuthFailed: onAuthFailed,
@@ -203,6 +217,9 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
 
   /// Providing an instance of this class to authorize
   /// to [PresenceChannel]s with [PresenceChannelAuthorizationData].
+  ///
+  /// Set `overrideContentTypeHeader` to `false` in order to prevent
+  /// `'content-type': 'application/x-www-form-urlencoded'` from being added into provided `headers`.
   ///
   /// If the custom [parser] is not provided the default one will
   /// be used:
@@ -226,6 +243,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
       PresenceChannelAuthorizationData> forPresenceChannel({
     required Uri authorizationEndpoint,
     required Map<String, String> headers,
+    bool overrideContentTypeHeader = true,
     EndpointAuthorizableChannelTokenAuthorizationParser<
             PresenceChannelAuthorizationData>
         parser = _defaultParserForPresenceChannel,
@@ -233,6 +251,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
   }) =>
       EndpointAuthorizableChannelTokenAuthorizationDelegate._(
         authorizationEndpoint: authorizationEndpoint,
+        overrideContentTypeHeader: overrideContentTypeHeader,
         headers: headers,
         parser: parser,
         onAuthFailed: onAuthFailed,
