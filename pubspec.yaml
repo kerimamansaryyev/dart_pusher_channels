@@ -1,6 +1,6 @@
 name: dart_pusher_channels
 description: Dart implementation of client of Pusher Channels protocol, instrument to work with real-time applications. 
-version: 1.2.2
+version: 1.2.2+1
 
 environment:
   sdk: ^3.0.0
