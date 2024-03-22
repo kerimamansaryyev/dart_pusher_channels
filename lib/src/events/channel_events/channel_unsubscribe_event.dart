@@ -28,7 +28,7 @@ class ChannelUnsubscribeEvent
       PusherChannelsEvent.eventNameKey: name,
       PusherChannelsEvent.dataKey: {
         PusherChannelsEvent.channelKey: channelName,
-      }
+      },
     });
   }
 }

@@ -118,7 +118,7 @@ class EndpointAuthorizableChannelTokenAuthorizationDelegate<
       headers: {
         ...headers,
         if (overrideContentTypeHeader)
-          'content-type': 'application/x-www-form-urlencoded'
+          'content-type': 'application/x-www-form-urlencoded',
       },
       body: {
         'socket_id': socketId,

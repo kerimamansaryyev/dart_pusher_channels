@@ -93,7 +93,7 @@ class ChannelSubscribeEvent
         PusherChannelsEvent.channelKey: channelName,
         if (authorizationKey != null) 'auth': authorizationKey,
         if (channelData != null) 'channel_data': channelData,
-      }
+      },
     });
   }
 }

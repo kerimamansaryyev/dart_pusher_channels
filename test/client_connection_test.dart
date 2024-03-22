@@ -1,3 +1,5 @@
+// ignore_for_file: require_trailing_commas
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:dart_pusher_channels/src/client/client.dart';
