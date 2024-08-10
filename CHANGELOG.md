@@ -1,3 +1,6 @@
+## 1.2.3
+- Updated dependency: `pinenacl: ^0.6.0`
+
 ## 1.2.2+1
 - Fixed the licence url in README
 
