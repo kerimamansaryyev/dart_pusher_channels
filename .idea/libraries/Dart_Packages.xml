@@ -238,7 +238,7 @@
         <entry key="pinenacl">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/pinenacl-0.5.1/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/pinenacl-0.6.0/lib" />
             </list>
           </value>
         </entry>
@@ -466,7 +466,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/package_config-2.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/petitparser-5.1.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pinenacl-0.5.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pinenacl-0.6.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pool-1.5.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pub_semver-2.1.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pub_semver-2.1.4/lib" />
