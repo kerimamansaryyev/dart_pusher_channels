@@ -175,6 +175,9 @@ class PusherChannelsClient {
       )
       .map(voidStreamMapper);
 
+  /// Used to get the socket id of the client
+  String? get socketId => controller.socketId;
+
   bool get isDisposed => _isDisposed;
 
   @visibleForTesting
