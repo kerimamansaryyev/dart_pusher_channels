@@ -20,6 +20,22 @@ import 'package:dart_pusher_channels/src/utils/helpers.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../dart_pusher_channels.dart';
+
+import '../channels/endpoint_authorizable_channel/endpoint_authorization_delegate.dart';
+
+import '../channels/endpoint_authorizable_channel/http_token_authorization_delegate.dart';
+
+import '../connection/connection.dart';
+
+import '../connection/websocket_connection.dart';
+
+import '../dart_pusher_channels_exports.dart';
+
+import '../options/options.dart';
+
+import 'controller.dart';
+
 class PusherChannelsClientDisposedException implements PusherChannelsException {
   const PusherChannelsClientDisposedException();
   @override
@@ -285,10 +301,11 @@ class PusherChannelsClient {
   /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
   /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel]
   ///
+  /// "private-" word already include in channel name
   /// Example:
   /// ```dart
   /// PrivateChannel myPrivateChannel = client.privateChannel(
-  ///   'private-channel',
+  ///   'channel',
   ///   authorizationDelegate:
   ///       EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel(
   ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
@@ -325,8 +342,13 @@ class PusherChannelsClient {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
     }
+    // migrate to new format
+    final name = channelName.startsWith('private-')
+        ? channelName
+        : 'private-$channelName';
+
     return channelsManager.privateChannel(
-      channelName,
+      name,
       authorizationDelegate: authorizationDelegate,
       forceCreateNewInstance: forceCreateNewInstance,
     );
