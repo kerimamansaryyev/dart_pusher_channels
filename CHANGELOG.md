@@ -1,3 +1,8 @@
+## 1.3.0
+- Updated dependency: `rxdart: ^0.28.0`
+- Updated dependency: `web_socket_channel: ^3.0.3`
+- Removed discontinued `dart_code_metrics` dependency
+
 ## 1.2.3
 - Updated dependency: `pinenacl: ^0.6.0`
 
