@@ -1,3 +1,6 @@
+## 1.3.0+1
+- Downgraded the meta package version to `^1.17.0` to resolve conflicts with Flutter SDK.
+
 ## 1.3.0
 - Updated all dependencies in `pubspec.yaml`.
 - Upgraded Dart SDK version.
