@@ -23,8 +23,7 @@ import 'package:dart_pusher_channels/src/events/event.dart';
 ///
 /// See docs: [Subscription events](https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/#subscription-events)
 ///
-class ChannelSubscribeEvent
-    with PusherChannelsEvent, PusherChannelsSentEventMixin {
+class ChannelSubscribeEvent with PusherChannelsEvent, PusherChannelsSentEventMixin {
   static const eventName = 'pusher:subscribe';
 
   @override
@@ -36,51 +35,26 @@ class ChannelSubscribeEvent
 
   final String? authKey;
 
-  const ChannelSubscribeEvent({
-    required this.channelName,
-    required this.authKey,
-    required this.channelDataEncoded,
-  });
+  const ChannelSubscribeEvent({required this.channelName, required this.authKey, required this.channelDataEncoded});
 
   /// Used when an instance of [PublicChannel] is subscribing.
-  const ChannelSubscribeEvent.forPublicChannel({
-    required String channelName,
-  }) : this(
-          channelName: channelName,
-          authKey: null,
-          channelDataEncoded: null,
-        );
+  const ChannelSubscribeEvent.forPublicChannel({required String channelName})
+    : this(channelName: channelName, authKey: null, channelDataEncoded: null);
 
   /// Used when an instance of [PrivateChannel] is subscribing.
-  const ChannelSubscribeEvent.forPrivateChannel({
-    required String channelName,
-    required String authKey,
-  }) : this(
-          channelName: channelName,
-          authKey: authKey,
-          channelDataEncoded: null,
-        );
+  const ChannelSubscribeEvent.forPrivateChannel({required String channelName, required String authKey})
+    : this(channelName: channelName, authKey: authKey, channelDataEncoded: null);
 
   /// Used when an instance of [PrivateEncryptedChannel] is subscribing.
-  const ChannelSubscribeEvent.forPrivateEncryptedChannel({
-    required String channelName,
-    required String authKey,
-  }) : this(
-          channelName: channelName,
-          authKey: authKey,
-          channelDataEncoded: null,
-        );
+  const ChannelSubscribeEvent.forPrivateEncryptedChannel({required String channelName, required String authKey})
+    : this(channelName: channelName, authKey: authKey, channelDataEncoded: null);
 
   /// Used when an instance of [PresenceChannel] is subscribing.
   const ChannelSubscribeEvent.forPresenceChannel({
     required String channelName,
     required String authKey,
     required String channelDataEncoded,
-  }) : this(
-          channelName: channelName,
-          authKey: authKey,
-          channelDataEncoded: channelDataEncoded,
-        );
+  }) : this(channelName: channelName, authKey: authKey, channelDataEncoded: channelDataEncoded);
 
   @override
   String getEncoded() {
@@ -91,8 +65,8 @@ class ChannelSubscribeEvent
       PusherChannelsEvent.eventNameKey: name,
       PusherChannelsEvent.dataKey: <String, String>{
         PusherChannelsEvent.channelKey: channelName,
-        if (authorizationKey != null) 'auth': authorizationKey,
-        if (channelData != null) 'channel_data': channelData,
+        'auth': ?authorizationKey,
+        'channel_data': ?channelData,
       },
     });
   }

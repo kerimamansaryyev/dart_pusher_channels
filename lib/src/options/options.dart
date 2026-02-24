@@ -1,11 +1,11 @@
-library pusher_channels_options;
+library;
 
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:meta/meta.dart';
 
 part 'clustered_options.dart';
-part 'host_options.dart';
 part 'custom_options.dart';
+part 'host_options.dart';
 
 typedef PusherChannelsOptionsCustomUriResolver = Uri Function(
   PusherChannelsOptionsMetadata metadata,

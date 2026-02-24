@@ -1,4 +1,4 @@
-part of pusher_channels_options;
+part of 'options.dart';
 
 @immutable
 class _CustomOptions implements PusherChannelsOptions {

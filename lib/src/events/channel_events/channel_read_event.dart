@@ -12,9 +12,9 @@ class ChannelReadEvent extends PusherChannelsReadEvent {
   final Channel channel;
 
   ChannelReadEvent._({
-    required Map<String, dynamic> rootObject,
+    required super.rootObject,
     required this.channel,
-  }) : super(rootObject: rootObject);
+  });
 
   @internal
   factory ChannelReadEvent.internalCreate({
