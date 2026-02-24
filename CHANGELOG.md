@@ -3,6 +3,7 @@
 - Upgraded Dart SDK version.
 - Removed `dart_code_metrics` analysis.
 - Applied code quality improvements.
+- Updated README.md.
 
 ## 1.2.3
 - Updated dependency: `pinenacl: ^0.6.0`
