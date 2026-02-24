@@ -1,4 +1,4 @@
-## 1.3.0+1
+## 1.3.1
 - Downgraded the meta package version to `^1.17.0` to resolve conflicts with Flutter SDK.
 
 ## 1.3.0
