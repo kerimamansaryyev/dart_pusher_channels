@@ -189,10 +189,11 @@ class PusherChannelsClient {
   /// Usage is the same as with the private channels but note that your
   /// server side has to support the encrypted channels feature.
   ///
+  /// "private-encrypted-" word already include in channel name
   /// Example:
   /// ```dart
   ///   PrivateEncryptedChannel myEncryptedChannel = client.privateEncryptedChannel(
-  ///   'private-encrypted-channel',
+  ///   'channel',
   ///   authorizationDelegate:
   ///       EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateEncryptedChannel(
   ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
@@ -239,13 +240,18 @@ class PusherChannelsClient {
     bool forceCreateNewInstance = false,
     PrivateEncryptedChannelEventDataEncodeDelegate eventDataEncodeDelegate =
         PrivateEncryptedChannel.defaultEventDataEncoder,
-  }) =>
-      channelsManager.privateEncryptedChannel(
-        channelName,
-        authorizationDelegate: authorizationDelegate,
-        forceCreateNewInstance: forceCreateNewInstance,
-        eventDataEncodeDelegate: eventDataEncodeDelegate,
-      );
+  }) {
+    // migrate to new format
+    final name = channelName.startsWith('private-encrypted-')
+        ? channelName
+        : 'private-encrypted-$channelName';
+    return channelsManager.privateEncryptedChannel(
+      name,
+      authorizationDelegate: authorizationDelegate,
+      forceCreateNewInstance: forceCreateNewInstance,
+      eventDataEncodeDelegate: eventDataEncodeDelegate,
+    );
+  }
 
   /// Creates a public channel.
   ///
@@ -285,10 +291,11 @@ class PusherChannelsClient {
   /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
   /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel]
   ///
+  /// "private-" word already include in channel name
   /// Example:
   /// ```dart
   /// PrivateChannel myPrivateChannel = client.privateChannel(
-  ///   'private-channel',
+  ///   'channel',
   ///   authorizationDelegate:
   ///       EndpointAuthorizableChannelTokenAuthorizationDelegate.forPrivateChannel(
   ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
@@ -325,8 +332,13 @@ class PusherChannelsClient {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
     }
+    // migrate to new format
+    final name = channelName.startsWith('private-')
+        ? channelName
+        : 'private-$channelName';
+
     return channelsManager.privateChannel(
-      channelName,
+      name,
       authorizationDelegate: authorizationDelegate,
       forceCreateNewInstance: forceCreateNewInstance,
     );
@@ -337,10 +349,11 @@ class PusherChannelsClient {
   /// Provide your implementation of [EndpointAuthorizableChannelAuthorizationDelegate] or you
   /// may use: [EndpointAuthorizableChannelTokenAuthorizationDelegate.forPresenceChannel]
   ///
+  /// "presence-" word already include in channel name
   /// Example:
   /// ```dart
   /// PresenceChannel myPresenceChannel = client.presenceChannel(
-  ///   'presence-channel',
+  ///   'channel',
   ///   authorizationDelegate: EndpointAuthorizableChannelTokenAuthorizationDelegate
   ///       .forPresenceChannel(
   ///     authorizationEndpoint: Uri.parse('https://test.pusher.com/pusher/auth'),
@@ -376,8 +389,13 @@ class PusherChannelsClient {
     if (_isDisposed) {
       throw const PusherChannelsClientDisposedException();
     }
+
+    // migrate to new format
+    final name = channelName.startsWith('presence-')
+        ? channelName
+        : 'presence-$channelName';
     return channelsManager.presenceChannel(
-      channelName,
+      name,
       authorizationDelegate: authorizationDelegate,
       forceCreateNewInstance: forceCreateNewInstance,
     );
